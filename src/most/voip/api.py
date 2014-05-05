@@ -8,8 +8,8 @@ class VoipLib:
     def __init__(self, backend):
         self.backend = backend
     
-    def initialize(self):
-        return self.backend.initialize()
+    def initialize(self,params):
+        return self.backend.initialize(params)
     
    
     def register_account(self):
