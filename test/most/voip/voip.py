@@ -5,22 +5,38 @@ from most.voip.states import VoipState
 from most.voip.api_backend import VoipBackend
 from mock_voip import MockVoipBackend
 
+import time
+
 class VoipTestCase(unittest.TestCase):
     
     def __init__(self, test_method,backend):
         #unittest.TestCase(test_method)
         super(VoipTestCase,self).__init__(test_method)
         self.voip = VoipLib(backend)
-        self.extension = "REMOTE_0002"
-        self.params =    {u'username': u'specialista', 
+        self.extension = "REMOTE0002"
+        self.params_spec =    {u'username': u'specialista', 
                           u'turn_server': u'156.148.133.240', 
                           u'sip_pwd': u'sha1$40fcf$4718177db1b6966f64d2d436f212', 
                           u'sip_server': u'156.148.133.240', 
                           u'sip_user': u'specialista', 
                           u'turn_user': u'specialista', 
                           u'turn_pwd': u'sha1$40fcf$4718177db1b6966f64d2d436f212',
+                                         #sha1$40fcf$4718177db1b6966f64d2d436f212 8da010a282b5
                           u'log_level' : 5}
         
+        self.params_eco =    {u'username': u'ecografista', 
+                          u'turn_server': u'156.148.133.240', 
+                          u'sip_pwd': u'sha1$fdcad$659da6841c6d8538b7a10ca12aae', 
+                                        #sha1$40fcf$4718177db1b6966f64d2d436f212
+                                        #sha1$fdcad$659da6841c6d8538b7a10ca12aae 3303f9a5a88b
+                                       
+                          u'sip_server': u'156.148.133.240', 
+                          u'sip_user': u'ecografista', 
+                          u'turn_user': u'ecografista', 
+                          u'turn_pwd': u'sha1$fdcad$659da6841c6d8538b7a10ca12aae',
+                          u'log_level' : 5}
+        
+        self.params = self.params_spec
         self.voipState = VoipState.Null
         
     
@@ -53,11 +69,13 @@ class VoipTestCase(unittest.TestCase):
     def test_unregister_account(self):
         self.assertTrue(self.voip.unregister_account(), "Error unregistering the account!")
         self.assertEquals(self.voipState, VoipState.Unregistered,"Unregistration state failed") 
-         
+    
+   
     def test_call(self):
         self.assertTrue(self.voip.make_call(self.extension), "Failed making a call to extension %s" % self.extension)
         #self.assertEquals(self.voipState, VoipState.Dialing,"Dialing state failed") 
-     
+    
+    
     def test_answer_call(self):
         self.assertTrue(self.voip.answer_call(), "Failed answering the call")
          
@@ -72,10 +90,11 @@ class VoipTestCase(unittest.TestCase):
     def test_hungup(self):
         self.assertTrue(self.voip.hungup_call(), "Failed hunging up the call")
         self.assertEquals(self.voipState, VoipState.Hungup,"Hungup state failed") 
-         
+    
+     
     def test_finalize(self):
         self.assertTrue(self.voip.finalize(), "Error finalizing the lib!")
-        
+     
      
     
 class DummyVoipTestCase(VoipTestCase):
@@ -99,6 +118,6 @@ if __name__ == '__main__':
     myDummySuite = getDummyVoipSuite()
     myRealSuite = getRealVoipSuite()
     runner = unittest.TextTestRunner()
-    #runner.run(myDummySuite)
-    runner.run(myRealSuite)
+    runner.run(myDummySuite)
+    #runner.run(myRealSuite)
     

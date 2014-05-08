@@ -11,8 +11,12 @@ from most.voip.states import VoipState
 
 
 
+
 ##########   GLOBAL VARS  ####################
 
+logger = None
+
+voip_data_root_dir = "../../data"
 is_server_on = False
 
 buddy = None
@@ -36,8 +40,22 @@ player_out_id = None
 input_volume = 0.5
 output_volume = 0.5
 
-remote_root_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
 
+
+auto_answer = False
+auto_answer_delay = 3
+voip_root_dir = os.path.join(os.path.dirname(__file__), "../../")
+in_call_ring_tone = "data/sounds/ring_in_call.wav"   #  TODO Change this... this path is only for testing....
+out_call_ring_tone = "data/sounds/ring_out_call.wav" # TODO Change this... this path is only for testing....
+
+
+input_volume = 0.5
+output_volume = 0.5
+in_device = -1
+out_device = -2
+in_sel_device = -1
+out_sel_device = -1
+ 
 local_hungup = False
 
 
@@ -62,31 +80,31 @@ def log_cb(level, msg, msg_len):
     print '[%s] %s' % (time.ctime(), msg),
 
 def _start_call_sound_out():
-    global player_out_id,input_volume, output_volume, remote_root_dir
+    global player_out_id,input_volume, output_volume, voip_root_dir
     #if player_out_id==None:
-
-    sound_file = os.path.join(remote_root_dir, TecapConfig().getConfig().get("VoipBackend","out_call_ring_tone"))
-    print "Loading sound file:%s  " % sound_file
+   
+    sound_file = os.path.join(voip_root_dir,out_call_ring_tone)
+    logger.debug("Loading sound file:%s  " % sound_file)
     player_out_id = pj.Lib.instance().create_player(sound_file,loop=True)
-    print "SETTING CALL IN VOLUME to %s,%s" % (input_volume,output_volume )
+    logger.debug("SETTING CALL IN VOLUME to %s,%s" % (input_volume,output_volume ))
     #pj.Lib.instance().conf_set_rx_level(player_out_id,output_volume)
     pj.Lib.instance().conf_set_tx_level(player_out_id,output_volume)
-    print "CREATED PLAYER HAVING ID:%s" % player_out_id
+    logger.debug("CREATED PLAYER HAVING ID:%s" % player_out_id)
 
     #else:
     #    print 'player already exists'
 
 
-    print 'try to connect player: %s' % pj.Lib.instance().player_get_slot(player_out_id)
-    print 'try to connect to slot: %s' % current_call.info().conf_slot
+    logger.debug('try to connect player: %s' % pj.Lib.instance().player_get_slot(player_out_id))
+    logger.debug( 'try to connect to slot: %s' % current_call.info().conf_slot)
 
     pj.Lib.instance().conf_connect(pj.Lib.instance().player_get_slot(player_out_id), 0)
 
 
 def _stop_call_sound():
     global player_out_id, player_in_id
-    print "in stop call sound.. "
-    print "player_out_id:%s" % player_out_id
+    logger.debug("in stop call sound.. ")
+    logger.debug("player_out_id:%s" % player_out_id)
     #print "player_in_id:%s" % player_in_id
 
     if player_out_id!=None:
@@ -97,53 +115,55 @@ def _stop_call_sound():
 
 def _stop_call_sound_out():
     global player_out_id
-    print "in _stop_call_sound_out. PLAYER_OUT_ID:%s" % player_out_id
+    logger.debug("in _stop_call_sound_out. PLAYER_OUT_ID:%s" % player_out_id)
     if player_out_id!=None:
-        print "disconnecting player CALL OUT"
+        logger.debug("disconnecting player CALL OUT")
         pj.Lib.instance().player_set_pos(player_out_id,0)
         pj.Lib.instance().conf_disconnect(pj.Lib.instance().player_get_slot(player_out_id), 0)
         #pj.Lib.instance().player_destroy(player_out_id)
 
 
 def _start_call_sound_in():
-    global player_in_id, remote_root_dir
-    print "in _stop_call_sound_in"
+    global player_in_id, voip_root_dir
+    logger.debug("in _stop_call_sound_in")
     if player_in_id==None:
-        sound_file = os.path.join(remote_root_dir,TecapConfig().getConfig().get("VoipBackend","in_call_ring_tone"))
+        #sound_file = os.path.join(voip_root_dir,TecapConfig().getConfig().get("VoipBackend","in_call_ring_tone"))
+        sound_file = os.path.join(voip_root_dir,in_call_ring_tone)
         player_in_id = pj.Lib.instance().create_player(sound_file,loop=True)
-        print "SETTING CALL IN VOLUME to %s,%s" % (input_volume,output_volume )
+        logger.debug("SETTING CALL IN VOLUME to %s,%s" % (input_volume,output_volume ))
         pj.Lib.instance().conf_set_tx_level(player_in_id,output_volume)
         #pj.Lib.instance().conf_set_rx_level(player_out_id,input_volume)
-        print "CREATED PLAYER HAVING ID:%s" % player_in_id
+        logger.debug("CREATED PLAYER HAVING ID:%s" % player_in_id)
 
     pj.Lib.instance().conf_connect(pj.Lib.instance().player_get_slot(player_in_id), 0)
 
 
 def _stop_call_sound_in():
     global player_in_id
-    print "in _stop_call_sound_in"
+    logger.debug("in _stop_call_sound_in")
     if player_in_id!=None:
-        print "disconnecting player CALL IN"
+        logger.debug("disconnecting player CALL IN")
         pj.Lib.instance().player_set_pos(player_in_id,0)
         pj.Lib.instance().conf_disconnect(pj.Lib.instance().player_get_slot(player_in_id), 0)
         #pj.Lib.instance().player_destroy(player_in_id)
         #player_in_id = None
  
-
-class VoipBackend:
-    
-    def _setup_logger(self):
-        
-        self.logger = logging.getLogger('Voip')
+def _setup_logger():
+        global logger
+        logger = logging.getLogger('Voip')
         handler = logging.StreamHandler()
         rootFormatter = logging.Formatter('%(name)s - %(levelname)s: %(msg)s')
         handler.setFormatter(rootFormatter)
-        self.logger.addHandler(handler)
-        self.logger.setLevel(logging.DEBUG)
+        logger.addHandler(handler)
+        logger.setLevel(logging.DEBUG)
+        
+class VoipBackend:
+    
+    
         
     def __init__(self):
         
-        self._setup_logger()
+        _setup_logger()
 
         global is_server_on, is_buddy_on_line, buddy_status_text
         self.lib = None
@@ -170,11 +190,11 @@ class VoipBackend:
         def __init__(self, notification_cb,call=None):
             pj.CallCallback.__init__(self, call)
             
-            self.logger.debug("Istanziata MyCallCallback")
+            logger.debug("Istanziata MyCallCallback")
             self.notification_cb = notification_cb
 
         def on_replace_request(self, code, reason):
-            self.logger.debug("richiamata ON REPLACE REQUEST:%s , %s" % (code,reason))
+            logger.debug("richiamata ON REPLACE REQUEST:%s , %s" % (code,reason))
             return (code,reason)
 
 
@@ -183,43 +203,43 @@ class VoipBackend:
             global current_call, callState, local_hungup, is_buddy_on_line
 
             
-            print "STATO DELLA CALL (on_state):%s" %  self.call.info().state
+            logger.debug( "STATO DELLA CALL (on_state):%s" %  self.call.info().state)
 
 
 
             uri_to_call = self.call.info().remote_uri
-            print "Call with", uri_to_call,
-            print "is", self.call.info().state_text,
-            print "last code =", self.call.info().last_code,
-            print "(" + self.call.info().last_reason + ")"
+            logger.debug( "Call with %s is %s Last code=%s (%s)" % (uri_to_call,
+                                                                    self.call.info().state_text,
+                                                                    self.call.info().last_code,self.call.info().last_reason))
+             
 
             if self.call.info().state == pj.CallState.DISCONNECTED:
                 current_call = None
                 callState = VoipBackendCallState.NONE
 
-                print "DISCONNECTION:Stopping call sound"
+                logger.debug( "DISCONNECTION:Stopping call sound")
                 _stop_call_sound()
 
-                print 'Current call is', current_call
+                logger.debug( 'Current call is:%s' % current_call)
                 
                 if local_hungup:
-                    self.logger.debug('Change internal state on HUNGUPPING from on_state dopo HUNGUP')
+                    logger.debug('Change internal state on HUNGUPPING from on_state dopo HUNGUP')
                     self.notification_cb(VoipState.Hungup, {'success': True, 'call_state' :callState})
                     local_hungup = False
                 else:
                     if is_buddy_on_line:
-                        print 'Change internal state on HUNGUPPING from on_state  dopo REMOTE HUNGUP'
+                        logger.debug( 'Change internal state on HUNGUPPING from on_state  dopo REMOTE HUNGUP')
                         self.notification_cb(VoipState.RemoteHungup, {'success': True, 'call_state' :callState})
                     else:
-                        self.logger.debug('Change internal state on HUNGUPPING from on_state  dopo REMOTE DISCONNECTION HUNGUP')
+                        logger.debug('Change internal state on HUNGUPPING from on_state  dopo REMOTE DISCONNECTION HUNGUP')
                         self.notification_cb(VoipState.RemoteDisconnectionHungup, {'success': True, 'call_state' :callState})
                         #self.sip_controller.change_state(SipControllerState.RemoteDisconnectionHungup,callState)
 
 
 
             elif self.call.info().state==pj.CallState.CONFIRMED:
-                print "CALL CONFIRMED" #. sending REQUEST to %s" % uri_to_call
-                self.logger.debug('Change internal state on CALLING')
+                logger.debug( "CALL CONFIRMED") #. sending REQUEST to %s" % uri_to_call
+                logger.debug('Change internal state on CALLING')
                 #self.sip_controller.change_state(SipControllerState.Calling, callState)
                 self.notification_cb(VoipState.Calling, {'success': True, 'call_state' :callState})
                 callState = VoipBackendCallState.BUSY
@@ -232,21 +252,21 @@ class VoipBackend:
         def on_media_state(self):
             
             global callState, input_volume, output_volume
-            print 'DENTRO ON MEDIA STATE:%s' % self.call.info().media_state
+            logger.debug( 'DENTRO ON MEDIA STATE:%s' % self.call.info().media_state)
             if self.call.info().media_state == pj.MediaState.ACTIVE:
-                print "Stopping ring tone...."
+                logger.debug( "Stopping ring tone....")
                 _stop_call_sound()
                 # Connect the call to sound device
                 call_slot = self.call.info().conf_slot
                 pj.Lib.instance().conf_connect(call_slot, 0)
                 pj.Lib.instance().conf_connect(0, call_slot)
                 
-                print "VOLUME INIZIALE:" + str(pj.Lib.instance().conf_get_signal_level(call_slot))
+                logger.debug( "VOLUME INIZIALE:" + str(pj.Lib.instance().conf_get_signal_level(call_slot)))
                 pj.Lib.instance().conf_set_rx_level(call_slot,input_volume)
                 pj.Lib.instance().conf_set_tx_level(call_slot,output_volume)
 
 
-                print "Media is now active"
+                logger.debug( "Media is now active")
                 #self.messenger.send_info("Call online")
                 #self.messenger.update_call_button_label("Hungup")
                 callState = VoipBackendCallState.BUSY
@@ -256,15 +276,15 @@ class VoipBackend:
                 #print "CALL CONFIRMED. sending REQUEST to::: %s" % uri_to_call
                 #self.call.send_pager(uri_to_call, "messaggio con la uri!!!", im_id="12345", content_type='text/plain')  #, hdr_list=["user=admin","secret=secret5"])
             elif self.call.info().media_state == pj.MediaState.LOCAL_HOLD:
-                print 'Local Hold request'
+                logger.debug( 'Local Hold request')
                 callState = VoipBackendCallState.LOCAL_HOLD
                 #self.sip_controller.change_state(SipControllerState.Holding, callState)
                 self.notification_cb(VoipState.RemoteDisconnectionHungup, {'success': True, 'call_state' :callState})
 
             elif self.call.info().media_state == pj.MediaState.REMOTE_HOLD:
-                print "Media is REMOTE HOLD STATE"
+                logger.debug( "Media is REMOTE HOLD STATE")
             else:
-                print "Media is inactive"
+                logger.debug( "Media is inactive")
 
                 #self.messenger.send_info("No Call")
                 #self.messenger.update_call_button_label("Call")
@@ -280,9 +300,10 @@ class VoipBackend:
             self.notification_cb = notification_cb
 
         def on_state(self):
-            print "Buddy", self.buddy.info().uri, "is --> ",
-            print self.buddy.info().online_status, " ->",
-            print self.buddy.info().online_text + " <--"
+            logger.debug("Buddy %s is --> %s -> %s <--" % ( self.buddy.info().uri,
+                                                                 self.buddy.info().online_status,
+                                                                 self.buddy.info().online_text))
+            
 
             global is_buddy_on_line, is_buddy_on_hold, buddy_status_text, callState
             is_buddy_on_line = self.buddy.info().online_status==1 and self.buddy.info().online_text != 'On hold'
@@ -291,11 +312,11 @@ class VoipBackend:
             buddy_status_text = self.buddy.info().online_text
 
             if is_buddy_on_line:
-                self.logger.debug('mando change state di Buddy CONNECTED')
+                logger.debug('mando change state di Buddy CONNECTED')
                 #self.sip_controller.change_state(SipControllerState.Remote_user_connected, buddy_status_text)
                 self.notification_cb(VoipState.Remote_user_connected, {'buddy_status' : buddy_status_text})
             elif is_buddy_on_hold:
-                print 'Buddy in REMOTE HOLD!!!'
+                logger.debug( 'Buddy in REMOTE HOLD!!!')
                 if callState == VoipBackendCallState.LOCAL_HOLD:
                     #self.sip_controller.change_state(SipControllerState.RemoteLocalHolding,buddy_status_text)
                     self.notification_cb(VoipState.RemoteLocalHolding, {'buddy_status' : buddy_status_text})
@@ -305,7 +326,7 @@ class VoipBackend:
                     self.notification_cb(VoipState.RemoteHolding, {'buddy_status' : buddy_status_text})
                     pass
             elif is_buddy_off_line:
-                self.logger.debug('mando change state di Buddy DISCONNECTED')
+                logger.debug('mando change state di Buddy DISCONNECTED')
                 #self.sip_controller.change_state(SipControllerState.Remote_user_disconnected, buddy_status_text)
                 self.notification_cb(VoipState.Remote_user_disconnected, {'buddy_status' : buddy_status_text})
 
@@ -313,20 +334,21 @@ class VoipBackend:
             #self.messenger.update_status_label(SignalEmitterState.NO_CALL)
 
         def on_pager(self, mime_type,body):
-            print "Instant message in BuddyCallBack from", self.buddy.info().uri,
-            print "(", mime_type, "):"
-            print body
+            logger.debug( "Instant message in BuddyCallBack from %s (%s)" % (self.buddy.info().uri, mime_type))
+             
+            logger.debug("Message body:%s" % body)
 
         def on_pager_status(self, body, im_id, code, reason):
             if code >= 300:
-                print "Message delivery failed for message",
-                print body, "to", self.buddy.info().uri, ":", reason
+                logger.debug("Message delivery failed for message %s to %s: %s" % (body, self.buddy.info().uri,reason))
+                
+                
 
         def on_typing(self, is_typing):
             if is_typing:
-                print self.buddy.info().uri, "is typing"
+                logger.debug("%s is typing" % self.buddy.info().uri)
             else:
-                print self.buddy.info().uri, "stops typing"
+                logger.debug("%s is typing" % self.buddy.info().uri)
 
 
  
@@ -356,9 +378,9 @@ class VoipBackend:
         
         # Notification on local user registration change state (a request timeout status code implies that the sip server is disconnected)
         def on_reg_state(self):
-            print '\ncalled on reg status:%s' % self.account.info().reg_status
-            print 'called on reg reason:%s\n' % self.account.info().reg_reason
-            print 'on line text:%s' % self.account.info().online_text
+            logger.debug( '\ncalled on reg status:%s' % self.account.info().reg_status)
+            logger.debug( 'called on reg reason:%s\n' % self.account.info().reg_reason)
+            logger.debug( 'on line text:%s' % self.account.info().online_text)
             
             global is_server_on
             # utente registrato con successo (evidentemente il server e' su
@@ -377,31 +399,31 @@ class VoipBackend:
                 
             elif reg_status==self.REGISTERED:
                 if not self.already_registered:
-                    self.logger.debug("LOCAL USER REGISTERED")
+                    logger.debug("LOCAL USER REGISTERED")
                     #self.sip_controller.change_state(SipControllerState.Registered,self.account.info())
                     #self.sip_controller.do_fsm(SipControllerState.Registered,self.account.info())
                     self.notification_cb(VoipState.Registered, {'Success' : True, 'account_info': self.account.info()})
                     self.already_registered = True
             else:
-                print 'LOCAL USER REGISTRATION FAILED:%s, %s' % (reg_status,reg_reason)
+                logger.debug( 'LOCAL USER REGISTRATION FAILED:%s, %s' % (reg_status,reg_reason))
                 #self.sip_controller.change_state(SipControllerState.Registration_failed, {'reg_status': reg_status, 'reg_reason': reg_reason})
                 #self.sip_controller.do_fsm(SipControllerState.Registration_failed,{'reg_status': reg_status, 'reg_reason': reg_reason})
                 self.notification_cb(VoipState.Registration_failed, {'Success' : False, 'reg_status': reg_status, 'reg_reason': reg_reason})
 
         # Notification on incoming call
         def on_incoming_call(self, call):
-            print '\nINCOMING CALL\n'
+            logger.debug( '\nINCOMING CALL\n')
             global current_call,config, callState, refused, auto_answer, auto_answer_delay
             refused = False
 
             if current_call:
                 callState = VoipBackendCallState.BUSY
-                print 'Chiamata occupata'
+                logger.debug( 'Chiamata occupata')
                 call.answer(486, "Busy")
                 return
             ru = str(call.info().remote_uri)
             remote_contact = ru[ru.index('"')+1:ru.rindex('"')]
-            print "Incoming call from ", call.info().remote_uri
+            logger.debug( "Incoming call from %s" % call.info().remote_uri)
 
         
             callState = VoipBackendCallState.INCOMING
@@ -411,13 +433,13 @@ class VoipBackend:
             call_cb = VoipBackend.MyCallCallback(self.notification_cb,current_call)
             current_call.set_callback(call_cb)
 
-            print 'cambio lo stato interno del sip controller in dialing!'
+            logger.debug( 'cambio lo stato interno del sip controller in dialing!')
             #self.sip_controller.change_state(SipControllerState.Dialing, callState)
             self.notification_cb(VoipState.Dialing, {'Success' : True, 'call_state': callState})
             if auto_answer==True:
 
 
-                print "auto answering after %s seconds" % auto_answer_delay
+                logger.debug( "auto answering after %s seconds" % auto_answer_delay)
 
                 #self.messenger.send_info("Auto Answering to Incoming call from %s in %s seconds" % (remote_contact,delay))
                 #self.messenger.update_status_label("Auto Answering to Incoming call from %s in %s seconds" % (remote_contact,delay))
@@ -432,7 +454,7 @@ class VoipBackend:
 
         def _auto_answer(self):
             global current_call, callState
-            print 'RISPOSTA AUTOMATICA!'
+            logger.debug( 'RISPOSTA AUTOMATICA!')
             self.auto_answer_call = None
              
             if callState==VoipBackendCallState.INCOMING:
@@ -440,26 +462,26 @@ class VoipBackend:
 
 
     def _initialize_values(self):
-        print 'initializing audio values temporary disabled'
-        """
+        logger.debug( 'setting audio values as default values (embedded)')
+         
         global input_volume, output_volume, auto_answer, auto_answer_delay
-        config = TecapConfig().getConfig()
+        #config = TecapConfig().getConfig()
 
-        input_volume = config.getfloat('VoipBackend','input_volume')
-        output_volume = config.getfloat('VoipBackend','output_volume')
-        auto_answer = config.getboolean('VoipBackend','auto_answer')
-        auto_answer_delay = config.getint('VoipBackend','auto_answer_delay')
+        input_volume = 0.5 # config.getfloat('VoipBackend','input_volume')
+        output_volume = 0.5 # config.getfloat('VoipBackend','output_volume')
+        auto_answer = False #config.getboolean('VoipBackend','auto_answer')
+        auto_answer_delay = 3 #config.getint('VoipBackend','auto_answer_delay')
 
         #self.sip_controller.view.control_panel.mic_volume.slider.setValue(input_volume*100)
         #self.sip_controller.view.control_panel.out_volume.slider.setValue(output_volume*100)
-        print "reading audio I/O devices..."
-        in_device = config.getint('VoipBackend','in_device')
-        out_device = config.getint('VoipBackend','out_device')
-        sel_in = config.getint('VoipBackend','in_sel_device')
-        sel_out = config.getint('VoipBackend','out_sel_device')
+        logger.debug( "reading audio I/O devices...")
+        in_device = -1 # config.getint('VoipBackend','in_device')
+        out_device = -2 # config.getint('VoipBackend','out_device')
+        sel_in = -1 # config.getint('VoipBackend','in_sel_device')
+        sel_out = -1 # config.getint('VoipBackend','out_sel_device')
 
         self.set_audio_devices(in_device,out_device,sel_in,sel_out)
-        """
+      
 
     def get_inout_devices(self):
         devices = self.lib.enum_snd_dev()
@@ -475,22 +497,22 @@ class VoipBackend:
 
 
     def set_audio_devices(self, input_device, output_device, list_index_in, list_index_out):
-        print 'dentro set_audio_devices di audio_chat'
+        logger.debug( 'into set_audio_devices()')
         try:
             self.lib.set_snd_dev(input_device, output_device)
             self.input_dev_list_index =  list_index_in
             self.output_dev_list_index =  list_index_out
         except Exception , ex:
-            print "Eccezione:%s" % str(ex)
+            logger.debug( "Eccezione:%s" % str(ex))
 
     def set_call_preferences(self, auto_answering, auto_answering_delay):
-        print 'dentro set_call_preferences di audio_chat'
+        logger.debug( 'into set_call_preferences on Voip Api backend')
         global auto_answer, auto_answer_delay
         try:
             auto_answer = auto_answering
             auto_answer_delay = auto_answering_delay
         except Exception , ex:
-            print "Eccezione:%s" % str(ex)
+            logger.error( "Exception:%s" % str(ex))
 
 
     def get_audio_devices(self):
@@ -520,17 +542,15 @@ class VoipBackend:
     def setInputVolume(self, newValue):
         global input_volume
         input_volume = newValue/100.0
-        #print "input volume setted to:%s" % input_volume
+        logger.debug( "setting input volume   to:%s" % input_volume)
         global current_call
         if current_call:
-            print "Mi cerco lo slot"
             slot = current_call.info().conf_slot
-            print "lo slot:" + str(slot)
             if slot!=None and slot>-1:
                 pj.Lib.instance().conf_set_tx_level(slot,input_volume)
                 #pj.Lib.instance().conf_set_rx_level(slot,input_volume)
             else:
-                print "SLOT NULLO!"
+                logger.debug( "SLOT NULLO!")
 
     def getOutputVolume(self):
         global output_volume
@@ -552,17 +572,17 @@ class VoipBackend:
 
         if current_call:
             slot = current_call.info().conf_slot
-            print "lo slot:" + str(slot)
+             
             if slot!=None and slot>-1:
                 pj.Lib.instance().conf_set_rx_level(slot, output_volume)
             else:
-                print "SLOT NULLO!"
+                logger.debug( "SLOT NULLO!")
     
     def unregister_account(self):
         
         if self.is_server_on():
 
-            self.logger.debug("Unregistering account having active? %s is_valid? %s" % (acc.info().reg_active, acc.is_valid()))
+            logger.debug("Unregistering account having active? %s is_valid? %s" % (acc.info().reg_active, acc.is_valid()))
             try:
                 if acc.info().reg_active:
                     acc.set_registration(False)
@@ -570,17 +590,17 @@ class VoipBackend:
                     #acc = None
                     return True
             except Exception,ex:
-                self.logger.exception("Unexpected exception during user unregistration, maybe because the sip server is offline:%s" % ex)
+                logger.exception("Unexpected exception during user unregistration, maybe because the sip server is offline:%s" % ex)
                 return False
 
             
     
     def finalize(self):
         if not self.lib:
-            self.logger.warn('No Pjsip lib to shutdown')
+            logger.warn('No Pjsip lib to shutdown')
             return False
         
-        print 'PJSIP SHUTTING DOWN....'
+        logger.debug( 'PJSIP SHUTTING DOWN....')
         global acc
         global transport
         global current_call
@@ -597,11 +617,11 @@ class VoipBackend:
         #     pj.Lib.instance().player_destroy(player_in_id)
         
         if player_out_id:
-            print 'deleting out id'
+            logger.debug( 'deleting out id')
             del player_out_id
             player_out_id = None
         if player_in_id:
-            print 'deleting in id'
+            logger.debug( 'deleting in id')
             del player_in_id
             player_in_id = None
 
@@ -628,94 +648,67 @@ class VoipBackend:
 
 
             # Shutdown the library
-            transport.close(True)
-            print "After force transport close"
-            transport = None
-            print "destroying pjsip lib"
+            if (transport!=None): # TODO verificare se la variabile transport va usata...
+                transport.close(True)
+                logger.debug( "After force transport close")
+                transport = None
+                
+            logger.debug( "destroying pjsip lib")
             self.lib.destroy()
             
-            print "library destroyed"
+            logger.debug( "library destroyed")
             del self.lib
             self.lib = None
         except Exception, e:
-            print 'Exception during shutting down:%s' % e
+            logger.exception( 'Exception during shutting down:%s' % e)
             return False
 
         return True
     
     
-
-    def register_account(self):
-        try:
-            global acc
-
-            if not acc:
-
-                self.logger.debug("Registering account **%s** (PWD:%s) on sip server:**%s**" % (self.my_account[0],self.my_account[1], self.sip_server))
-                acc_cfg = pj.AccountConfig('%s;transport=tcp' % str(self.sip_server), str(self.my_account[0]), str(self.my_account[1]))
-                #acc_cfg = pj.AccountConfig('156.148.132.244', 'demo-smonni', 'pwd_smonni')
-
-               
-                # la riregistrazione avviene ogni 60 secondi che e' il minimo consentito (verifica la presenza del server)
-                acc_cfg.reg_timeout = 60
-                acc_cfg.publish_enabled = True
-                
-
-                acc = self.lib.create_account(acc_cfg, cb=VoipBackend.MyAccountCallback(None)) #TODO inserire oggetto che riceve le notifiche di cambio di stato
-
-                self.logger.debug("Account %s registration successfully sent with timeout:%s" % (self.my_account[0], acc_cfg.reg_timeout))
-                #self.sip_controller.change_state(SipControllerState.Registered, self.my_account[0])
-                #self.sip_controller.do_fsm(SipControllerState.Registered,self.my_account[0])
-                self.notification_cb(VoipState.Registered, {'Success' : True, 'account_info' : self.my_account[0]})
-            else:
-                self.logger.debug("account previously registered. Nothing to do")
-            
-            return True
-
-            
-        except pj.Error, e:
-            self.logger.exception("Exception registering account:%s" % str(e))
-            self.lib.destroy()
-            self.lib = None
-            #self.sip_controller.change_state(SipControllerState.Registration_failed, str(e))
-            #self.sip_controller.do_fsm(SipControllerState.Registration_failed,self.params)
-            self.notification_cb(VoipState.Registration_failed, {'Success' : False, 'error' : str(e), 'params': self.params})
-            return False
-
-
     def initialize(self,params, notification_cb):
 
         # Create library instance
         # Create pjsua before anything else
-        self.logger.debug("\nSTARTING SIP...%s\n" % str(params))
+        
+        self.params = params
+        if (self.params.has_key("debug") and self.params["debug"]==False):
+            logger.disabled = True
+        logger.debug("\nSTARTING SIP...%s\n" % str(params))
         if not self.lib:
+            logger.debug("\nInstancing pjsip lib...%s\n" % str(params))
             self.lib = pj.Lib()
         
   
-        self.params = params
+        
         self.notification_cb = notification_cb
         
         self.sip_server = str(self.params['sip_server'])
-        self.turn_server = str(self.params['turn_server'])
-        print 'reading server: %s:%s' % (self.sip_server, self.turn_server)
+        if (self.params.has_key("turn_server")):
+            self.turn_server = str(self.params['turn_server'])
+        else:
+            self.turn_server= None
+            
+        logger.debug( 'reading server: %s:%s' % (self.sip_server, self.turn_server))
         self.my_account = (self.params['sip_user'], self.params['sip_pwd'])
-        self.logger.debug("ACCOUNT FROM WEB APP:%s,%s" % self.my_account)
-
-
+        logger.debug("ACCOUNT FROM WEB APP:%s,%s" % self.my_account)
 
         try:
             # Init library with default config and some customized
-
+            # TURN SERVER CONFIGURATION
+            
             my_media_cfg = pj.MediaConfig()
-            my_media_cfg.enable_ice = True
-            my_media_cfg.enable_turn = True
-            my_media_cfg.turn_server = "%s:3478" % str(self.turn_server)
-            #my_media_cfg.turn_server = "156.148.18.186:3478"
-            self.logger.debug("Setting turn server[%s]:%s" % (type(my_media_cfg.turn_server), (my_media_cfg.turn_server)))
-            my_media_cfg.turn_cred = pj.AuthCred("remote.most.it", '%s' % str(self.params['turn_user']), '%s' % str(self.params['turn_pwd']))
-            self.logger.debug("#%s#" % my_media_cfg.turn_cred)
-            my_media_cfg.turn_conn_type = pj.TURNConnType.TCP
-            self.logger.debug("Setting turn user:%s:%s" % (self.params['turn_user'], self.params['turn_pwd']))
+            
+            if (self.turn_server!=None):
+                my_media_cfg.enable_ice = True
+                my_media_cfg.enable_turn = True
+                my_media_cfg.turn_server = "%s:3478" % str(self.turn_server)
+                #my_media_cfg.turn_server = "156.148.18.186:3478"
+                logger.debug("Setting turn server[%s]:%s" % (type(my_media_cfg.turn_server), (my_media_cfg.turn_server)))
+                my_media_cfg.turn_cred = pj.AuthCred("remote.most.it", '%s' % str(self.params['turn_user']), '%s' % str(self.params['turn_pwd']))
+                logger.debug("#%s#" % my_media_cfg.turn_cred)
+                my_media_cfg.turn_conn_type = pj.TURNConnType.TCP
+                logger.debug("Setting turn user:%s:%s" % (self.params['turn_user'], self.params['turn_pwd']))
 
             #my_media_cfg.snd_play_latency = 0
             #my_media_cfg.snd_rec_latency = 0
@@ -737,50 +730,31 @@ class VoipBackend:
             
             self.lib.init(log_cfg = pj.LogConfig(level=LOG_LEVEL, callback=log_cb),  media_cfg=my_media_cfg, ua_cfg=ua_cfg)
 
-            print "looking for installed devices..."
-            #self.lib.set_snd_dev(0,0)
-            devices = self.lib.enum_snd_dev()
-            print "Devices found:%s" % len(devices)
-            snd_dev = self.lib.get_snd_dev()
             
-            print "My Sound devs:" + str(snd_dev) ## returns (-1,-2)
-            #assert len(devices)>0
-            
-            
-            for d in devices:
-                print "DEVICE:" + d.name + " > sr:" + str(d.default_clock_rate)
-
-
-
+            # TRANSPORT CONFIGURATION
             #print "creating UDP transport..."
             global transport
-            #transport = self.lib.create_transport(pj.TransportType.UDP)
-            transport = self.lib.create_transport(pj.TransportType.TCP)
-            self.logger.debug("Creating transport:%s" % transport)
+            if (self.params.has_key("transport") and self.params["transport"]=="udp"):
+                transport = self.lib.create_transport(pj.TransportType.UDP)
+            else:
+                transport = self.lib.create_transport(pj.TransportType.TCP)
+            logger.debug("Creating transport:%s" % transport)
 
             # Start the library
             self.lib.start(with_thread=True)
 
- 
-            c = self.lib.enum_codecs()
-            self.logger.debug("List of Codecs(%s)" % len(c))
-            for codec in c:
-                self.logger.debug("Found codec %s with priority: %s" % (codec.name, codec.priority))
-                if not codec.name.startswith('iLBC'):pass
-                    #self.lib.set_codec_priority(codec.name, 0)
-                    #print 'Setting codec priority to 0 for %s' % codec.name
-                    #codec.priority=0
- 
+
             self._initialize_values()
             self.notification_cb(VoipState.Initialized, {'success': True, 'sip_server' :self.sip_server})
             #self.sip_controller.change_state(SipControllerState.Initialized, self.sip_server)
             #self.sip_controller.do_fsm(SipControllerState.Initialized,self.params)
 
-            self.logger.debug('SIP successfully initialized!')
+            logger.debug('SIP successfully initialized!')
             return True
         except pj.Error, e:
-            self.logger.debug( "SIP INITIALIZATION FAILED: Exception: " + str(e))
-            self.lib.destroy()
+            logger.exception( "SIP INITIALIZATION FAILED: Exception: " + str(e))
+            if self.lib!=None:
+                self.lib.destroy()
             self.lib = None
             return False
         
@@ -788,23 +762,88 @@ class VoipBackend:
             self.notification_cb(VoipState.Initialize_failed, {'success': False, 'error' :str(e)})
             #self.sip_controller.do_fsm(SipControllerState.Initialize_failed,self.params)
 
+    def register_account(self):
+        try:
+            global acc
 
+            if not acc:
+
+                logger.debug("Registering account **%s** (PWD:%s) on sip server:**%s**" % (self.my_account[0],self.my_account[1], self.sip_server))
+                if (self.params.has_key("transport") and self.params["transport"]=="udp"):
+                      transport_info = "" 
+                else:
+                    transport_info =  ";transport=tcp"
+                                  
+                acc_cfg = pj.AccountConfig('%s%s' % (str(self.sip_server), transport_info), str(self.my_account[0]), str(self.my_account[1]))
+                #acc_cfg = pj.AccountConfig('156.148.132.244', 'demo-smonni', 'pwd_smonni')
+                logger.debug("Acccount Config:%s" % acc_cfg.reg_uri)
+               
+                # la riregistrazione avviene ogni 60 secondi che e' il minimo consentito (verifica la presenza del server)
+                acc_cfg.reg_timeout = 60
+                acc_cfg.publish_enabled = True
+                
+
+                acc = self.lib.create_account(acc_cfg, cb=VoipBackend.MyAccountCallback(self.notification_cb))  
+
+                logger.debug("Account %s registration successfully sent with timeout:%s" % (self.my_account[0], acc_cfg.reg_timeout))
+                #self.sip_controller.change_state(SipControllerState.Registered, self.my_account[0])
+                #self.sip_controller.do_fsm(SipControllerState.Registered,self.my_account[0])
+                self.notification_cb(VoipState.Registering, {'Success' : True, 'account_info' : self.my_account[0]})
+            else:
+                logger.debug("account previously registered. Nothing to do")
+            
+            return True
+
+            
+        except pj.Error, e:
+            logger.exception("Exception registering account:%s" % str(e))
+            self.lib.destroy()
+            self.lib = None
+            #self.sip_controller.change_state(SipControllerState.Registration_failed, str(e))
+            #self.sip_controller.do_fsm(SipControllerState.Registration_failed,self.params)
+            self.notification_cb(VoipState.Registration_failed, {'Success' : False, 'error' : str(e), 'params': self.params})
+            return False
+
+    def _show_devices(self):
+        
+        logger.debug( "looking for installed devices...")
+        devices = self.lib.enum_snd_dev()
+        logger.debug( "Devices found:%s" % len(devices))
+        assert len(devices)>0
+        for d in devices:
+            logger.debug( "DEVICE: %s > sr:%s"  % (d.name,str(d.default_clock_rate)))
+            
+        snd_dev = self.lib.get_snd_dev()
+        logger.debug( "My Sound devs:%s" % str(snd_dev)) ## returns (-1,-2)
+        
+    def _show_codecs(self):
+        c = self.lib.enum_codecs()
+        logger.debug("List of Codecs(%s)" % len(c))
+        for codec in c:
+            logger.debug("Found codec %s with priority: %s" % (codec.name, codec.priority))
+            if not codec.name.startswith('iLBC'):pass
+                #self.lib.set_codec_priority(codec.name, 0)
+                #print 'Setting codec priority to 0 for %s' % codec.name
+                #codec.priority=0
+
+
+    
     def add_buddy(self, dest_extension):
-        print '\nADDING REMOTE USER...\n'
+        logger.debug( '\nADDING REMOTE USER...\n')
         global buddy
         try:
             global acc
             dest_uri = "sip:%s@%s;transport=tcp" % (str(dest_extension), self.sip_server)
             
-            print 'adding buddy:%s' % dest_uri
+            logger.debug( 'adding buddy:%s' % dest_uri)
             buddy = acc.add_buddy(dest_uri,cb=VoipBackend.MyBuddyCallback(self.notification_cb))
             buddy.subscribe()
-            print 'REMOTE USER ADDED'
+            logger.debug( 'REMOTE USER ADDED')
             #self.sip_controller.do_fsm(SipControllerState.Remote_user_subscribed,dest_extension)
             self.notification_cb(VoipState.Remote_user_subscribed, {'success': True, 'dest_extension' : dest_extension})
             #self.sip_controller.change_state(SipControllerState.Remote_user_subscribed, dest_extension)
         except pj.Error, e:
-            print "ADDING REMOTE USER FAILED: Exception: " + str(e)
+            logger.exception( "ADDING REMOTE USER FAILED: Exception: " + str(e))
             #self.sip_controller.do_fsm(SipControllerState.Remote_user_subscribing_failed,dest_extension)
             self.notification_cb(VoipState.Remote_user_subscribing_failed, {'success': False, 'dest_extension': dest_extension, 'error' :str(e)})
             #self.sip_controller.change_state(SipControllerState.Remote_user_subscribing_failed, dest_extension)
@@ -830,13 +869,13 @@ class VoipBackend:
         global current_call, config
         global acc, callState
         if not dest_extension:
-            print "No sip address provided. Call canceled"
+            logger.debug( "No sip address provided. Call canceled")
             return
         
         uri = 'sip:%s@%s' % (str(dest_extension), str(self.sip_server))
 
-        print "MAKE CALL:%s" % str(current_call)
-        print "STATO DELLA CALL (make_call): %s " % str (callState)
+        logger.debug( "MAKE CALL:%s" % str(current_call))
+        logger.debug( "CALL STATE(make_call): %s " % str (callState))
         try:
             """
             if current_call:
@@ -851,13 +890,13 @@ class VoipBackend:
 
 
 
-            print "Making call to:%s" % uri
+            logger.debug( "Making call to:%s" % uri)
             #self.messenger.send_info("Dialing to %s (%s)" % (contact, uri))
             #self.messenger.update_status_label("Dialing call to %s" % uri)
             #self.messenger.update_status_label(SignalEmitterState.OUTCOMING_CALL)
             lck = self.lib.auto_lock()
 
-            print "CURRENT CALL PRIMA:%s" % current_call
+            logger.debug( "CURRENT CALL PRIMA:%s" % current_call)
 
 
             callState = VoipBackendCallState.OUTCOMING
@@ -865,40 +904,39 @@ class VoipBackend:
             _start_call_sound_out()
             #self.messenger.update_call_button_label("Hungup")
             
-            print "CURRENT CALL DOPO:%s" % current_call
             del lck
-            print 'Current call is', current_call
+           
 
         except pj.Error, e:
-            print ">>>> Exception in make_call: " + str(e)
+            logger.exception( ">>>> Exception in make_call: %s" % str(e))
 
     def answer_call(self):
         global current_call
 
         try:
             if not current_call:
-                print 'There is no call'
+                logger.debug( 'There is no call')
                 return
             elif current_call.info().state!=pj.CallState.CONFIRMED:
                 _stop_call_sound()
                 current_call.answer(200)
-                print 'Answer'
+                logger.debug( 'Answer')
             else:
-                print 'Call On line: answer call ignored'
+                logger.debug( 'Call On line: answer call ignored')
         except Exception, ex:
-            print 'ECCEZIONE in answer call:%s' % ex
+            logger.exception( 'Exception in answer call:%s' % ex)
             
     def hungup_call(self):
         #global refused
         #refused = True
-        print "RICHIESTA HUNGUP"
+        logger.debug( "HUNGUP Request")
         try:
             _stop_call_sound()
 
             global current_call, local_hungup
 
             if current_call:
-                print "Hungup Call (current_call!=null)."
+                logger.debug( "Hungup Call (current_call!=null).")
                 local_hungup = True
                 current_call.hangup()
                 #self.sip_controller.change_state(SipControllerState.Hungup,'')
@@ -908,35 +946,35 @@ class VoipBackend:
 
 
             else:
-                self.logger.debug("There is no call to hungup")
+                logger.debug("There is no call to hungup")
                 #self.messenger.send_info("No Call to hungup!")
                 return False
 
         except Exception,ex:
-            self.logger.exception("Exception in hungup call:%s" % ex) 
+            logger.exception("Exception in hungup call:%s" % ex) 
             return False
 
     def hold_call(self):
         try:
             global current_call
             if current_call:
-                print 'holding current call...'
+                logger.debug( 'holding current call...')
                 current_call.hold()
                 if self.is_buddy_on_hold():
                     #self.sip_controller.change_state(SipControllerState.RemoteLocalHolding,'')
                     self.notification_cb(VoipState.RemoteLocalHolding, {'success': True})
-                    self.logger.debug("remote local holding!")
+                    logger.debug("remote local holding!")
                 else:
                     #self.sip_controller.change_state(SipControllerState.Holding,'')
                     self.notification_cb(VoipState.Holding, {'success': True})
-                    self.logger.debug("remote holding!")
+                    logger.debug("remote holding!")
                 return True
             else:
-                print "There is no call to hold"
+                logger.debug( "There is no call to hold")
                 #self.messenger.send_info("No Call to hungup!")
                 return False
         except Exception,ex:
-            self.logger.exception("Exception in hold_call:%s" % ex)
+            logger.exception("Exception in hold_call:%s" % ex)
             return False
 
     def unhold_call(self):
@@ -947,31 +985,32 @@ class VoipBackend:
                 if self.is_buddy_on_hold():
                     #self.sip_controller.change_state(SipControllerState.RemoteHolding,'') ### TODO : check if this is correct or not
                     self.notification_cb(VoipState.RemoteHolding, {'success': True}) ## REMOTE BUG?!?!
-                    self.logger.debug( "remote unholding!")
+                    logger.debug( "remote unholding!")
                 else:   
                     #self.sip_controller.change_state(SipControllerState.Calling,'')
                     self.notification_cb(VoipState.Calling, {'success': True})
-                    print "remote local unholding!"
+                    logger.debug( "remote local unholding!")
                 return True
             else:
-                print "There is no call to unhold"
+                logger.debug( "There is no call to unhold")
                 #self.messenger.send_info("No Call to hungup!")
                 return False
         except Exception,ex:
-            print "ECCEZIONE in unhold_call:%s" % ex
+            logger.exception( "Exception in unhold_call:%s" % ex)
             return False
 
 
-
+  
+    
     def serialize_values(self):
         if not self.lib:
-            print 'PJSIP Library no yet initialized. Nothing to serialize!!'
+            logger.debug( 'PJSIP Library no yet initialized. Nothing to serialize!!')
             return
         
-        print 'serializing audio preferences'
+        logger.debug( 'serializing audio preferences TEMPORARY DISABLED!')
 
         global input_volume, output_volume, auto_answer, auto_answer_delay
-        
+        """
         config = TecapConfig().getConfig()
         config.set('VoipBackend','input_volume', str(input_volume))
         config.set('VoipBackend','output_volume', str(output_volume))
@@ -985,4 +1024,5 @@ class VoipBackend:
         config.set('VoipBackend','auto_answer_delay' , str(auto_answer_delay))
         TecapConfig().write()
         print 'config serialized...'
+        """
 

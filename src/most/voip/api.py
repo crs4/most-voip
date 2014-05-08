@@ -3,14 +3,15 @@ Created on 28/apr/2014
 
 @author: smonni
 '''
+from api_backend import VoipBackend
 
 class VoipLib:
-    def __init__(self, backend):
+    def __init__(self, backend=VoipBackend()):
         self.backend = backend
     
     def initialize(self,params, notification_cb):
         """
-        @param params: a dictionary contatining all initialization parameters
+        @param params: a dictionary containing all initialization parameters
         @param notification_cb: a method called for all voip notification (status changes, errors, events and so on)
         @return: True if the initialization successfully completes, False otherwise 
         """

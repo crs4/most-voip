@@ -5,6 +5,7 @@ Created on 28/apr/2014
 '''
 import logging
 from most.voip.states import VoipState
+import time
 
 class MockVoipState:
     NOT_INITIALIZED = 0
@@ -62,6 +63,7 @@ class MockVoipBackend:
         if self.state != MockVoipState.REGISTERED:
             return False
         self.notification_cb(VoipState.Dialing, { 'State': VoipState.Dialing ,'Success' : True})
+        time.sleep(2)
         return True
     
     def answer_call(self):
