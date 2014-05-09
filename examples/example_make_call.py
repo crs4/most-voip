@@ -8,14 +8,14 @@ def notify_events(voip_state, params):
 if __name__ == '__main__':
     voip_params = {u'username': u'ste', 
                    u'sip_pwd': u'ste', 
-                   u'sip_server': u'192.168.1.79', 
+                   u'sip_server': u'156.148.33.223' , #'u'192.168.1.79', 
                    u'sip_user': u'ste', 
                    u'transport' :u'udp',
                    # u'turn_server': u'192.168.1.79', 
                    #u'turn_user': u'', 
                    #u'turn_pwd': u'',
                    u'log_level' : 1,
-                   u'debug' : False }
+                   u'debug' : True }
     
     
     myVoip = VoipLib()
@@ -23,7 +23,7 @@ if __name__ == '__main__':
     myVoip.initialize(voip_params, notify_events)
     print "Registering the account on the Sip Server..."
     myVoip.register_account()
-    print "MAking a call dialing a specific extension..."
+    print "Making a call dialing a specific extension..."
     extension = "1234"
     myVoip.make_call(extension)
     

@@ -705,7 +705,7 @@ class VoipBackend:
                 my_media_cfg.turn_server = "%s:3478" % str(self.turn_server)
                 #my_media_cfg.turn_server = "156.148.18.186:3478"
                 logger.debug("Setting turn server[%s]:%s" % (type(my_media_cfg.turn_server), (my_media_cfg.turn_server)))
-                my_media_cfg.turn_cred = pj.AuthCred("remote.most.it", '%s' % str(self.params['turn_user']), '%s' % str(self.params['turn_pwd']))
+                my_media_cfg.turn_cred = pj.AuthCred("remote.most.it", '%s' % str(self.params['turn_user']), '%s' % str(self.params['turn_pwd'])) #TODO check remote.most.it
                 logger.debug("#%s#" % my_media_cfg.turn_cred)
                 my_media_cfg.turn_conn_type = pj.TURNConnType.TCP
                 logger.debug("Setting turn user:%s:%s" % (self.params['turn_user'], self.params['turn_pwd']))
