@@ -45,8 +45,8 @@ output_volume = 0.5
 auto_answer = False
 auto_answer_delay = 3
 voip_root_dir = os.path.join(os.path.dirname(__file__), "../../")
-in_call_ring_tone = "data/sounds/ring_in_call.wav"   #  TODO Change this... this path is only for testing....
-out_call_ring_tone = "data/sounds/ring_out_call.wav" # TODO Change this... this path is only for testing....
+in_call_ring_tone = "data/sounds/ring_in_call.wav"   
+out_call_ring_tone = "data/sounds/ring_out_call.wav"  
 
 
 input_volume = 0.5
@@ -705,7 +705,7 @@ class VoipBackend:
                 my_media_cfg.turn_server = "%s:3478" % str(self.turn_server)
                 #my_media_cfg.turn_server = "156.148.18.186:3478"
                 logger.debug("Setting turn server[%s]:%s" % (type(my_media_cfg.turn_server), (my_media_cfg.turn_server)))
-                my_media_cfg.turn_cred = pj.AuthCred("remote.most.it", '%s' % str(self.params['turn_user']), '%s' % str(self.params['turn_pwd'])) #TODO check remote.most.it
+                my_media_cfg.turn_cred = pj.AuthCred("tecap.crs4.it", '%s' % str(self.params['turn_user']), '%s' % str(self.params['turn_pwd'])) #TODO check remote.most.it
                 logger.debug("#%s#" % my_media_cfg.turn_cred)
                 my_media_cfg.turn_conn_type = pj.TURNConnType.TCP
                 logger.debug("Setting turn user:%s:%s" % (self.params['turn_user'], self.params['turn_pwd']))
