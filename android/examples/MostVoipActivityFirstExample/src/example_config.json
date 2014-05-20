@@ -1,0 +1,86 @@
+
+{ 
+    "EpConfig":             { 
+       "UaConfig":             { 
+          "maxCalls":             4,
+          "threadCnt":            1,
+          "mainThreadOnly":       false,
+          "nameserver":           [ ],
+          "userAgent":            "",
+          "stunServer":           [ ],
+          "stunIgnoreFailure":    true,
+          "natTypeInSdp":         1,
+          "mwiUnsolicitedEnabled": true
+       },
+       "LogConfig":            { 
+          "msgLogging":           1,
+          "level":                5,
+          "consoleLevel":         4,
+          "decor":                25328,
+          "filename":             "",
+          "fileFlags":            0
+       },
+       "MediaConfig":          { 
+          "clockRate":            16000,
+          "sndClockRate":         0,
+          "channelCount":         1,
+          "audioFramePtime":      20,
+          "maxMediaPorts":        12,
+          "hasIoqueue":           true,
+          "threadCnt":            1,
+          "quality":              4,
+          "ptime":                0,
+          "noVad":                false,
+          "ilbcMode":             30,
+          "txDropPct":            0,
+          "rxDropPct":            0,
+          "ecOptions":            0,
+          "ecTailLen":            200,
+          "sndRecLatency":        100,
+          "sndPlayLatency":       140,
+          "jbInit":               -1,
+          "jbMinPre":             -1,
+          "jbMaxPre":             -1,
+          "jbMax":                -1,
+          "sndAutoCloseTime":     1,
+          "vidPreviewEnableNative": true
+       }
+    },
+    "SipTransport":         { 
+       "TransportConfig":      { 
+          "port":                 5060,
+          "portRange":            0,
+          "publicAddress":        "",
+          "boundAddress":         "",
+          "qosType":              0,
+          "qosParams":            { 
+             "qos.flags":            0,
+             "qos.dscp_val":         0,
+             "qos.so_prio":          0,
+             "qos.wmm_prio":         0
+          },
+          "TlsConfig":            { 
+             "CaListFile":           "",
+             "certFile":             "",
+             "privKeyFile":          "",
+             "password":             "",
+             "method":               0,
+             "ciphers":              [ ],
+             "verifyServer":         false,
+             "verifyClient":         false,
+             "requireClientCert":    false,
+             "msecTimeout":          0,
+             "qosType":              0,
+             "qosParams":            { 
+                "qos.flags":            0,
+                "qos.dscp_val":         0,
+                "qos.so_prio":          0,
+                "qos.wmm_prio":         0
+             },
+             "qosIgnoreError":       true
+          }
+       }
+    },
+    "accounts":             [ ]
+ }
+ 
