@@ -1,17 +1,16 @@
 package most.voip.api;
 
-import java.io.File;
-import java.security.NoSuchAlgorithmException;
+
 import java.util.ArrayList;
 
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 import org.pjsip.pjsua2.*;
- 
- 
 
-
-public class VoipLibBackend implements VoipLib  {
+ 
+public class VoipLibBackend implements VoipLib   {
 	
 
 	static {
@@ -29,6 +28,7 @@ private TransportConfig sipTpConfig = new TransportConfig();
 private MyAccount acc = null;
 
 private final int SIP_PORT  = 5060;
+private Handler notificationHandler = null;
 
 private final static String TAG = "VoipLib"; 
     public VoipLibBackend()
@@ -36,11 +36,18 @@ private final static String TAG = "VoipLib";
     	Log.d((TAG), "VoipLib");
     }
     
+    private void notifyState(VoipStateBundle myStateBundle)
+    {
+    	Message m = Message.obtain(this.notificationHandler,myStateBundle.getMsgType().ordinal(), myStateBundle);
+		m.sendToTarget();
+    }
+    
     @Override
-    public boolean initialize(String configParams)
+    public boolean initialize(String configParams, Handler notificationHandler)
     {
     	Log.d((TAG), "initializing");
-    	 
+    	
+    	this.notificationHandler = notificationHandler;
     	/* Create endpoint */
 		try {
 			ep.libCreate();
@@ -63,34 +70,38 @@ private final static String TAG = "VoipLib";
 			// Start the library
 			ep.libStart();
 			// print the json config
-		    this.saveConfig(null);
 		    
+		    this.notifyState(new VoipStateBundle(VoipMessageType.LIB_STATE, VoipState.INITIALIZED, "Inizialization Ok", null));
 			return true;
 		} catch (Exception e) {
 			Log.e(TAG,"Error Initializing the lib:" + e);
 			System.out.println("ERROR IN INITIALIZATION:" + e);
+			this.notifyState(new VoipStateBundle(VoipMessageType.LIB_STATE, VoipState.INITIALIZE_FAILED, "Inizialization Failed:"+ e.getMessage(), null));
 			return false;
 		}
     }
+    
     
    
 	@Override
 	public boolean registerAccount() {
 		
 		AccountConfig acfg = new AccountConfig();
-		acfg.setIdUri("sip:steand@156.148.133.239");
-		acfg.getRegConfig().setRegistrarUri("sip:156.148.133.239");
-		AuthCredInfo cred = new AuthCredInfo("digest", "*", "steand", 0, "secret");
+		acfg.setIdUri("sip:ste@156.148.33.223");
+		acfg.getRegConfig().setRegistrarUri("sip:156.148.33.223");
+		AuthCredInfo cred = new AuthCredInfo("digest", "*", "ste", 0, "ste");
 		acfg.getSipConfig().getAuthCreds().add( cred );
 		// Create the account
 		
 		this.acc = new MyAccount(acfg);
 		try {
 			acc.create(acfg);
+			this.notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REGISTERING, "Account Registration request sent", null));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			Log.e(TAG,"Error Registering the account:" + e);
+			this.notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REGISTRATION_FAILED, "Account Registration request failed:"+e.getMessage(), null));
 			return false;
 		}
 		
@@ -127,7 +138,7 @@ private final static String TAG = "VoipLib";
 	}
 
 	@Override
-	public void hungupCall() {
+	public void hangupCall() {
 		// TODO Auto-generated method stub
 		
 	}
@@ -178,6 +189,7 @@ private final static String TAG = "VoipLib";
 		public ArrayList<MyBuddy> buddyList = new ArrayList<MyBuddy>();
 		public AccountConfig cfg;
 		
+		
 		MyAccount(AccountConfig config) {
 			super();
 			cfg = config;
@@ -215,6 +227,14 @@ private final static String TAG = "VoipLib";
 		@Override
 		public void onRegState(OnRegStateParam prm) {
 			//MyApp.observer.notifyRegState(prm.getCode(), prm.getReason(), prm.getExpiration());
+			Log.d(TAG,"onRegState Code:" +  prm.getCode() + ":" + prm.getReason());
+			
+			if (prm.getCode().swigValue() == RegistrationState.REGISTERED.intValue())
+				notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REGISTERED, "Registration Success:" + prm.getReason(), null));
+			else
+				notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REGISTRATION_FAILED, "Registration Failed: Code:" +
+                        prm.getCode().swigValue() + " " + prm.getReason(), null)); 
+				
 		}
 
 		@Override

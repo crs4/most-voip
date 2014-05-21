@@ -1,8 +1,10 @@
 package most.voip.api;
 
+import android.os.Handler;
+
 public interface VoipLib {
 	
-	public boolean initialize(String configParams);
+	public boolean initialize(String configParams, Handler notificationHandler);
 	public boolean destroy();
    
  
@@ -15,6 +17,6 @@ public interface VoipLib {
     public void answerCall();
     public void holdCall();
     public void unholdCall();
-    public void hungupCall();
+    public void hangupCall();
        
 }
