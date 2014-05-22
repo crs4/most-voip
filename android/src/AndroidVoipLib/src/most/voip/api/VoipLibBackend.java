@@ -2,6 +2,7 @@ package most.voip.api;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import android.os.Handler;
 import android.os.Message;
@@ -26,6 +27,7 @@ private ArrayList<MyAccountConfig> accCfgs = new ArrayList<MyAccountConfig>();
 private EpConfig epConfig = new EpConfig();
 private TransportConfig sipTpConfig = new TransportConfig();
 private MyAccount acc = null;
+private AccountConfig acfg = null;
 
 private final int SIP_PORT  = 5060;
 private Handler notificationHandler = null;
@@ -43,7 +45,7 @@ private final static String TAG = "VoipLib";
     }
     
     @Override
-    public boolean initialize(String configParams, Handler notificationHandler)
+    public boolean initialize(HashMap<String,String> configParams, Handler notificationHandler)
     {
     	Log.d((TAG), "initializing");
     	
@@ -54,15 +56,10 @@ private final static String TAG = "VoipLib";
 			Log.d(TAG,"Lib initiazed");
 			
 			/* Load config */
+			loadConfig(configParams);
 			
 			
-			if (configParams!=null) {
-				loadConfig(configParams);
-			} else {
-				/* Set 'default' values */
-				sipTpConfig.setPort(SIP_PORT);
-			}
-			
+			// Init the pjsua lib with the given configuration
 			ep.libInit( epConfig );
 			
 			// Create SIP transport. Error handling sample is shown
@@ -85,12 +82,13 @@ private final static String TAG = "VoipLib";
    
 	@Override
 	public boolean registerAccount() {
-		
+		/*
 		AccountConfig acfg = new AccountConfig();
 		acfg.setIdUri("sip:ste@156.148.33.223");
 		acfg.getRegConfig().setRegistrarUri("sip:156.148.33.223");
 		AuthCredInfo cred = new AuthCredInfo("digest", "*", "ste", 0, "ste");
 		acfg.getSipConfig().getAuthCreds().add( cred );
+		*/
 		// Create the account
 		
 		this.acc = new MyAccount(acfg);
@@ -110,7 +108,15 @@ private final static String TAG = "VoipLib";
 
 	@Override
 	public boolean unregisterAccount() {
-		// TODO Auto-generated method stub
+		try {
+			acc.setRegistration(false);
+			return true;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			Log.e(TAG, "Failed Unregistering the account:" + e.getMessage());
+			this.notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REGISTERING, "Account Unregistration request failed:"+e.getMessage(), null));
+		}
 		return false;
 	}
 
@@ -153,12 +159,15 @@ private final static String TAG = "VoipLib";
 		// Explicitly destroy and delete endpoint
 		try {
 			ep.libDestroy();
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			Log.e(TAG, "Lib Destroy failed:" + e.getMessage());
 			return false;
 		}
 		ep.delete();
+		this.notifyState(new VoipStateBundle(VoipMessageType.LIB_STATE, VoipState.DEINITIALIZE_DONE, "Voip Lib destroyed", null));
 		return true;
 		
 	}
@@ -227,10 +236,20 @@ private final static String TAG = "VoipLib";
 		@Override
 		public void onRegState(OnRegStateParam prm) {
 			//MyApp.observer.notifyRegState(prm.getCode(), prm.getReason(), prm.getExpiration());
-			Log.d(TAG,"onRegState Code:" +  prm.getCode() + ":" + prm.getReason());
+			Log.d(TAG,"onRegState Code:" +  prm.getCode() + ": Reg Expire:" + prm.getExpiration() + " Reason:" + prm.getReason());
 			
-			if (prm.getCode().swigValue() == RegistrationState.REGISTERED.intValue())
-				notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REGISTERED, "Registration Success:" + prm.getReason(), null));
+			if (prm.getCode().swigValue() == RegistrationState.OK.intValue())
+			{
+				if (prm.getExpiration()>0){
+					notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REGISTERED, "Registration Success:::" + prm.getReason(), null));
+				}
+				
+				else {
+					notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.UNREGISTERED, "Unregistration Success:::" + prm.getReason(), null));
+				}
+				
+			}
+				
 			else
 				notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REGISTRATION_FAILED, "Registration Failed: Code:" +
                         prm.getCode().swigValue() + " " + prm.getReason(), null)); 
@@ -294,38 +313,37 @@ private final static String TAG = "VoipLib";
 		}
 		
 	}
-	private void loadConfig(String jsonContent) {
-		JsonDocument json = new JsonDocument();
-		
+	private void loadConfig(HashMap<String, String> configParams) {
+		 
 		try {
-			/* Load json content */
 			 
-			json.loadString(jsonContent);
-			ContainerNode root = json.getRootContainer();
+			Log.d(TAG, "Reading account config:::");
+
+	        acfg = new AccountConfig();
+	        
+	        String sip_server_ip = configParams.get("sipServerIp"); //   "192.168.1.83"; //156.148.33.223";
+	        String registrar_uri = "sip:" + sip_server_ip;
+	        String user_name = configParams.get("userName");
+	        String user_pwd = configParams.get("userPwd");
+	        String id_uri = "sip:" + user_name + "@" + sip_server_ip;
+	        
+	        // Account Config
+	        acfg.setIdUri(id_uri); //"sip:ste@192.168.1.83");
+			acfg.getRegConfig().setRegistrarUri(registrar_uri); // "sip:192.168.1.83"
+			AuthCredInfo cred = new AuthCredInfo("digest", "*", user_name, 0, user_pwd);
+			acfg.getSipConfig().getAuthCreds().add( cred );
 			
-			/* Read endpoint config */
-			epConfig.readObject(root);
+			// Transport Config
+			if (configParams.containsKey("sipPort"))
 			
-			/* Read transport config */
-			ContainerNode tp_node = root.readContainer("SipTransport");
-			sipTpConfig.readObject(tp_node);
-			
-			/* Read account configs */
-			accCfgs.clear();
-			ContainerNode accs_node = root.readArray("accounts");
-			while (accs_node.hasUnread()) {
-				MyAccountConfig acc_cfg = new MyAccountConfig();
-				acc_cfg.readObject(accs_node);
-				accCfgs.add(acc_cfg);
-			}
+				sipTpConfig.setPort(Integer.valueOf(configParams.get("sipPort")));
+			else
+				sipTpConfig.setPort(5060);
+		 
 		} catch (Exception e) {
 			System.out.println(e);
+			Log.e(TAG,"Error loading configuration:" + e.getMessage());
 		}
-		
-		/* Force delete json now, as I found that Java somehow destroys it
-		 * after lib has been destroyed and from non-registered thread.
-		 */
-		json.delete();
 	}
 	
 	 private void saveConfig(String filename) {

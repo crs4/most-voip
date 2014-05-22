@@ -1,5 +1,6 @@
 package most.voip.example;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import most.voip.api.Utils;
 import most.voip.api.VoipLib;
@@ -15,7 +16,17 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-
+/**
+ * This example application shows how to:
+ * <ul>
+ * <li>initialize the Voip Lib </li>
+ * <li>register an account to a remote Sip Server </li>
+ * <li>unregister an account to a remote Sip Server </li>
+ * <li>deinitialize the Voip Lib </li>
+ * </ul>
+ * @author crs4
+ *
+ */
 public class MainActivity extends Activity implements Handler.Callback {
 	private static final String TAG = "VoipTestActivity";
 	private final Handler handler = new Handler(this);
@@ -28,7 +39,7 @@ public class MainActivity extends Activity implements Handler.Callback {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.initializeGUI();
-        this.runTest();
+        this.runExample();
     }
     
     private void initializeGUI()
@@ -47,19 +58,23 @@ public class MainActivity extends Activity implements Handler.Callback {
     	/* Wait for GDB to init */
     	Log.d(TAG, "Waiting some second before initializing the lib...");
     	if ((this.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
-			try {
-				Thread.sleep(2000);
-			} catch (InterruptedException e) {}
+    		this.waitForSeconds(3);
 		}
     }
-    private void runTest()
+    
+    
+    public void runExample()
     {
     	this.waitForInitialization();
     	this.addInfoLine("Local IP Address:" + Utils.getIPAddress(true));
 		
-    	// Voip Lib Initialization
-		String params = "{ 'SipTransport': 'UDP' }";
-		
+    	// Voip Lib Initialization Params
+
+		HashMap<String,String> params = new HashMap<>();
+		params.put("sipServerIp","192.168.1.83");  //"156.148.33.223";
+		params.put("userName","ste");
+		params.put("userPwd","ste");
+		//params.put("sipPort","5060"); // optional: default 5060
 		
 		Log.d(TAG, "Initializing the lib...");
 		if (myVoip==null)
@@ -68,17 +83,38 @@ public class MainActivity extends Activity implements Handler.Callback {
 			myVoip = new  VoipLibBackend();
 		}
 		
-		boolean result = myVoip.initialize(null, handler);
+		// Initialize the library providing custom initialization params and an handler where
+		// to receive event notifications
+		boolean result = myVoip.initialize(params, handler);
 		
-		// Account Registration
-		
+		// Register the account
 		Log.d(TAG, "Registering the account..");
 		result = myVoip.registerAccount();
-		//this.addInfoLine("Voip Lib account registration success ? " + String.valueOf(result));
-		//this.waitForInitialization();
+		
+		// Wait some seconds before unregistering the account
+		this.waitForSeconds(3);
+		
+		// Unregister the account
+		myVoip.unregisterAccount();
+		
+		// Wait some seconds before destroying the Voip Lib
+		 this.waitForSeconds(3);
+		
+		// Deinitialize the Voip Lib and release all allocated resources
+		myVoip.destroy();
+		
     }
     
-    
+    private void waitForSeconds(int secs)
+    {
+    	try {
+			Thread.sleep(secs*1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+    }
     private void addInfoLine(String info)
     {
     	this.infoArray.add(info);
