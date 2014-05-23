@@ -110,12 +110,13 @@ private final static String TAG = "VoipLib";
 	public boolean unregisterAccount() {
 		try {
 			acc.setRegistration(false);
+			this.notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.UNREGISTERING, "Account Unregistration request sent", null));
 			return true;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			Log.e(TAG, "Failed Unregistering the account:" + e.getMessage());
-			this.notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REGISTERING, "Account Unregistration request failed:"+e.getMessage(), null));
+			this.notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.UNREGISTRATION_FAILED, "Account Unregistration request failed:"+e.getMessage(), null));
 		}
 		return false;
 	}
@@ -151,19 +152,23 @@ private final static String TAG = "VoipLib";
 
 	@Override
 	public boolean destroy() {
-		/* Explicitly delete the account.
-		* This is to avoid GC to delete the endpoint first before deleting
-		* the account.
-		*/
-		acc.delete();
+		
+		this.notifyState(new VoipStateBundle(VoipMessageType.LIB_STATE, VoipState.DEINITIALIZING, "Voip Lib destroying", null));
 		// Explicitly destroy and delete endpoint
 		try {
+			/* Explicitly delete the account.
+			* This is to avoid GC to delete the endpoint first before deleting
+			* the account.
+			*/
+			acc.delete();
+			
 			ep.libDestroy();
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			Log.e(TAG, "Lib Destroy failed:" + e.getMessage());
+			this.notifyState(new VoipStateBundle(VoipMessageType.LIB_STATE, VoipState.DEINITIALIZE_FAILED, "Voip Lib destroyed", null));
 			return false;
 		}
 		ep.delete();
@@ -251,8 +256,20 @@ private final static String TAG = "VoipLib";
 			}
 				
 			else
-				notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REGISTRATION_FAILED, "Registration Failed: Code:" +
-                        prm.getCode().swigValue() + " " + prm.getReason(), null)); 
+			{
+				if (prm.getExpiration()>0) 
+				{
+					notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REGISTRATION_FAILED, "Registration Failed: Code:" +
+	                        prm.getCode().swigValue() + " " + prm.getReason(), null)); 
+				}
+				else {
+					notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.UNREGISTRATION_FAILED, "Unregistration Failed: Code:" +
+	                        prm.getCode().swigValue() + " " + prm.getReason(), null)); 
+				}
+				
+			
+			}
+			
 				
 		}
 

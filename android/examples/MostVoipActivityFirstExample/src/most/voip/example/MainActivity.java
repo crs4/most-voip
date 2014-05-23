@@ -5,6 +5,7 @@ import java.util.HashMap;
 import most.voip.api.Utils;
 import most.voip.api.VoipLib;
 import most.voip.api.VoipLibBackend;
+import most.voip.api.VoipState;
 import most.voip.api.VoipStateBundle;
 import most.voip.example1.R;
 import android.app.Activity;
@@ -34,6 +35,18 @@ public class MainActivity extends Activity implements Handler.Callback {
 	private ArrayList<String> infoArray = null;
 	private VoipLib myVoip =  null;
 	private ArrayAdapter<String> arrayAdapter = null;
+	
+	
+	private VoipState [] expectedStates = { VoipState.INITIALIZED , 
+			VoipState.REGISTERING, 
+			VoipState.REGISTERED, 
+			VoipState.UNREGISTERING,
+			VoipState.UNREGISTERED,
+			VoipState.DEINITIALIZING,
+			VoipState.DEINITIALIZE_DONE};
+
+	private int curStateIndex = 0;
+
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -71,7 +84,7 @@ public class MainActivity extends Activity implements Handler.Callback {
     	// Voip Lib Initialization Params
 
 		HashMap<String,String> params = new HashMap<>();
-		params.put("sipServerIp","192.168.1.83");  //"156.148.33.223";
+		params.put("sipServerIp","156.148.33.223");  //"156.148.33.223";"192.168.1.83"
 		params.put("userName","ste");
 		params.put("userPwd","ste");
 		//params.put("sipPort","5060"); // optional: default 5060
@@ -84,25 +97,9 @@ public class MainActivity extends Activity implements Handler.Callback {
 		}
 		
 		// Initialize the library providing custom initialization params and an handler where
-		// to receive event notifications
+		// to receive event notifications. Following Voip methods are called form the handleMassage() callback method
 		boolean result = myVoip.initialize(params, handler);
-		
-		// Register the account
-		Log.d(TAG, "Registering the account..");
-		result = myVoip.registerAccount();
-		
-		// Wait some seconds before unregistering the account
-		this.waitForSeconds(3);
-		
-		// Unregister the account
-		myVoip.unregisterAccount();
-		
-		// Wait some seconds before destroying the Voip Lib
-		 this.waitForSeconds(3);
-		
-		// Deinitialize the Voip Lib and release all allocated resources
-		myVoip.destroy();
-		
+	
     }
     
     private void waitForSeconds(int secs)
@@ -130,6 +127,18 @@ public class MainActivity extends Activity implements Handler.Callback {
 		String infoMsg = "State:" + myState.getState() + ":" + myState.getInfo();
 		Log.d(TAG, "State info:" + infoMsg);
 		this.addInfoLine(infoMsg);
+		
+		assert( myState.getState()==expectedStates[curStateIndex]);
+		curStateIndex++;
+		// Register the account after the Lib Initialization
+		if (myState.getState()==VoipState.INITIALIZED)   myVoip.registerAccount();	
+		 
+		// Unregister the account
+		else if (myState.getState()==VoipState.REGISTERED)    myVoip.unregisterAccount();	
+		// Deinitialize the Voip Lib and release all allocated resources
+		else if (myState.getState()==VoipState.UNREGISTERED)  myVoip.destroy();
+		     
+		     
 		return false;
 	}
     
