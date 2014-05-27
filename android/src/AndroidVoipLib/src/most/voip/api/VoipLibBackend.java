@@ -21,7 +21,7 @@ public class VoipLibBackend implements VoipLib   {
 	}
 	
 	
-public static Endpoint ep = new Endpoint();
+public static Endpoint ep = null; //new Endpoint();
 public ArrayList<MyAccount> accList = new ArrayList<MyAccount>();
 private ArrayList<MyAccountConfig> accCfgs = new ArrayList<MyAccountConfig>();
 private EpConfig epConfig = new EpConfig();
@@ -52,23 +52,36 @@ private final static String TAG = "VoipLib";
     	this.notificationHandler = notificationHandler;
     	/* Create endpoint */
 		try {
+			Log.d(TAG,"Lib create...");
+			if (ep!=null)
+			{  
+				Log.d(TAG, "EndPoint is not null...destroying .....");
+				this.destroy();
+			}
+			Log.d(TAG,"Instancing EndPoint..");
+			ep = new Endpoint();
 			ep.libCreate();
-			Log.d(TAG,"Lib initiazed");
+			
 			
 			/* Load config */
+			Log.d(TAG,"Load configuration...");
 			loadConfig(configParams);
 			
 			
 			// Init the pjsua lib with the given configuration
+			Log.d(TAG,"Lib init......");
 			ep.libInit( epConfig );
 			
 			// Create SIP transport. Error handling sample is shown
+			Log.d(TAG,"transport create...");
 			ep.transportCreate(pjsip_transport_type_e.PJSIP_TRANSPORT_UDP, sipTpConfig);
 			// Start the library
+			Log.d(TAG,"Lib startig....");
 			ep.libStart();
 			// print the json config
-		    
+			Log.d(TAG,"Lib initialized and started");
 		    this.notifyState(new VoipStateBundle(VoipMessageType.LIB_STATE, VoipState.INITIALIZED, "Inizialization Ok", null));
+		    
 			return true;
 		} catch (Exception e) {
 			Log.e(TAG,"Error Initializing the lib:" + e);
@@ -160,9 +173,29 @@ private final static String TAG = "VoipLib";
 			* This is to avoid GC to delete the endpoint first before deleting
 			* the account.
 			*/
-			acc.delete();
+			if (acc!=null)
+			{
+				acc.delete();
+				acc = null;
+			}
 			
-			ep.libDestroy();
+			/* Try force GC to avoid late destroy of PJ objects as they should be
+			 * deleted before lib is destroyed.
+			 */
+			Runtime.getRuntime().gc();
+			
+			/* Shutdown pjsua. Note that Endpoint destructor will also invoke
+			 * libDestroy(), so this will be a test of double libDestroy().
+			 */
+			try {
+				ep.libDestroy();
+			} catch (Exception e) {}
+			
+			/* Force delete Endpoint here, to avoid deletion from a non-
+			 * registered thread (by GC?). 
+			 */
+			ep.delete();
+			ep = null;
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -171,7 +204,7 @@ private final static String TAG = "VoipLib";
 			this.notifyState(new VoipStateBundle(VoipMessageType.LIB_STATE, VoipState.DEINITIALIZE_FAILED, "Voip Lib destroyed", null));
 			return false;
 		}
-		ep.delete();
+		 
 		this.notifyState(new VoipStateBundle(VoipMessageType.LIB_STATE, VoipState.DEINITIALIZE_DONE, "Voip Lib destroyed", null));
 		return true;
 		
