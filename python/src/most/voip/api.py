@@ -8,7 +8,7 @@ from api_backend import VoipBackend
 class VoipLib:
     def __init__(self, backend=VoipBackend()):
         self.backend = backend
-    
+        
     def initialize(self,params, notification_cb):
         """
         @param params: a dictionary containing all initialization parameters
@@ -39,10 +39,10 @@ class VoipLib:
     def hungup_call(self):
         return self.backend.hungup_call()
     
-    def finalize(self):
+    def destroy(self):
         """
         Destroy the Voip Lib and free all allocated resources.
         """
-        return self.backend.finalize()
+        return self.backend.destroy()
     
         

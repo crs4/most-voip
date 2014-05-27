@@ -242,33 +242,45 @@ private final static String TAG = "VoipLib";
 		public void onRegState(OnRegStateParam prm) {
 			//MyApp.observer.notifyRegState(prm.getCode(), prm.getReason(), prm.getExpiration());
 			Log.d(TAG,"onRegState Code:" +  prm.getCode() + ": Reg Expire:" + prm.getExpiration() + " Reason:" + prm.getReason());
-			
-			if (prm.getCode().swigValue() == RegistrationState.OK.intValue())
-			{
-				if (prm.getExpiration()>0){
-					notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REGISTERED, "Registration Success:::" + prm.getReason(), null));
-				}
+			try {
+				Log.d(TAG,"onRegState ACCOUNT REG ACTIVE ? : " + acc.getInfo().getRegIsActive());
 				
-				else {
-					notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.UNREGISTERED, "Unregistration Success:::" + prm.getReason(), null));
-				}
-				
-			}
-				
-			else
-			{
-				if (prm.getExpiration()>0) 
+				// Registration Ok
+				if (prm.getCode().swigValue() == RegistrationState.OK.intValue())
 				{
-					notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REGISTRATION_FAILED, "Registration Failed: Code:" +
-	                        prm.getCode().swigValue() + " " + prm.getReason(), null)); 
+					if (prm.getExpiration()>0  && acc.getInfo().getRegIsActive()){
+						notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REGISTERED, "Registration Success:::" + prm.getReason(), null));
+					}
+					
+					else  if (prm.getExpiration()==0  && !acc.getInfo().getRegIsActive()) {
+						notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.UNREGISTERED, "Unregistration Success:::" + prm.getReason(), null));
+					}
+					
 				}
-				else {
-					notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.UNREGISTRATION_FAILED, "Unregistration Failed: Code:" +
-	                        prm.getCode().swigValue() + " " + prm.getReason(), null)); 
+				// There was an error registering or unsregistering the account
+				else
+				{
+					if (!acc.getInfo().getRegIsActive()) 
+					{
+						notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REGISTRATION_FAILED, "Registration Failed: Code:" +
+		                        prm.getCode().swigValue() + " " + prm.getReason(), null)); 
+					}
+					else {
+						notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.UNREGISTRATION_FAILED, "Unregistration Failed: Code:" +
+		                        prm.getCode().swigValue() + " " + prm.getReason(), null)); 
+					}
+					
+				
 				}
 				
-			
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				Log.e(TAG,"Error reatrieving account info:" + e.getMessage());
 			}
+			
+			
+			
 			
 				
 		}
