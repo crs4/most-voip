@@ -31,8 +31,8 @@ class VoipState(object):
     RemoteHolding                 = '%s__CALL_REMOTE_HOLDING' % Name
     RemoteLocalHolding            = '%s__CALL_REMOTE_HOLDING' % Name
     Unholding                     = '%s__CALL_UNHOLDING' % Name
-    Hangup                        = '%s__CALL_HUNGUP' % Name
-    RemoteHangup                  = '%s__CALL_REMOTE_HUNGUP' % Name
+    Hangup                        = '%s__CALL_HANGUP' % Name
+    RemoteHangup                  = '%s__CALL_REMOTE_HANGUP' % Name
     RemoteDisconnectionHangup     = '%s__CALL_REMOTE_DISCONNECTION_HUNGUP' % Name
     ExitingDone                   = '%s__EXITING_DONE' % Name
     Deinitializing              = '%s__DEINITIALIZING' % Name

@@ -98,7 +98,7 @@ public class MainActivity extends Activity implements Handler.Callback {
 		
 		// Initialize the library providing custom initialization params and an handler where
 		// to receive event notifications. Following Voip methods are called form the handleMassage() callback method
-		boolean result = myVoip.initialize(params, handler);
+		boolean result = myVoip.initLib(params, handler);
 	
     }
     
@@ -136,7 +136,7 @@ public class MainActivity extends Activity implements Handler.Callback {
 		// Unregister the account
 		else if (myState.getState()==VoipState.REGISTERED)    myVoip.unregisterAccount();	
 		// Deinitialize the Voip Lib and release all allocated resources
-		else if (myState.getState()==VoipState.UNREGISTERED)  myVoip.destroy();
+		else if (myState.getState()==VoipState.UNREGISTERED)  myVoip.destroyLib();
 		     
 		     
 		return false;

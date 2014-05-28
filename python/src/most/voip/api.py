@@ -9,13 +9,13 @@ class VoipLib:
     def __init__(self, backend=VoipBackend()):
         self.backend = backend
         
-    def initialize(self,params, notification_cb):
+    def init_lib(self,params, notification_cb):
         """
         @param params: a dictionary containing all initialization parameters
         @param notification_cb: a method called for all voip notification (status changes, errors, events and so on)
         @return: True if the initialization successfully completes, False otherwise 
         """
-        return self.backend.initialize(params, notification_cb)
+        return self.backend.init_lib(params, notification_cb)
     
    
     def register_account(self):
@@ -36,13 +36,13 @@ class VoipLib:
     def unhold_call(self):
         return self.backend.unhold_call()
     
-    def hungup_call(self):
-        return self.backend.hungup_call()
+    def hangup_call(self):
+        return self.backend.hangup_call()
     
-    def destroy(self):
+    def destroy_lib(self):
         """
         Destroy the Voip Lib and free all allocated resources.
         """
-        return self.backend.destroy()
+        return self.backend.destroy_lib()
     
         

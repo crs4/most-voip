@@ -42,8 +42,8 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback {
 	 *  registerAccount(), unregisterAccount(), destroyLib(), checking any time for the expected received VoipState.
 	 */
 	public void testVoip() {
-		boolean result = myVoip.initialize(null, this.handler);
-		Log.d(TAG,"testInitialize...");
+		boolean result = myVoip.initLib(null, this.handler);
+		Log.d(TAG,"testVoip...");
 		assertTrue(result);
 		
 		while (curStateIndex<expectedStates.length)
@@ -70,7 +70,7 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback {
 		curStateIndex++;
 		     if (myState.getState()==VoipState.INITIALIZED)   assertTrue(myVoip.registerAccount());	
 		else if (myState.getState()==VoipState.REGISTERED)    assertTrue(myVoip.unregisterAccount());	
-		else if (myState.getState()==VoipState.UNREGISTERED)  assertTrue(myVoip.destroy());
+		else if (myState.getState()==VoipState.UNREGISTERED)  assertTrue(myVoip.destroyLib());
 
 		return false;
 	}

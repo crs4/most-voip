@@ -20,7 +20,7 @@ public class MockVoipLib implements VoipLib{
     }
 
 	@Override
-	public boolean initialize(HashMap<String, String> configParams,
+	public boolean initLib(HashMap<String, String> configParams,
 			Handler notificationHandler) {
 		this.notificationHandler = notificationHandler;
 		this.notifyState(new VoipStateBundle(VoipMessageType.LIB_STATE, VoipState.INITIALIZED, "Inizialization Ok", null));
@@ -28,7 +28,7 @@ public class MockVoipLib implements VoipLib{
 	}
 
 	@Override
-	public boolean destroy() {
+	public boolean destroyLib() {
 		this.notifyState(new VoipStateBundle(VoipMessageType.LIB_STATE, VoipState.DEINITIALIZING, "Voip Lib destroying...", null));
 		this.simulatePause(1);
 		this.notifyState(new VoipStateBundle(VoipMessageType.LIB_STATE, VoipState.DEINITIALIZE_DONE, "Voip Lib destroyed", null));

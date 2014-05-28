@@ -19,16 +19,16 @@ public interface VoipLib {
 	 * @param notificationHandler
 	 * @return
 	 */
-	public boolean initialize(HashMap<String,String> configParams, Handler notificationHandler);
+	public boolean initLib(HashMap<String,String> configParams, Handler notificationHandler);
 	
 	/**
 	 * Destroy the Voip Lib
 	 * @return <code>true</code> if no error occurred in the deinitialization process
 	 */
-	public boolean destroy();
+	public boolean destroyLib();
    
     /**
-     * Register the account according to the configuration params provided in the {@link #initialize(HashMap, Handler)} method
+     * Register the account according to the configuration params provided in the {@link #initLib(HashMap, Handler)} method
      * @return <code>true</code> if the registration request was sent to the sip server, <code>false</code> otherwise
      */
 	public boolean registerAccount();
@@ -57,7 +57,7 @@ public interface VoipLib {
     public void holdCall();
     
     /**
-     *  Put the active call on online status
+     *  Put the active call on active status
      */
     public void unholdCall();
     

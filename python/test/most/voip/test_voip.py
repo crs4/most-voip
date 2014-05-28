@@ -9,28 +9,15 @@ import time
 
 class VoipTestCase(unittest.TestCase):
     
-   
-    
     def __init__(self, test_method,backend):
         #unittest.TestCase(test_method)
         super(VoipTestCase,self).__init__(test_method)
      
         self.voip = VoipLib(backend)
         
-        self.expectedStates = [
-                        VoipState.Initializing, 
-                        VoipState.Initialized , 
-                        VoipState.Registering, 
-                        VoipState.Registered, 
-                        VoipState.Unregistering,
-                        VoipState.Unregistered,
-                        VoipState.Deinitializing,
-                        VoipState.DeinitializeDone
-                        ]
-    
         self.curStateIndex = 0
     
-        self.extension = "REMOTE0002"
+        self.extension = "1234"; #"REMOTE0002"; # "1234"
         self.params_spec =    {u'username': u'specialista', 
                           u'turn_server': u'156.148.133.240', 
                           u'sip_pwd': u'sha1$40fcf$4718177db1b6966f64d2d436f212', 
@@ -39,11 +26,11 @@ class VoipTestCase(unittest.TestCase):
                           u'turn_user': u'specialista', 
                           u'turn_pwd': u'sha1$40fcf$4718177db1b6966f64d2d436f212',
                                          #sha1$40fcf$4718177db1b6966f64d2d436f212 8da010a282b5
-                          u'log_level' : 5}
+                          u'log_level' :1 }
         
         self.params_eco =    {u'username': u'ecografista', 
-                          u'turn_server': u'156.148.133.240', 
-                          u'sip_pwd': u'sha1$fdcad$659da6841c6d8538b7a10ca12aae', 
+                              u'turn_server': u'156.148.133.240', 
+                              u'sip_pwd': u'sha1$fdcad$659da6841c6d8538b7a10ca12aae', 
                                         #sha1$40fcf$4718177db1b6966f64d2d436f212
                                         #sha1$fdcad$659da6841c6d8538b7a10ca12aae 3303f9a5a88b
                                        
@@ -58,13 +45,13 @@ class VoipTestCase(unittest.TestCase):
                                 u'sip_pwd': u'ste',    
                                 u'sip_server': u'156.148.33.223', 
                                 u'transport' : u'udp',
-                                u'log_level' : 2}
+                                u'log_level' : 1}
         
         self.params = self.params_local
-        self.voipState = VoipState.Null
+        
         
     
-    def notification_cb(self, voip_state, params):
+    def account_reg_notification_cb(self, voip_state, params):
         print "Notification State:%s - Params:%s" % (voip_state,params)
         self.voipState = voip_state
         
@@ -76,20 +63,91 @@ class VoipTestCase(unittest.TestCase):
             self.assertTrue(self.voip.register_account());    
         elif (voip_state==VoipState.Registered):
             self.assertTrue(self.voip.unregister_account());    
-#         elif (voip_state==VoipState.Unregistered):
-#             self.assertTrue(self.voip.destroy());
+        elif (voip_state==VoipState.Unregistered):
+            self.assertTrue(self.voip.destroy_lib());
+        elif (voip_state==VoipState.DeinitializeDone):
+            print "Ok."
+   
+    def make_call_notification_cb(self, voip_state, params):
+        print "Notification State:%s - Params:%s" % (voip_state,params)
+        self.voipState = voip_state
+        
+        self.assertEqual(voip_state,  self.expectedStates[self.curStateIndex], "Wrong state: %s . Expected:%s"  % (self.voipState,  self.expectedStates[self.curStateIndex]) )
 
+        self.curStateIndex+=1
+         
+        if (voip_state==VoipState.Initialized):
+            self.assertTrue(self.voip.register_account());    
+        elif (voip_state==VoipState.Registered):
+            self.assertTrue(self.voip.make_call(self.extension)); 
+        elif (voip_state==VoipState.Dialing):
+            pass   
+        elif (voip_state==VoipState.Calling):
+            time.sleep(2)
+            #self.assertTrue(self.voip.hold_call()); 
+            self.assertTrue(self.voip.hangup_call()); 
+#         elif (voip_state==VoipState.Holding):
+#             time.sleep(0.5)
+#             self.assertTrue(self.voip.unhold_call()); 
+#         elif (voip_state==VoipState.Unholding):
+#            self.assertTrue(self.voip.hangup_call()); 
+        elif (voip_state==VoipState.Hangup):
+            self.assertTrue(self.voip.unregister_account());  
+        elif (voip_state==VoipState.Unregistered):
+            self.assertTrue(self.voip.destroy_lib());
+        elif (voip_state==VoipState.DeinitializeDone):
+            print "Ok."
         
     def setUp(self):
         print "Running test:%s" % self._testMethodName
+        self.curStateIndex = 0
+        self.voipState = VoipState.Null
        
     def tearDown(self):
+        print "Test:%s completed." % self._testMethodName
         print "-----------------------------------------------\n"
       
         
-    def test_voip(self):
-        print "Test initialize....."
-        result = self.voip.initialize(self.params, self.notification_cb)
+    def etest_account_registration(self):
+        
+        self.expectedStates = [
+                        VoipState.Initializing, 
+                        VoipState.Initialized , 
+                        VoipState.Registering, 
+                        VoipState.Registered, 
+                        VoipState.Unregistering,
+                        VoipState.Unregistered,
+                        VoipState.Deinitializing,
+                        VoipState.DeinitializeDone
+                        ]
+         
+        result = self.voip.init_lib(self.params, self.account_reg_notification_cb)
+      
+        self.assertTrue(result , "Error initializing the lib!")
+        
+        while (self.curStateIndex<len(self.expectedStates)):
+            time.sleep(0.5)
+            
+            
+    def test_make_call(self):
+        
+        self.expectedStates = [
+                        VoipState.Initializing, 
+                        VoipState.Initialized , 
+                        VoipState.Registering, 
+                        VoipState.Registered, 
+                        VoipState.Dialing,
+                        VoipState.Calling,
+#                         VoipState.Holding,
+#                         VoipState.Unholding,
+                        VoipState.Hangup,
+                        VoipState.Unregistering,
+                        VoipState.Unregistered,
+                        VoipState.Deinitializing,
+                        VoipState.DeinitializeDone
+                        ]
+         
+        result = self.voip.init_lib(self.params, self.make_call_notification_cb)
       
         self.assertTrue(result , "Error initializing the lib!")
         

@@ -33,24 +33,112 @@ import android.widget.TextView;
  * @author crs4
  *
  */
-public class MainActivity extends Activity implements Handler.Callback {
+public class MainActivity extends Activity {
 	private static final String TAG = "VoipTestActivity";
-	private final Handler handler = new Handler(this);
+	//private final Handler handler = new Handler(this);
 	
 	private ArrayList<String> infoArray = null;
 	private VoipLib myVoip =  null;
 	private ArrayAdapter<String> arrayAdapter = null;
 	
 	
-	private VoipState [] expectedStates = { VoipState.INITIALIZED , 
-			VoipState.REGISTERING, 
-			VoipState.REGISTERED, 
-			VoipState.UNREGISTERING,
-			VoipState.UNREGISTERED,
-			VoipState.DEINITIALIZING,
-			VoipState.DEINITIALIZE_DONE};
+	
 
-	private int curStateIndex = 0;
+	
+	
+	private static class AbstractAppHandler extends Handler{
+		protected MainActivity app = null;
+		protected VoipLib myVoip = null;
+		protected  int curStateIndex = 0;
+		
+ 		public AbstractAppHandler(MainActivity app, VoipLib myVoip) {
+ 			super();
+			this.app = app;
+			this.myVoip = myVoip;
+		}
+ 		
+ 		protected VoipStateBundle getStateBundle(Message voipMessage)
+ 		{
+ 			//int msg_type = voipMessage.what;
+			VoipStateBundle myState = (VoipStateBundle) voipMessage.obj;
+			String infoMsg = "State:" + myState.getState() + ":" + myState.getInfo();
+			Log.d(TAG, "Called handleMessage with state info:" + infoMsg);
+			this.app.addInfoLine(infoMsg);
+			return myState;
+ 		}
+	}
+	
+	private class RegistrationHandler extends AbstractAppHandler {
+		
+		private VoipState [] expectedStates = { VoipState.INITIALIZED , 
+				VoipState.REGISTERING, 
+				VoipState.REGISTERED, 
+				VoipState.UNREGISTERING,
+				VoipState.UNREGISTERED,
+				VoipState.DEINITIALIZING,
+				VoipState.DEINITIALIZE_DONE};
+		
+		public RegistrationHandler(MainActivity app, VoipLib myVoip) {
+			super(app, myVoip);
+		}
+
+		@Override
+		public void handleMessage(Message voipMessage) {
+			VoipStateBundle myState = getStateBundle(voipMessage);
+			
+			assert( myState.getState()==expectedStates[curStateIndex]);
+			curStateIndex++;
+			// Register the account after the Lib Initialization
+			if (myState.getState()==VoipState.INITIALIZED)   myVoip.registerAccount();	
+			// Unregister the account
+			else if (myState.getState()==VoipState.REGISTERED)    myVoip.unregisterAccount();	
+			// Deinitialize the Voip Lib and release all allocated resources
+			else if (myState.getState()==VoipState.UNREGISTERED)  myVoip.destroyLib();
+			     
+		}
+	}
+	
+
+	private class MakeCallHandler extends AbstractAppHandler {
+	
+		private String extension = "1234";
+		private VoipState [] expectedStates = { VoipState.INITIALIZED , 
+				VoipState.REGISTERING, 
+				VoipState.REGISTERED, 
+				VoipState.CALL_DIALING,
+				VoipState.CALL_ACTIVE,
+				VoipState.CALL_HANGUP,
+				VoipState.UNREGISTERING,
+				VoipState.UNREGISTERED,
+				VoipState.DEINITIALIZING,
+				VoipState.DEINITIALIZE_DONE};
+		
+		public MakeCallHandler(MainActivity app, VoipLib myVoip) {
+			super(app, myVoip);
+		}
+
+		@Override
+		public void handleMessage(Message voipMessage) {
+			VoipStateBundle myState = getStateBundle(voipMessage);
+			
+			assert( myState.getState()==expectedStates[curStateIndex]);
+			curStateIndex++;
+			// Register the account after the Lib Initialization
+			if (myState.getState()==VoipState.INITIALIZED)   myVoip.registerAccount();	
+			else if (myState.getState()==VoipState.REGISTERED)    myVoip.makeCall(extension);	
+			else if  (myState.getState()==VoipState.CALL_ACTIVE)    {
+				//this.app.waitForSeconds(20);
+				//myVoip.hangupCall();
+			}
+			// Unregister the account
+			else if (myState.getState()==VoipState.CALL_HANGUP)    myVoip.unregisterAccount();	
+			// Deinitialize the Voip Lib and release all allocated resources
+			else if (myState.getState()==VoipState.UNREGISTERED)  myVoip.destroyLib();
+			     
+		}
+	   
+	}
+	
 
 	
     @Override
@@ -68,7 +156,7 @@ public class MainActivity extends Activity implements Handler.Callback {
     	InputMethodManager imm = (InputMethodManager)this.getSystemService(Service.INPUT_METHOD_SERVICE);
     	imm.hideSoftInputFromWindow(txtView.getWindowToken(), 0); 
     	
-    	this.runExample(serverIp);
+    	this.runRegistrationExample(serverIp);
     }
     
     private void initializeGUI()
@@ -92,7 +180,7 @@ public class MainActivity extends Activity implements Handler.Callback {
     }
     
     
-    public void runExample(String serverIp)
+    public void runRegistrationExample(String serverIp)
     {
     	
     	
@@ -116,11 +204,11 @@ public class MainActivity extends Activity implements Handler.Callback {
 		
 		// Initialize the library providing custom initialization params and an handler where
 		// to receive event notifications. Following Voip methods are called form the handleMassage() callback method
-		boolean result = myVoip.initialize(params, handler);
-	
+		//boolean result = myVoip.initLib(params, new RegistrationHandler(this, myVoip));
+		boolean result = myVoip.initLib(params, new MakeCallHandler(this, myVoip));
     }
     
-    private void waitForSeconds(int secs)
+    public void waitForSeconds(int secs)
     {
     	try {
 			Thread.sleep(secs*1000);
@@ -138,13 +226,14 @@ public class MainActivity extends Activity implements Handler.Callback {
     		arrayAdapter.notifyDataSetChanged();
     }
     
-    private void addInfoLine(String info)
+    public void addInfoLine(String info)
     {
     	this.infoArray.add(info);
     	if (arrayAdapter!=null)
     		arrayAdapter.notifyDataSetChanged();
     }
 
+    /*
 	@Override
 	public boolean handleMessage(Message voipMessage) {
 		//int msg_type = voipMessage.what;
@@ -162,10 +251,10 @@ public class MainActivity extends Activity implements Handler.Callback {
 		// Unregister the account
 		else if (myState.getState()==VoipState.REGISTERED)    myVoip.unregisterAccount();	
 		// Deinitialize the Voip Lib and release all allocated resources
-		else if (myState.getState()==VoipState.UNREGISTERED)  myVoip.destroy();
+		else if (myState.getState()==VoipState.UNREGISTERED)  myVoip.destroyLib();
 		     
 		     
 		return false;
 	}
-    
+    */
 }
