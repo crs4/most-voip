@@ -26,14 +26,15 @@ class VoipState(object):
     Remote_user_connected         = '%s__REMOTE_USER_CONNECTED' % Name
     Remote_user_disconnected      = '%s__REMOTE_USER_DISCONNECTED' % Name
     Dialing                       = '%s__CALL_DIALING' % Name
+    Incoming                       = '%s__CALL_INCOMING' % Name
     Calling                       = '%s__CALL_ACTIVE' % Name
     Holding                       = '%s__CALL_HOLDING' % Name
     RemoteHolding                 = '%s__CALL_REMOTE_HOLDING' % Name
-    RemoteLocalHolding            = '%s__CALL_REMOTE_HOLDING' % Name
+    RemoteLocalHolding            = '%s__CALL_LOCAL_HOLDING' % Name
     Unholding                     = '%s__CALL_UNHOLDING' % Name
     Hangup                        = '%s__CALL_HANGUP' % Name
     RemoteHangup                  = '%s__CALL_REMOTE_HANGUP' % Name
-    RemoteDisconnectionHangup     = '%s__CALL_REMOTE_DISCONNECTION_HUNGUP' % Name
+    RemoteDisconnectionHangup     = '%s__CALL_REMOTE_DISCONNECTION_HANGUP' % Name
     ExitingDone                   = '%s__EXITING_DONE' % Name
     Deinitializing              = '%s__DEINITIALIZING' % Name
     DeinitializeDone              = '%s__DEINITIALIZE_DONE' % Name

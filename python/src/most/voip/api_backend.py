@@ -232,7 +232,7 @@ class VoipBackend:
                         logger.debug( 'Change internal state on HANGUP from on_state  dopo REMOTE HUNGUP')
                         self.notification_cb(VoipState.RemoteHangup, {'success': True, 'call_state' :callState})
                     else:
-                        logger.debug('Change internal state on HANGUP from on_state  dopo REMOTE DISCONNECTION HUNGUP')
+                        logger.debug('Change internal state on HANGUP from on_state  dopo REMOTE DISCONNECTION HANGUP')
                         self.notification_cb(VoipState.RemoteDisconnectionHangup, {'success': True, 'call_state' :callState})
                         #self.sip_controller.change_state(SipControllerState.RemoteDisconnectionHangup,callState)
 
@@ -429,10 +429,10 @@ class VoipBackend:
 
         # Notification on incoming call
         def on_incoming_call(self, call):
-            logger.debug( '\nINCOMING CALL\n')
+            logger.debug( '\nINCOMING CALL FROM %s \n' % call.info().remote_uri)
             global current_call,config, callState, refused, auto_answer, auto_answer_delay
             refused = False
-
+            
             if current_call:
                 callState = VoipBackendCallState.BUSY
                 logger.debug( 'Chiamata occupata')
@@ -452,10 +452,9 @@ class VoipBackend:
 
             logger.debug( 'cambio lo stato interno del sip controller in dialing!')
             #self.sip_controller.change_state(SipControllerState.Dialing, callState)
-            self.notification_cb(VoipState.Dialing, {'Success' : True, 'call_state': callState})
+            #self.notification_cb(VoipState.Dialing, {'Success' : True, 'call_state': callState})
+            self.notification_cb(VoipState.Incoming, {'Success' : True, 'from': call.info().remote_uri})
             if auto_answer==True:
-
-
                 logger.debug( "auto answering after %s seconds" % auto_answer_delay)
 
                 #self.messenger.send_info("Auto Answering to Incoming call from %s in %s seconds" % (remote_contact,delay))
@@ -466,8 +465,8 @@ class VoipBackend:
 
                 current_call.answer(180)
                 self.auto_answer_call = self.sip_controller.loop.timer_add(auto_answer_delay*1000,self._auto_answer) ## TODO
-            else:
-                current_call.answer(180)
+#             else:
+#                 current_call.answer(180)
 
         def _auto_answer(self):
             global current_call, callState
@@ -827,7 +826,7 @@ class VoipBackend:
                                   
                 acc_cfg = pj.AccountConfig('%s%s' % (str(self.sip_server), transport_info), str(self.my_account[0]), str(self.my_account[1]))
                 #acc_cfg = pj.AccountConfig('156.148.132.244', 'demo-smonni', 'pwd_smonni')
-                logger.debug("Acccount Config:%s" % acc_cfg.reg_uri)
+                logger.debug("Account Config:%s" % acc_cfg.reg_uri)
                
                 # la riregistrazione avviene ogni 60 secondi che e' il minimo consentito (verifica la presenza del server)
                 acc_cfg.reg_timeout = 60
@@ -970,7 +969,7 @@ class VoipBackend:
 
         try:
             if not current_call:
-                logger.debug( 'There is no call')
+                logger.debug( 'There is no call TO ANSWER!')
                 return
             elif current_call.info().state!=pj.CallState.CONFIRMED:
                 _stop_call_sound()
@@ -986,7 +985,7 @@ class VoipBackend:
     def hangup_call(self):
         #global refused
         #refused = True
-        logger.debug( "HUNGUP Request")
+        logger.debug( "HANGUP Request")
         try:
             _stop_call_sound()
 
@@ -1001,12 +1000,12 @@ class VoipBackend:
 
 
             else:
-                logger.debug("There is no call to hungup")
-                #self.messenger.send_info("No Call to hungup!")
+                logger.debug("There is no call to hangup")
+                #self.messenger.send_info("No Call to hangup!")
                 return False
 
         except Exception,ex:
-            logger.exception("Exception in hungup call:%s" % ex) 
+            logger.exception("Exception in hangup call:%s" % ex) 
             return False
 
     def hold_call(self):

@@ -3,4 +3,6 @@
     <string name="app_name">MostVoipActivitySecondExample</string>
     <string name="ip_server">156.148.33.223</string>
     <string name="ip_server_title">Sip Server IP:</string>
+    <string name="extension_title">Extension:</string>
+    <string name="extension">ste</string>
 </resources>

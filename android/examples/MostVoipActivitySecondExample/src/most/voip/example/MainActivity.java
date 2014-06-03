@@ -115,6 +115,8 @@ public class MainActivity extends Activity {
 		
 		public MakeCallHandler(MainActivity app, VoipLib myVoip) {
 			super(app, myVoip);
+			//EditText txtView =(EditText) findViewById(R.id.txtExtension);
+			//this.extension = txtView.getText().toString();
 		}
 
 		@Override
@@ -139,6 +141,48 @@ public class MainActivity extends Activity {
 	   
 	}
 	
+	private class MakeRemoteCallHandler extends AbstractAppHandler {
+		
+		private String extension = null;
+		
+		private VoipState [] expectedStates = { VoipState.INITIALIZED , 
+				VoipState.REGISTERING, 
+				VoipState.REGISTERED, 
+				VoipState.CALL_DIALING,
+				VoipState.CALL_ACTIVE,
+				VoipState.CALL_HANGUP,
+				VoipState.UNREGISTERING,
+				VoipState.UNREGISTERED,
+				VoipState.DEINITIALIZING,
+				VoipState.DEINITIALIZE_DONE};
+		
+		public MakeRemoteCallHandler(MainActivity app, VoipLib myVoip) {
+			super(app, myVoip);
+			EditText txtView =(EditText) findViewById(R.id.txtExtension);
+			this.extension = txtView.getText().toString();
+		}
+
+		@Override
+		public void handleMessage(Message voipMessage) {
+			VoipStateBundle myState = getStateBundle(voipMessage);
+			
+			assert( myState.getState()==expectedStates[curStateIndex]);
+			curStateIndex++;
+			// Register the account after the Lib Initialization
+			if (myState.getState()==VoipState.INITIALIZED)   myVoip.registerAccount();	
+			else if (myState.getState()==VoipState.REGISTERED)    myVoip.makeCall(extension);	
+			else if  (myState.getState()==VoipState.CALL_ACTIVE)    {
+				//this.app.waitForSeconds(20);
+				//myVoip.hangupCall();
+			}
+			// Unregister the account
+			else if (myState.getState()==VoipState.CALL_HANGUP)    myVoip.unregisterAccount();	
+			// Deinitialize the Voip Lib and release all allocated resources
+			else if (myState.getState()==VoipState.UNREGISTERED)  myVoip.destroyLib();
+			     
+		}
+	   
+	}
 
 	
     @Override
@@ -191,8 +235,8 @@ public class MainActivity extends Activity {
 
 		HashMap<String,String> params = new HashMap<>();
 		params.put("sipServerIp",serverIp);  //"156.148.33.223";"192.168.1.83"
-		params.put("userName","ste");
-		params.put("userPwd","ste");
+		params.put("userName","steand");
+		params.put("userPwd","steand");
 		//params.put("sipPort","5060"); // optional: default 5060
 		
 		Log.d(TAG, "Initializing the lib...");
@@ -205,7 +249,7 @@ public class MainActivity extends Activity {
 		// Initialize the library providing custom initialization params and an handler where
 		// to receive event notifications. Following Voip methods are called form the handleMassage() callback method
 		//boolean result = myVoip.initLib(params, new RegistrationHandler(this, myVoip));
-		boolean result = myVoip.initLib(params, new MakeCallHandler(this, myVoip));
+		boolean result = myVoip.initLib(params, new MakeRemoteCallHandler(this, myVoip));
     }
     
     public void waitForSeconds(int secs)
@@ -232,29 +276,4 @@ public class MainActivity extends Activity {
     	if (arrayAdapter!=null)
     		arrayAdapter.notifyDataSetChanged();
     }
-
-    /*
-	@Override
-	public boolean handleMessage(Message voipMessage) {
-		//int msg_type = voipMessage.what;
-		Log.d(TAG, "Called handleMessage with info...");
-		VoipStateBundle myState = (VoipStateBundle) voipMessage.obj;
-		String infoMsg = "State:" + myState.getState() + ":" + myState.getInfo();
-		Log.d(TAG, "State info:" + infoMsg);
-		this.addInfoLine(infoMsg);
-		
-		assert( myState.getState()==expectedStates[curStateIndex]);
-		curStateIndex++;
-		// Register the account after the Lib Initialization
-		if (myState.getState()==VoipState.INITIALIZED)   myVoip.registerAccount();	
-		 
-		// Unregister the account
-		else if (myState.getState()==VoipState.REGISTERED)    myVoip.unregisterAccount();	
-		// Deinitialize the Voip Lib and release all allocated resources
-		else if (myState.getState()==VoipState.UNREGISTERED)  myVoip.destroyLib();
-		     
-		     
-		return false;
-	}
-    */
 }
