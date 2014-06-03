@@ -194,13 +194,16 @@ public class MainActivity extends Activity {
         //this.runExample();
     }
     
+    /**
+     * Invoked when the 'Go' button is clicked
+     */
     public void doVoipTest(View view) {
     	EditText txtView =(EditText) this.findViewById(R.id.txtServerIp);
     	String serverIp = txtView.getText().toString();
     	InputMethodManager imm = (InputMethodManager)this.getSystemService(Service.INPUT_METHOD_SERVICE);
     	imm.hideSoftInputFromWindow(txtView.getWindowToken(), 0); 
     	
-    	this.runRegistrationExample(serverIp);
+    	this.runExample(serverIp);
     }
     
     private void initializeGUI()
@@ -224,7 +227,7 @@ public class MainActivity extends Activity {
     }
     
     
-    public void runRegistrationExample(String serverIp)
+    public void runExample(String serverIp)
     {
     	
     	
