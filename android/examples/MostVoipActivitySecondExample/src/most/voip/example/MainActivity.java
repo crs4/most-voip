@@ -19,8 +19,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.ListView;	
 
 /**
  * This example application shows how to:
@@ -236,7 +235,7 @@ public class MainActivity extends Activity {
 		
     	// Voip Lib Initialization Params
 
-		HashMap<String,String> params = new HashMap<>();
+		HashMap<String,String> params = new HashMap<String,String>();
 		params.put("sipServerIp",serverIp);  //"156.148.33.223";"192.168.1.83"
 		params.put("userName","steand");
 		params.put("userPwd","steand");
