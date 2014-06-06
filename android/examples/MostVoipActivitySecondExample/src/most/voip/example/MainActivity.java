@@ -41,10 +41,7 @@ public class MainActivity extends Activity {
 	private ArrayAdapter<String> arrayAdapter = null;
 	
 	
-	
 
-	
-	
 	private static class AbstractAppHandler extends Handler{
 		protected MainActivity app = null;
 		protected VoipLib myVoip = null;

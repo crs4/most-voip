@@ -43,8 +43,9 @@ public interface VoipLib {
      * Make a call to the specific extension
      * 
      * @param extension The extension to dial
+     * @return true if no error occurred during this operation, false otherwise
      */
-    public void makeCall(String extension);
+    public boolean makeCall(String extension);
     
     /**
      * Answer a call

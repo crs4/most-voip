@@ -16,12 +16,8 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
 			return curStateIndex>=expectedStates.length;
 		}
 		
- 
-		public boolean handleMessage(Message voipMessage) {
-			Log.d(TAG, "Called handleMessage ABSTRACT ..");
-			return false;
-		}
-		
+		public abstract boolean handleMessage(Message voipMessage);
+
 	}
 	
 	class AccountRegistrationHandlerTest extends HandlerTest {
@@ -41,15 +37,100 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
 		@Override
 		public boolean handleMessage(Message voipMessage) {
 			//int msg_type = voipMessage.what;
-			Log.d(TAG, "Called handleMessage with info...");
 			VoipStateBundle myState = (VoipStateBundle) voipMessage.obj;
 			String infoMsg = myState.getState() + ":" + myState.getInfo();
-			Log.d(TAG, "Current State:" + infoMsg);
+			Log.d(TAG, "handleMessage: Current State:" + infoMsg);
 			
 			assertEquals( myState.getState(), expectedStates[curStateIndex]);
 			curStateIndex++;
 			     if (myState.getState()==VoipState.INITIALIZED)   assertTrue(myVoip.registerAccount());	
 			else if (myState.getState()==VoipState.REGISTERED)    assertTrue(myVoip.unregisterAccount());	
+			else if (myState.getState()==VoipState.UNREGISTERED)  assertTrue(myVoip.destroyLib());
+
+			return false;
+		}
+
+	}
+	
+	class MakeCallHandlerTest extends HandlerTest {
+		
+		 MakeCallHandlerTest () {
+			
+			this.expectedStates = new VoipState[] {VoipState.INITIALIZED , 
+					VoipState.REGISTERING, 
+					VoipState.REGISTERED, 
+					VoipState.CALL_DIALING,
+					VoipState.CALL_ACTIVE,
+					VoipState.CALL_HANGUP,
+					VoipState.UNREGISTERING,
+					VoipState.UNREGISTERED,
+					VoipState.DEINITIALIZING,
+					VoipState.DEINITIALIZE_DONE};
+		}
+ 
+		
+		@Override
+		public boolean handleMessage(Message voipMessage) {
+			//int msg_type = voipMessage.what;
+			//Log.d(TAG, "Called handleMessage with info...");
+			VoipStateBundle myState = (VoipStateBundle) voipMessage.obj;
+			String infoMsg = myState.getState() + ":" + myState.getInfo();
+			Log.d(TAG, "handleMessage: Current State:" + infoMsg);
+			
+			assertEquals( myState.getState(), expectedStates[curStateIndex]);
+			curStateIndex++;
+			     if (myState.getState()==VoipState.INITIALIZED)   assertTrue(myVoip.registerAccount());	
+			else if (myState.getState()==VoipState.REGISTERED)    assertTrue(myVoip.makeCall("destination_test_extension"));	
+			else if (myState.getState()==VoipState.CALL_ACTIVE)   myVoip.hangupCall();	
+			else if (myState.getState()==VoipState.CALL_HANGUP)   assertTrue(myVoip.unregisterAccount());	
+			else if (myState.getState()==VoipState.UNREGISTERED)  assertTrue(myVoip.destroyLib());
+
+			return false;
+		}
+
+	}
+	
+	
+	class AnswerCallHandlerTest extends HandlerTest {
+		
+		 AnswerCallHandlerTest () {
+			
+			this.expectedStates = new VoipState[] {VoipState.INITIALIZED , 
+					VoipState.REGISTERING, 
+					VoipState.REGISTERED, 
+					VoipState.CALL_DIALING,
+					VoipState.CALL_ACTIVE,
+					VoipState.CALL_HANGUP,
+					VoipState.UNREGISTERING,
+					VoipState.UNREGISTERED,
+					VoipState.DEINITIALIZING,
+					VoipState.DEINITIALIZE_DONE};
+		}
+
+		 private void notifyDialingIncomingCall()
+		    {
+			    VoipStateBundle myStateBundle = new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_DIALING, "Dialing call from:" + "test_caller", null);
+			    Handler testHandler = new Handler(VoipLibTestSuite.this);
+				Log.d(TAG, "Called notifyState for state:" + myStateBundle.getState().name());
+		    	Message m = Message.obtain(testHandler,myStateBundle.getMsgType().ordinal(), myStateBundle);
+				m.sendToTarget();
+		    }
+		 
+		@Override
+		public boolean handleMessage(Message voipMessage) {
+			//int msg_type = voipMessage.what;
+			//Log.d(TAG, "Called handleMessage with info...");
+			VoipStateBundle myState = (VoipStateBundle) voipMessage.obj;
+			String infoMsg = myState.getState() + ":" + myState.getInfo();
+			Log.d(TAG, "handleMessage: Current State:" + infoMsg);
+			
+			assertEquals( myState.getState(), expectedStates[curStateIndex]);
+			curStateIndex++;
+			     if (myState.getState()==VoipState.INITIALIZED)   assertTrue(myVoip.registerAccount());	
+			else if (myState.getState()==VoipState.REGISTERED)    this.notifyDialingIncomingCall();	
+			else if (myState.getState()==VoipState.CALL_DIALING)  myVoip.answerCall();	
+			else if (myState.getState()==VoipState.CALL_ACTIVE)   myVoip.hangupCall();	
+			else if (myState.getState()==VoipState.CALL_HANGUP)   assertTrue(myVoip.unregisterAccount());	
 			else if (myState.getState()==VoipState.UNREGISTERED)  assertTrue(myVoip.destroyLib());
 
 			return false;
@@ -88,6 +169,30 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
 	}
 	
 	
+	/**
+	 *  This test calls the initLib() method of the Voip Library. The testing callback method receives the updated Voip State. The test checks if
+	 *  the received Voip State matches with the expected state (VoipState.INITIALIZED). Then the test continues by calling the methods
+	 *  registerAccount(), makeCall(), hangupCall(), unregisterAccount(), destroyLib(), checking any time for the expected received VoipState.
+	 */
+	public void testMakeCall()
+	{
+		Log.d(TAG, "Testing testMakeCall");
+		this._testHandler(new MakeCallHandlerTest());
+	}
+	
+	/**
+	 *  This test calls the initLib() method of the Voip Library. The testing callback method receives the updated Voip State. The test checks if
+	 *  the received Voip State matches with the expected state (VoipState.INITIALIZED). Then the test continues by calling the methods
+	 *  registerAccount(), answerCall() (after sending a simulated dialing notification), hangupCall(), unregisterAccount(), destroyLib(), checking any time for the expected received VoipState.
+	 */
+	public void testAnswerCall()
+	{
+		Log.d(TAG, "Testing testAnswerCall");
+		this._testHandler(new AnswerCallHandlerTest());
+	}
+	
+	
+	
 	private void _testHandler(HandlerTest handlerTest) {
 		this.handlerTest= handlerTest;
 		boolean result = myVoip.initLib(null,this.handler);
@@ -110,7 +215,7 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
 
 	@Override
 	public boolean handleMessage(Message msg) {
-		Log.d(TAG, "Called handleMessage with HandlerTest!!");
+		//Log.d(TAG, "Called handleMessage with HandlerTest!!");
 		return this.handlerTest.handleMessage(msg);
 	 
 	}

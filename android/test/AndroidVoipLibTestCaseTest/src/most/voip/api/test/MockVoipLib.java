@@ -42,14 +42,14 @@ public class MockVoipLib implements VoipLib{
     
 	private void simulatePause(int secs)
 	{
-//		try {
-//			Thread.sleep(secs*1000);
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		
+		try {
+			Thread.sleep(secs*1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
+	
 	@Override
 	public boolean registerAccount() {
 		Log.d(TAG, "Called registerAccount");
@@ -69,33 +69,36 @@ public class MockVoipLib implements VoipLib{
 	}
 
 	@Override
-	public void makeCall(String extension) {
+	public boolean makeCall(String extension) {
 		Log.d(TAG, "Called makeCall");
-		// TODO Auto-generated method stub
-		
+		notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_DIALING, "Dialing call to:" + extension, null));
+		this.simulatePause(1);
+		notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_ACTIVE, "Call active with:" + extension, null));
+		return true;
 	}
 
 	@Override
 	public void answerCall() {
 		Log.d(TAG, "Called answerCall");
-		
+		notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_ACTIVE, "Call active after answering", null));
 	}
 
 	@Override
 	public void holdCall() {
 		Log.d(TAG, "Called holdCall");
+		notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_HOLDING, "Call holding", null));
 		
 	}
 
 	@Override
 	public void unholdCall() {
 		Log.d(TAG, "Called unholdCall");
-		
+		notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_UNHOLDING, "Call unholding", null));
 	}
 
 	@Override
 	public void hangupCall() {
-		Log.d(TAG, "Called hangupCall");
+		notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_HANGUP, "Call hangup" , null));
 		
 	}
 

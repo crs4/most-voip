@@ -141,7 +141,7 @@ private final static String TAG = "VoipLib";
 	}
 	
 	@Override
-	public void makeCall(String extension) {
+	public boolean makeCall(String extension) {
 		Log.d(TAG, "Called makeCall for extension " + extension);
 		MyCall call = new MyCall(this.acc, -1);
 		CallOpParam prm = new CallOpParam();
@@ -153,10 +153,10 @@ private final static String TAG = "VoipLib";
 			call.makeCall(this.getSipUriFromExtension(extension), prm);
 		} catch (Exception e) {
 			currentCall = null;
-			Log.d(TAG, "Exception makingCall: " + e.getMessage());
-			return;
+			Log.e(TAG, "Exception makingCall: " + e.getMessage());
+			return false;
 		}
-	
+	    return true;
 	}
 
 	@Override
