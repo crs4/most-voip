@@ -98,7 +98,7 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
 			this.expectedStates = new VoipState[] {VoipState.INITIALIZED , 
 					VoipState.REGISTERING, 
 					VoipState.REGISTERED, 
-					VoipState.CALL_DIALING,
+					VoipState.CALL_INCOMING,
 					VoipState.CALL_ACTIVE,
 					VoipState.CALL_HANGUP,
 					VoipState.UNREGISTERING,
@@ -107,9 +107,9 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
 					VoipState.DEINITIALIZE_DONE};
 		}
 
-		 private void notifyDialingIncomingCall()
+		 private void notifyIncomingCall()
 		    {
-			    VoipStateBundle myStateBundle = new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_DIALING, "Dialing call from:" + "test_caller", null);
+			    VoipStateBundle myStateBundle = new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_INCOMING, "Incoming call from:" + "test_caller", null);
 			    Handler testHandler = new Handler(VoipLibTestSuite.this);
 				Log.d(TAG, "Called notifyState for state:" + myStateBundle.getState().name());
 		    	Message m = Message.obtain(testHandler,myStateBundle.getMsgType().ordinal(), myStateBundle);
@@ -127,8 +127,8 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
 			assertEquals( myState.getState(), expectedStates[curStateIndex]);
 			curStateIndex++;
 			     if (myState.getState()==VoipState.INITIALIZED)   assertTrue(myVoip.registerAccount());	
-			else if (myState.getState()==VoipState.REGISTERED)    this.notifyDialingIncomingCall();	
-			else if (myState.getState()==VoipState.CALL_DIALING)  myVoip.answerCall();	
+			else if (myState.getState()==VoipState.REGISTERED)    this.notifyIncomingCall();	
+			else if (myState.getState()==VoipState.CALL_INCOMING) assertTrue(myVoip.answerCall());	
 			else if (myState.getState()==VoipState.CALL_ACTIVE)   myVoip.hangupCall();	
 			else if (myState.getState()==VoipState.CALL_HANGUP)   assertTrue(myVoip.unregisterAccount());	
 			else if (myState.getState()==VoipState.UNREGISTERED)  assertTrue(myVoip.destroyLib());

@@ -143,6 +143,13 @@ private final static String TAG = "VoipLib";
 	@Override
 	public boolean makeCall(String extension) {
 		Log.d(TAG, "Called makeCall for extension " + extension);
+		
+		/* Only one call at anytime */
+		if (currentCall != null) {
+			Log.w(TAG, "There is already a call active, make call rejected");
+			return false;
+		}
+		
 		MyCall call = new MyCall(this.acc, -1);
 		CallOpParam prm = new CallOpParam();
 		CallSetting opt = prm.getOpt();
@@ -152,17 +159,89 @@ private final static String TAG = "VoipLib";
 		try {
 			call.makeCall(this.getSipUriFromExtension(extension), prm);
 		} catch (Exception e) {
-			currentCall = null;
-			Log.e(TAG, "Exception makingCall: " + e.getMessage());
+			VoipLibBackend.currentCall = null;
+			Log.e(TAG, "Exception in makeCall: " + e.getMessage());
 			return false;
 		}
+		// setting the new call as the current call
+		VoipLibBackend.currentCall = call;
 	    return true;
+	}
+	
+	/**
+	 * 
+	 * Reject any incoming call if there is already any pending call, otherwise start ringing and set the new call as current call
+	 * @param call
+	 * @return true if the new call was not rejected, false otherwise
+	 */
+	private boolean handleIncomingCall(MyCall call)
+	{
+		
+		Log.d(TAG,"Handling incoming call from the Voip Lib");
+		/* Incoming call */
+		//final MyCall call = (MyCall) m.obj;
+		CallOpParam prm = new CallOpParam();
+		
+		/* Only one call at anytime */
+		if (currentCall != null) {
+			prm.setStatusCode(pjsip_status_code.PJSIP_SC_BUSY_HERE);
+			this.notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_INCOMING_REJECTED, "Incoming call rejected beacuse there is already an other active call", null));
+			try {
+				
+				call.hangup(prm);
+			} catch (Exception e) {
+				
+				Log.e(TAG,"Exception hanging up the call:" +e);
+			}
+			return false;
+		}
+
+		/* Answer with ringing */
+		prm.setStatusCode(pjsip_status_code.PJSIP_SC_RINGING);
+		try {
+			Log.d(TAG,"Setting call in ringing state");
+			call.answer(prm);
+		} catch (Exception e) {
+			
+			Log.e(TAG,"Exception answering the call:" +e);
+			return false;
+		}
+		
+		currentCall = call;
+		return true;
 	}
 
 	@Override
-	public void answerCall() {
-		// TODO Auto-generated method stub
+	public boolean answerCall() {
+		if (VoipLibBackend.currentCall==null)
+		{
+			Log.d(TAG, "Answer Call ignored: no call found");
+			return false;
+		}
+		CallInfo ci;
+		try {
+			ci = VoipLibBackend.currentCall.getInfo();
+			if (ci.getState()!=pjsip_inv_state.PJSIP_INV_STATE_EARLY)
+			{
+				Log.d(TAG, "The current call is not in dialing state. Answering request ignored: State:" + ci.getState());
+				return false;
+			}
+		} catch (Exception e1) {
+			Log.d(TAG, "Error getting call info:" + e1);
+			return false;
+		}
 		
+		CallOpParam prm = new CallOpParam();
+		prm.setStatusCode(pjsip_status_code.PJSIP_SC_OK);
+		try {
+			Log.d(TAG, "Try to answer the Call" );
+			VoipLibBackend.currentCall.answer(prm);
+			
+		} catch (Exception e) {
+			Log.e(TAG, "Exception in answerCall: " + e.getMessage());
+			return false;
+		}
+		return true;
 	}
 
 	@Override
@@ -178,7 +257,17 @@ private final static String TAG = "VoipLib";
 
 	@Override
 	public void hangupCall() {
-		// TODO Auto-generated method stub
+		if (VoipLibBackend.currentCall != null) {
+			CallOpParam prm = new CallOpParam();
+			prm.setStatusCode(pjsip_status_code.PJSIP_SC_DECLINE);
+			try {
+				Log.d(TAG, "Try to hangup the Call disabled!!" );
+				VoipLibBackend.currentCall.hangup(prm);
+				} catch (Exception e) {
+					Log.e(TAG, "Exception hanging up the call:" + e);
+			}
+			//VoipLibBackend.currentCall = null;
+		}
 		
 	}
 
@@ -273,10 +362,13 @@ private final static String TAG = "VoipLib";
 					notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_ACTIVE, "Call active with:" + ci.getRemoteUri(), null));
 				}
 				else if (ci.getState()==pjsip_inv_state.PJSIP_INV_STATE_DISCONNECTED) {
+					VoipLibBackend.currentCall = null;
 					notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_HANGUP, "Call hangup with:" + ci.getRemoteUri(), null));
 				}
+				 
 				
 			} catch (Exception e) {
+				Log.e(TAG, "Exception in onCallState():" + e.getMessage());
 				return;
 			}
 			
@@ -409,9 +501,19 @@ private final static String TAG = "VoipLib";
 
 		@Override
 		public void onIncomingCall(OnIncomingCallParam prm) {
-			System.out.println("======== Incoming call ======== ");
-			//MyCall call = new MyCall(this, prm.getCallId());
+			Log.d(TAG, "INCOMING CALL:" + prm.toString());
+			MyCall call = new MyCall(this, prm.getCallId());
 			//MyApp.observer.notifyIncomingCall(call);
+			 try {
+				 boolean incoming_call_result = handleIncomingCall(call);	
+				 if (incoming_call_result)
+					 notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_INCOMING, "Incoming call from:" + call.getInfo().getRemoteUri(), call));
+                		
+			 } catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				Log.e(TAG,"Error reatrieving call info:" + e.getMessage());
+			}
 		}
 		
 		@Override

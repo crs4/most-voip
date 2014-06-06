@@ -78,9 +78,10 @@ public class MockVoipLib implements VoipLib{
 	}
 
 	@Override
-	public void answerCall() {
+	public boolean answerCall() {
 		Log.d(TAG, "Called answerCall");
 		notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_ACTIVE, "Call active after answering", null));
+		return true;
 	}
 
 	@Override

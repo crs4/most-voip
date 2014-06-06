@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;	
 
@@ -66,14 +67,12 @@ public class MainActivity extends Activity {
 	}
 	
 	
-	private class MakeCallHandler extends AbstractAppHandler {
-		
-		private String extension = null;
-		
+	private class AnswerCallHandler extends AbstractAppHandler {
+	 
 		private VoipState [] expectedStates = { VoipState.INITIALIZED , 
 				VoipState.REGISTERING, 
 				VoipState.REGISTERED, 
-				VoipState.CALL_DIALING,
+				VoipState.CALL_INCOMING,
 				VoipState.CALL_ACTIVE,
 				VoipState.CALL_HANGUP,
 				VoipState.UNREGISTERING,
@@ -81,11 +80,14 @@ public class MainActivity extends Activity {
 				VoipState.DEINITIALIZING,
 				VoipState.DEINITIALIZE_DONE};
 		
-		public MakeCallHandler(MainActivity app, VoipLib myVoip) {
+		public AnswerCallHandler(MainActivity app, VoipLib myVoip) {
 			super(app, myVoip);
-			EditText txtView =(EditText) findViewById(R.id.txtExtension);
-			this.extension = txtView.getText().toString();
+			//EditText txtView =(EditText) findViewById(R.id.txtExtension);
+			//this.extension = txtView.getText().toString();
+			
 		}
+		
+		
 
 		@Override
 		public void handleMessage(Message voipMessage) {
@@ -95,20 +97,26 @@ public class MainActivity extends Activity {
 			curStateIndex++;
 			// Register the account after the Lib Initialization
 			if (myState.getState()==VoipState.INITIALIZED)   myVoip.registerAccount();	
-			else if (myState.getState()==VoipState.REGISTERED)    myVoip.makeCall(extension);	
+			else if (myState.getState()==VoipState.REGISTERED)    this.app.addInfoLine("Ready to accept calls"); 														
+			else if (myState.getState()==VoipState.CALL_INCOMING)  handleIncomingCall();
 			else if  (myState.getState()==VoipState.CALL_ACTIVE)    {
 				//this.app.waitForSeconds(20);
 				//myVoip.hangupCall();
 			}
 			// Unregister the account
-			else if (myState.getState()==VoipState.CALL_HANGUP)    myVoip.unregisterAccount();	
+			else if (myState.getState()==VoipState.CALL_HANGUP)    {    setupButtons(false);
+				                                                        myVoip.unregisterAccount();	}
 			// Deinitialize the Voip Lib and release all allocated resources
 			else if (myState.getState()==VoipState.UNREGISTERED)  myVoip.destroyLib();
 			     
 		}
 	   
 	}
-
+     
+    private void handleIncomingCall()
+    {
+    	setupButtons(true);
+    }
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -131,6 +139,19 @@ public class MainActivity extends Activity {
     	this.runExample(serverIp);
     }
     
+    public void answerCall(View view) 
+    {
+    	this.myVoip.answerCall();
+    }
+    
+    public void hangupCall(View view) 
+    {
+    	this.myVoip.hangupCall();
+    }
+    
+    public void toggleHoldCall(View view) {}
+    
+    
     private void initializeGUI()
     {
     	setContentView(R.layout.activity_main);
@@ -139,7 +160,7 @@ public class MainActivity extends Activity {
         arrayAdapter =
                 new ArrayAdapter<String>(this, R.layout.row, R.id.textViewList, this.infoArray);
         listView.setAdapter(arrayAdapter);
-         
+        this.setupButtons(false);
         //this.addInfoLine("Most Voip Lib Test Example 1");
     }
     
@@ -151,6 +172,17 @@ public class MainActivity extends Activity {
 		}
     }
     
+    void setupButtons(boolean active)
+	{
+		Button butAccept = (Button) findViewById(R.id.butAccept);
+		butAccept.setEnabled(active);
+		
+		Button butToogleHold = (Button) findViewById(R.id.butToggleHold);
+		butToogleHold.setEnabled(active);
+		
+		Button butHangup = (Button) findViewById(R.id.butHangup);
+		butHangup.setEnabled(active);
+	}
     
     public void runExample(String serverIp)
     {
@@ -177,7 +209,7 @@ public class MainActivity extends Activity {
 		// Initialize the library providing custom initialization params and an handler where
 		// to receive event notifications. Following Voip methods are called form the handleMassage() callback method
 		//boolean result = myVoip.initLib(params, new RegistrationHandler(this, myVoip));
-		boolean result = myVoip.initLib(params, new MakeCallHandler(this, myVoip));
+		boolean result = myVoip.initLib(params, new AnswerCallHandler(this, myVoip));
     }
     
     public void waitForSeconds(int secs)

@@ -49,8 +49,9 @@ public interface VoipLib {
     
     /**
      * Answer a call
+     * @return false if this command was ignored for some reasons (e.g there is already an active call), true otherwise
      */
-    public void answerCall();
+    public boolean answerCall();
     
     /**
      * Put the active call on hold status
