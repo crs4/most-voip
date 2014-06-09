@@ -187,7 +187,6 @@ private final static String TAG = "VoipLib";
 			prm.setStatusCode(pjsip_status_code.PJSIP_SC_BUSY_HERE);
 			this.notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_INCOMING_REJECTED, "Incoming call rejected beacuse there is already an other active call", null));
 			try {
-				
 				call.hangup(prm);
 			} catch (Exception e) {
 				
@@ -201,6 +200,7 @@ private final static String TAG = "VoipLib";
 		try {
 			Log.d(TAG,"Setting call in ringing state");
 			call.answer(prm);
+			Log.d(TAG,"Called answer in ringing state");
 		} catch (Exception e) {
 			
 			Log.e(TAG,"Exception answering the call:" +e);
@@ -252,7 +252,6 @@ private final static String TAG = "VoipLib";
 	@Override
 	public void unholdCall() {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -261,7 +260,7 @@ private final static String TAG = "VoipLib";
 			CallOpParam prm = new CallOpParam();
 			prm.setStatusCode(pjsip_status_code.PJSIP_SC_DECLINE);
 			try {
-				Log.d(TAG, "Try to hangup the Call disabled!!" );
+				Log.d(TAG, "Try to hangup the Call" );
 				VoipLibBackend.currentCall.hangup(prm);
 				} catch (Exception e) {
 					Log.e(TAG, "Exception hanging up the call:" + e);

@@ -19,7 +19,7 @@ if __name__ == '__main__':
         print "Received state:%s -> Params: %s" % (voip_state, params)
         
         if (voip_state==VoipState.Registered):
-            extension = "ste"
+            extension = "1234"
             print "Making a call dialing the extension: %s" % extension
             myVoip.make_call(extension)
             
@@ -39,7 +39,7 @@ if __name__ == '__main__':
         
     voip_params0 = {u'username': u'steand', 
                    u'sip_pwd': u'steand', 
-                   u'sip_server': u'156.148.33.223' , #'u'192.168.1.79',  u'156.148.33.223' 
+                   u'sip_server': u'156.148.33.226' , #'u'192.168.1.79',  u'156.148.33.223' 
                    u'sip_user': u'steand', 
                    u'transport' :u'udp',
                    # u'turn_server': u'192.168.1.79', 

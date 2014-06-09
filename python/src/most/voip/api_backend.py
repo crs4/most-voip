@@ -125,7 +125,7 @@ def _stop_call_sound_out():
 
 def _start_call_sound_in():
     global player_in_id, voip_root_dir
-    logger.debug("in _stop_call_sound_in")
+    logger.debug("in _start_call_sound_in")
     if player_in_id==None:
         #sound_file = os.path.join(voip_root_dir,TecapConfig().getConfig().get("VoipBackend","in_call_ring_tone"))
         sound_file = os.path.join(voip_root_dir,in_call_ring_tone)
@@ -445,7 +445,7 @@ class VoipBackend:
         
             callState = VoipBackendCallState.INCOMING
             #_start_call_sound(config.get("VoipBackend","in_call_ring_tone"))
-            #_start_call_sound_in()
+            _start_call_sound_in()
             current_call = call
             call_cb = VoipBackend.MyCallCallback(self.notification_cb,current_call)
             current_call.set_callback(call_cb)
@@ -820,7 +820,7 @@ class VoipBackend:
 
                 logger.debug("Registering account **%s** (PWD:%s) on sip server:**%s**" % (self.my_account[0],self.my_account[1], self.sip_server))
                 if (self.params.has_key("transport") and self.params["transport"]=="udp"):
-                      transport_info = "" 
+                    transport_info = "" 
                 else:
                     transport_info =  ";transport=tcp"
                                   
