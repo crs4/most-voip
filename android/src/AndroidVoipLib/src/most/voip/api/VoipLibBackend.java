@@ -10,7 +10,7 @@ import android.util.Log;
 
 import org.pjsip.pjsua2.*;
 
- 
+
 public class VoipLibBackend implements VoipLib   {
 	
 
@@ -20,14 +20,16 @@ public class VoipLibBackend implements VoipLib   {
 		System.out.println("Library loaded");
 	}
 	
-	
-public static Endpoint ep = new Endpoint();
+
+public static Endpoint ep = null; //new Endpoint();
 public ArrayList<MyAccount> accList = new ArrayList<MyAccount>();
 private ArrayList<MyAccountConfig> accCfgs = new ArrayList<MyAccountConfig>();
 private EpConfig epConfig = new EpConfig();
 private TransportConfig sipTpConfig = new TransportConfig();
 private MyAccount acc = null;
 private AccountConfig acfg = null;
+private static MyCall currentCall = null;	
+private String sipServerIp = null;
 
 private final int SIP_PORT  = 5060;
 private Handler notificationHandler = null;
@@ -45,30 +47,43 @@ private final static String TAG = "VoipLib";
     }
     
     @Override
-    public boolean initialize(HashMap<String,String> configParams, Handler notificationHandler)
+    public boolean initLib(HashMap<String,String> configParams, Handler notificationHandler)
     {
     	Log.d((TAG), "initializing");
     	
     	this.notificationHandler = notificationHandler;
     	/* Create endpoint */
 		try {
+			Log.d(TAG,"Lib create...");
+			if (ep!=null)
+			{  
+				Log.d(TAG, "EndPoint is not null...destroying .....");
+				this.destroyLib();
+			}
+			Log.d(TAG,"Instancing EndPoint..");
+			ep = new Endpoint();
 			ep.libCreate();
-			Log.d(TAG,"Lib initiazed");
+			
 			
 			/* Load config */
+			Log.d(TAG,"Load configuration...");
 			loadConfig(configParams);
 			
 			
 			// Init the pjsua lib with the given configuration
+			Log.d(TAG,"Lib init......");
 			ep.libInit( epConfig );
 			
 			// Create SIP transport. Error handling sample is shown
+			Log.d(TAG,"transport create...");
 			ep.transportCreate(pjsip_transport_type_e.PJSIP_TRANSPORT_UDP, sipTpConfig);
 			// Start the library
+			Log.d(TAG,"Lib startig....");
 			ep.libStart();
 			// print the json config
-		    
+			Log.d(TAG,"Lib initialized and started");
 		    this.notifyState(new VoipStateBundle(VoipMessageType.LIB_STATE, VoipState.INITIALIZED, "Inizialization Ok", null));
+		    
 			return true;
 		} catch (Exception e) {
 			Log.e(TAG,"Error Initializing the lib:" + e);
@@ -121,16 +136,112 @@ private final static String TAG = "VoipLib";
 		return false;
 	}
 
+	public String getSipUriFromExtension(String extension) {
+		return "sip:" + extension + "@" + this.sipServerIp;
+	}
+	
 	@Override
-	public void makeCall(String extension) {
-		// TODO Auto-generated method stub
+	public boolean makeCall(String extension) {
+		Log.d(TAG, "Called makeCall for extension " + extension);
 		
+		/* Only one call at anytime */
+		if (currentCall != null) {
+			Log.w(TAG, "There is already a call active, make call rejected");
+			return false;
+		}
+		
+		MyCall call = new MyCall(this.acc, -1);
+		CallOpParam prm = new CallOpParam();
+		CallSetting opt = prm.getOpt();
+		opt.setAudioCount(1);
+		opt.setVideoCount(0);
+
+		try {
+			call.makeCall(this.getSipUriFromExtension(extension), prm);
+		} catch (Exception e) {
+			VoipLibBackend.currentCall = null;
+			Log.e(TAG, "Exception in makeCall: " + e.getMessage());
+			return false;
+		}
+		// setting the new call as the current call
+		VoipLibBackend.currentCall = call;
+	    return true;
+	}
+	
+	/**
+	 * 
+	 * Reject any incoming call if there is already any pending call, otherwise start ringing and set the new call as current call
+	 * @param call
+	 * @return true if the new call was not rejected, false otherwise
+	 */
+	private boolean handleIncomingCall(MyCall call)
+	{
+		
+		Log.d(TAG,"Handling incoming call from the Voip Lib");
+		/* Incoming call */
+		//final MyCall call = (MyCall) m.obj;
+		CallOpParam prm = new CallOpParam();
+		
+		/* Only one call at anytime */
+		if (currentCall != null) {
+			prm.setStatusCode(pjsip_status_code.PJSIP_SC_BUSY_HERE);
+			this.notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_INCOMING_REJECTED, "Incoming call rejected beacuse there is already an other active call", null));
+			try {
+				call.hangup(prm);
+			} catch (Exception e) {
+				
+				Log.e(TAG,"Exception hanging up the call:" +e);
+			}
+			return false;
+		}
+
+		/* Answer with ringing */
+		prm.setStatusCode(pjsip_status_code.PJSIP_SC_RINGING);
+		try {
+			Log.d(TAG,"Setting call in ringing state");
+			call.answer(prm);
+			Log.d(TAG,"Called answer in ringing state");
+		} catch (Exception e) {
+			
+			Log.e(TAG,"Exception answering the call:" +e);
+			return false;
+		}
+		
+		currentCall = call;
+		return true;
 	}
 
 	@Override
-	public void answerCall() {
-		// TODO Auto-generated method stub
+	public boolean answerCall() {
+		if (VoipLibBackend.currentCall==null)
+		{
+			Log.d(TAG, "Answer Call ignored: no call found");
+			return false;
+		}
+		CallInfo ci;
+		try {
+			ci = VoipLibBackend.currentCall.getInfo();
+			if (ci.getState()!=pjsip_inv_state.PJSIP_INV_STATE_EARLY)
+			{
+				Log.d(TAG, "The current call is not in dialing state. Answering request ignored: State:" + ci.getState());
+				return false;
+			}
+		} catch (Exception e1) {
+			Log.d(TAG, "Error getting call info:" + e1);
+			return false;
+		}
 		
+		CallOpParam prm = new CallOpParam();
+		prm.setStatusCode(pjsip_status_code.PJSIP_SC_OK);
+		try {
+			Log.d(TAG, "Try to answer the Call" );
+			VoipLibBackend.currentCall.answer(prm);
+			
+		} catch (Exception e) {
+			Log.e(TAG, "Exception in answerCall: " + e.getMessage());
+			return false;
+		}
+		return true;
 	}
 
 	@Override
@@ -141,17 +252,26 @@ private final static String TAG = "VoipLib";
 	@Override
 	public void unholdCall() {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public void hangupCall() {
-		// TODO Auto-generated method stub
+		if (VoipLibBackend.currentCall != null) {
+			CallOpParam prm = new CallOpParam();
+			prm.setStatusCode(pjsip_status_code.PJSIP_SC_DECLINE);
+			try {
+				Log.d(TAG, "Try to hangup the Call" );
+				VoipLibBackend.currentCall.hangup(prm);
+				} catch (Exception e) {
+					Log.e(TAG, "Exception hanging up the call:" + e);
+			}
+			//VoipLibBackend.currentCall = null;
+		}
 		
 	}
 
 	@Override
-	public boolean destroy() {
+	public boolean destroyLib() {
 		
 		this.notifyState(new VoipStateBundle(VoipMessageType.LIB_STATE, VoipState.DEINITIALIZING, "Voip Lib destroying", null));
 		// Explicitly destroy and delete endpoint
@@ -160,9 +280,29 @@ private final static String TAG = "VoipLib";
 			* This is to avoid GC to delete the endpoint first before deleting
 			* the account.
 			*/
-			acc.delete();
+			if (acc!=null)
+			{
+				acc.delete();
+				acc = null;
+			}
 			
-			ep.libDestroy();
+			/* Try force GC to avoid late destroy of PJ objects as they should be
+			 * deleted before lib is destroyed.
+			 */
+			Runtime.getRuntime().gc();
+			
+			/* Shutdown pjsua. Note that Endpoint destructor will also invoke
+			 * libDestroy(), so this will be a test of double libDestroy().
+			 */
+			try {
+				ep.libDestroy();
+			} catch (Exception e) {}
+			
+			/* Force delete Endpoint here, to avoid deletion from a non-
+			 * registered thread (by GC?). 
+			 */
+			ep.delete();
+			ep = null;
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -171,7 +311,7 @@ private final static String TAG = "VoipLib";
 			this.notifyState(new VoipStateBundle(VoipMessageType.LIB_STATE, VoipState.DEINITIALIZE_FAILED, "Voip Lib destroyed", null));
 			return false;
 		}
-		ep.delete();
+		 
 		this.notifyState(new VoipStateBundle(VoipMessageType.LIB_STATE, VoipState.DEINITIALIZE_DONE, "Voip Lib destroyed", null));
 		return true;
 		
@@ -195,6 +335,79 @@ private final static String TAG = "VoipLib";
 			}
 			
 			accCfgs.add(my_acc_cfg);
+		}
+	}
+	
+	
+	class MyCall extends Call {
+		MyCall(MyAccount acc, int call_id) {
+			super(acc, call_id);
+		}
+
+		@Override
+		public void onCallState(OnCallStateParam prm) {
+			//MyApp.observer.notifyCallState(this);
+			Log.e(TAG, "On Call State Called:" + prm.getE().toString());
+			CallInfo ci;
+			try {
+				ci = getInfo();
+				
+				
+				Log.d(TAG, "On Call State: CallInfo:" + ci.getStateText());
+				if (ci.getState()==pjsip_inv_state.PJSIP_INV_STATE_CALLING) {
+					notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_DIALING, "Dialing call to:" + ci.getRemoteUri(), null));
+				}
+				else if (ci.getState()==pjsip_inv_state.PJSIP_INV_STATE_CONFIRMED) {
+					notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_ACTIVE, "Call active with:" + ci.getRemoteUri(), null));
+				}
+				else if (ci.getState()==pjsip_inv_state.PJSIP_INV_STATE_DISCONNECTED) {
+					VoipLibBackend.currentCall = null;
+					notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_HANGUP, "Call hangup with:" + ci.getRemoteUri(), null));
+				}
+				 
+				
+			} catch (Exception e) {
+				Log.e(TAG, "Exception in onCallState():" + e.getMessage());
+				return;
+			}
+			
+			
+		}
+		
+		@Override
+		public void onCallMediaState(OnCallMediaStateParam prm) {
+		    Log.d(TAG, "On Media State:" + prm.toString());
+			CallInfo ci;
+			try {
+				ci = getInfo();
+				Log.d(TAG, "On Media State: CallInfo:" + ci.getStateText());
+			} catch (Exception e) {
+				return;
+			}
+			
+			CallMediaInfoVector cmiv = ci.getMedia();
+			
+			for (int i = 0; i < cmiv.size(); i++) {
+				CallMediaInfo cmi = cmiv.get(i);
+				if (cmi.getType() == pjmedia_type.PJMEDIA_TYPE_AUDIO &&
+				    (cmi.getStatus() == pjsua_call_media_status.PJSUA_CALL_MEDIA_ACTIVE ||
+				     cmi.getStatus() == pjsua_call_media_status.PJSUA_CALL_MEDIA_REMOTE_HOLD))
+				{
+					// unfortunately, on Java too, the returned Media cannot be downcasted to AudioMedia 
+					Media m = getMedia(i);
+					AudioMedia am = AudioMedia.typecastFromMedia(m);
+					
+					// connect ports
+					try {
+						//Cattura l'audio da remoto e lo trasmette al phone Android
+						VoipLibBackend.ep.audDevManager().getCaptureDevMedia().startTransmit(am);
+						//trasmette l'audio emesso dal phone android al client SIP remoto
+						am.startTransmit(VoipLibBackend.ep.audDevManager().getPlaybackDevMedia());
+					} catch (Exception e) {
+						continue;
+					}
+				}
+			}
 		}
 	}
 	
@@ -242,42 +455,64 @@ private final static String TAG = "VoipLib";
 		public void onRegState(OnRegStateParam prm) {
 			//MyApp.observer.notifyRegState(prm.getCode(), prm.getReason(), prm.getExpiration());
 			Log.d(TAG,"onRegState Code:" +  prm.getCode() + ": Reg Expire:" + prm.getExpiration() + " Reason:" + prm.getReason());
-			
-			if (prm.getCode().swigValue() == RegistrationState.OK.intValue())
-			{
-				if (prm.getExpiration()>0){
-					notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REGISTERED, "Registration Success:::" + prm.getReason(), null));
-				}
+			try {
+				Log.d(TAG,"onRegState ACCOUNT REG ACTIVE ? : " + acc.getInfo().getRegIsActive());
 				
-				else {
-					notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.UNREGISTERED, "Unregistration Success:::" + prm.getReason(), null));
-				}
-				
-			}
-				
-			else
-			{
-				if (prm.getExpiration()>0) 
+				// Registration Ok
+				if (prm.getCode().swigValue() == RegistrationState.OK.intValue())
 				{
-					notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REGISTRATION_FAILED, "Registration Failed: Code:" +
-	                        prm.getCode().swigValue() + " " + prm.getReason(), null)); 
+					if (prm.getExpiration()>0  && acc.getInfo().getRegIsActive()){
+						notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REGISTERED, "Registration Success:::" + prm.getReason(), null));
+					}
+					
+					else  if (prm.getExpiration()==0  && !acc.getInfo().getRegIsActive()) {
+						notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.UNREGISTERED, "Unregistration Success:::" + prm.getReason(), null));
+					}
+					
 				}
-				else {
-					notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.UNREGISTRATION_FAILED, "Unregistration Failed: Code:" +
-	                        prm.getCode().swigValue() + " " + prm.getReason(), null)); 
+				// There was an error registering or unsregistering the account
+				else
+				{
+					if (!acc.getInfo().getRegIsActive()) 
+					{
+						notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REGISTRATION_FAILED, "Registration Failed: Code:" +
+		                        prm.getCode().swigValue() + " " + prm.getReason(), null)); 
+					}
+					else {
+						notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.UNREGISTRATION_FAILED, "Unregistration Failed: Code:" +
+		                        prm.getCode().swigValue() + " " + prm.getReason(), null)); 
+					}
+					
+				
 				}
 				
-			
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				Log.e(TAG,"Error reatrieving account info:" + e.getMessage());
 			}
+			
+			
+			
 			
 				
 		}
 
 		@Override
 		public void onIncomingCall(OnIncomingCallParam prm) {
-			System.out.println("======== Incoming call ======== ");
-			//MyCall call = new MyCall(this, prm.getCallId());
+			Log.d(TAG, "INCOMING CALL:" + prm.toString());
+			MyCall call = new MyCall(this, prm.getCallId());
 			//MyApp.observer.notifyIncomingCall(call);
+			 try {
+				 boolean incoming_call_result = handleIncomingCall(call);	
+				 if (incoming_call_result)
+					 notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_INCOMING, "Incoming call from:" + call.getInfo().getRemoteUri(), call));
+                		
+			 } catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				Log.e(TAG,"Error reatrieving call info:" + e.getMessage());
+			}
 		}
 		
 		@Override
@@ -338,11 +573,11 @@ private final static String TAG = "VoipLib";
 
 	        acfg = new AccountConfig();
 	        
-	        String sip_server_ip = configParams.get("sipServerIp"); //   "192.168.1.83"; //156.148.33.223";
-	        String registrar_uri = "sip:" + sip_server_ip;
+	        this.sipServerIp = configParams.get("sipServerIp"); //   "192.168.1.83"; //156.148.33.223";
+	        String registrar_uri = "sip:" +this.sipServerIp;
 	        String user_name = configParams.get("userName");
 	        String user_pwd = configParams.get("userPwd");
-	        String id_uri = "sip:" + user_name + "@" + sip_server_ip;
+	        String id_uri = "sip:" + user_name + "@" + this.sipServerIp;
 	        
 	        // Account Config
 	        acfg.setIdUri(id_uri); //"sip:ste@192.168.1.83");

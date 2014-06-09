@@ -2,19 +2,45 @@ from most.voip.api import VoipLib
 from most.voip.states import VoipState
  
 
-def notify_events(voip_state, params):
-    print "Received state:%s -> Params: %s" % (voip_state, params)
-    if (voip_state==VoipState.Registered):
-        print "Making a call dialing a specific extension..."
-        extension = "REMOTE0002"
-        myVoip.make_call(extension)
-        
+import time, sys
+"""
+For locally testing this application, assuming that you are using asterisk as Sip Server, do the following:
+
+1) Run this application
+2) from the Asterisk CLI console type the following command:
+   originate SIP/ste extension
+   where 'ste' is the user you have just registered  by this application on the SIP server from this application
+"""
 
 if __name__ == '__main__':
-    voip_params0 = {u'username': u'ste', 
-                   u'sip_pwd': u'ste', 
-                   u'sip_server': u'156.148.133.239' , #'u'192.168.1.79',  u'156.148.33.223' 
-                   u'sip_user': u'ste', 
+
+    
+    def notify_events(voip_state, params):
+        print "Received state:%s -> Params: %s" % (voip_state, params)
+        
+        if (voip_state==VoipState.Registered):
+            extension = "1234"
+            print "Making a call dialing the extension: %s" % extension
+            myVoip.make_call(extension)
+            
+        elif(voip_state==VoipState.Calling):
+            dur = 4
+            print "Waiting %s seconds before hanging up..."  % dur
+            time.sleep(dur)
+            myVoip.hangup_call()
+            
+        elif (voip_state in [VoipState.RemoteDisconnectionHangup, VoipState.RemoteHangup, VoipState.Hangup]):
+            print "End of call. Destroying lib..."
+            myVoip.destroy_lib()
+            
+        elif (voip_state==VoipState.DeinitializeDone):
+            print "Lib Destroyed. Exiting from the app."
+            sys.exit(0)
+        
+    voip_params0 = {u'username': u'steand', 
+                   u'sip_pwd': u'steand', 
+                   u'sip_server': u'156.148.33.226' , #'u'192.168.1.79',  u'156.148.33.223' 
+                   u'sip_user': u'steand', 
                    u'transport' :u'udp',
                    # u'turn_server': u'192.168.1.79', 
                    #u'turn_user': u'', 
@@ -36,20 +62,14 @@ if __name__ == '__main__':
     
     myVoip = VoipLib()
     print "Initializing the Voip Lib..."
-    myVoip.initialize(voip_params0, notify_events)
+    myVoip.init_lib(voip_params0, notify_events)
     print "Registering the account on the Sip Server..."
     myVoip.register_account()
     
-    
-    import time
-    print "Sleeping for some seconds for calling..."
-    time.sleep(10)
-    print "Hunging up the call..."
-    myVoip.hungup_call()
-    #myVoip.unregister_account()
-    time.sleep(2)
-    print "Finalizing the lib..."
-    myVoip.finalize()
+    while True:
+        time.sleep(1)
+  
+   
     
     
     
