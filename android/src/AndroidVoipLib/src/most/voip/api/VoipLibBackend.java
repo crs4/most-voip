@@ -13,6 +13,7 @@ import org.pjsip.pjsua2.*;
 
 public class VoipLibBackend implements VoipLib   {
 	
+private CallState currentCallState = CallState.NONE;
 
 	static {
 		System.out.println("LOADING LIB...");
@@ -41,9 +42,28 @@ private final static String TAG = "VoipLib";
     }
     
     private void notifyState(VoipStateBundle myStateBundle)
-    {
+    {   
+    	Log.d(TAG, "notify state:" + myStateBundle.getState());
+    	this.updateCallStateByVoipState(myStateBundle.getState());
+    	Log.d(TAG, "New Current State:" + this.getCallState());
     	Message m = Message.obtain(this.notificationHandler,myStateBundle.getMsgType().ordinal(), myStateBundle);
 		m.sendToTarget();
+    }
+    
+    private void updateCallStateByVoipState(VoipState voipState)
+    {
+    	switch (voipState){
+		case CALL_ACTIVE: this.currentCallState = CallState.ACTIVE; break;
+		case CALL_DIALING: this.currentCallState = CallState.DIALING; break;
+		case CALL_INCOMING: this.currentCallState = CallState.INCOMING; break;
+		case CALL_HOLDING: this.currentCallState = CallState.HOLDING; break;
+		case CALL_REMOTE_HOLDING: this.currentCallState = CallState.REMOTE_HOLDING; break;
+		case CALL_UNHOLDING: this.currentCallState = CallState.ACTIVE; break; // da gestire il caso di holding e remote holding...
+		case CALL_HANGUP: this.currentCallState = CallState.NONE; break;
+		case CALL_REMOTE_HANGUP: this.currentCallState = CallState.NONE; break;
+		default:
+			break;
+    	}
     }
     
     @Override
@@ -245,29 +265,59 @@ private final static String TAG = "VoipLib";
 	}
 
 	@Override
-	public void holdCall() {
-		// TODO Auto-generated method stub
+	public boolean holdCall() {
+		if (VoipLibBackend.currentCall == null) {
+			Log.d(TAG,"There is no call to hold");
+			return false;
+		}
+		CallOpParam prm = new CallOpParam(true);
+		try {
+		Log.d(TAG,"Call Hold request...");
+		currentCall.setHold(prm);
+		} catch (Exception e) {
+		e.printStackTrace();
+		Log.e(TAG, "Exception in holdCall: " + e.getMessage());
+		return false;
+		}
+       return true;
 	}
 
 	@Override
-	public void unholdCall() {
-		// TODO Auto-generated method stub
+	public boolean unholdCall() {
+		if (VoipLibBackend.currentCall == null) {
+			Log.d(TAG,"There is no call to unhold");
+			return false;
+		}
+		CallOpParam prm = new CallOpParam();
+		prm.setOptions(pjsua_call_flag.PJSUA_CALL_UNHOLD.swigValue());
+		//prm.setOpt(CallSetting.this.
+		try {
+		Log.d(TAG,"Call unhold request...");
+		currentCall.reinvite(prm);
+		return true;
+		} catch (Exception e) {
+		e.printStackTrace();
+		Log.e(TAG, "Exception in unholdCall: " + e.getMessage());
+		return false;
+		}
 	}
 
 	@Override
-	public void hangupCall() {
+	public boolean hangupCall() {
 		if (VoipLibBackend.currentCall != null) {
 			CallOpParam prm = new CallOpParam();
 			prm.setStatusCode(pjsip_status_code.PJSIP_SC_DECLINE);
 			try {
 				Log.d(TAG, "Try to hangup the Call" );
 				VoipLibBackend.currentCall.hangup(prm);
+				return true;
 				} catch (Exception e) {
 					Log.e(TAG, "Exception hanging up the call:" + e);
+					return false;
 			}
 			//VoipLibBackend.currentCall = null;
 		}
-		
+		return false;
 	}
 
 	@Override
@@ -276,6 +326,7 @@ private final static String TAG = "VoipLib";
 		this.notifyState(new VoipStateBundle(VoipMessageType.LIB_STATE, VoipState.DEINITIALIZING, "Voip Lib destroying", null));
 		// Explicitly destroy and delete endpoint
 		try {
+			
 			/* Explicitly delete the account.
 			* This is to avoid GC to delete the endpoint first before deleting
 			* the account.
@@ -376,11 +427,11 @@ private final static String TAG = "VoipLib";
 		
 		@Override
 		public void onCallMediaState(OnCallMediaStateParam prm) {
-		    Log.d(TAG, "On Media State:" + prm.toString());
+		    Log.d(TAG, "On Call Media State:" + prm.toString());
 			CallInfo ci;
 			try {
 				ci = getInfo();
-				Log.d(TAG, "On Media State: CallInfo:" + ci.getStateText());
+				Log.d(TAG, "On Call Media State: CallInfo:" + ci.getStateText());
 			} catch (Exception e) {
 				return;
 			}
@@ -393,6 +444,11 @@ private final static String TAG = "VoipLib";
 				    (cmi.getStatus() == pjsua_call_media_status.PJSUA_CALL_MEDIA_ACTIVE ||
 				     cmi.getStatus() == pjsua_call_media_status.PJSUA_CALL_MEDIA_REMOTE_HOLD))
 				{
+					if (cmi.getStatus() == pjsua_call_media_status.PJSUA_CALL_MEDIA_REMOTE_HOLD)
+					{
+					currentCallState = CallState.REMOTE_HOLDING;
+					notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_REMOTE_HOLDING, "Call Remote holding", null));
+					}
 					// unfortunately, on Java too, the returned Media cannot be downcasted to AudioMedia 
 					Media m = getMedia(i);
 					AudioMedia am = AudioMedia.typecastFromMedia(m);
@@ -407,7 +463,12 @@ private final static String TAG = "VoipLib";
 						continue;
 					}
 				}
-			}
+				else if(cmi.getStatus() == pjsua_call_media_status.PJSUA_CALL_MEDIA_LOCAL_HOLD)
+				{
+					currentCallState = CallState.HOLDING;
+					notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_HOLDING, "Call holding", null));
+				}
+			}  // end FOR
 		}
 	}
 	
@@ -663,6 +724,10 @@ private final static String TAG = "VoipLib";
 				}
 			} catch (Exception e) {}
 		}
+	}
+	@Override
+	public CallState getCallState() {
+		return this.currentCallState;
 	}
 	
 }

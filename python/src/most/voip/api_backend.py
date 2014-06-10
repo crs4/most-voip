@@ -283,7 +283,7 @@ class VoipBackend:
                 logger.debug( 'Local Hold request')
                 callState = VoipBackendCallState.LOCAL_HOLD
                 #self.sip_controller.change_state(SipControllerState.Holding, callState)
-                self.notification_cb(VoipState.RemoteDisconnectionHangup, {'success': True, 'call_state' :callState})
+                self.notification_cb(VoipState.Holding, {'success': True, 'call_state' :callState})
 
             elif self.call.info().media_state == pj.MediaState.REMOTE_HOLD:
                 logger.debug( "Media is REMOTE HOLD STATE")

@@ -55,17 +55,25 @@ public interface VoipLib {
     
     /**
      * Put the active call on hold status
+     * @return true if no error occurred during this operation, false otherwise
      */
-    public void holdCall();
+    public boolean holdCall();
     
     /**
      *  Put the active call on active status
+     *  @return true if no error occurred during this operation, false otherwise
      */
-    public void unholdCall();
+    public boolean unholdCall();
     
     /**
      * Close the current active call
+     * @return true if no error occurred during this operation, false otherwise
      */
-    public void hangupCall();
-       
+    public boolean hangupCall();
+     
+    /**
+     * Get the state of the current call (if any)
+     * @return the state of the current call (if any), CallState.NONE if there is no call
+     */
+    public CallState getCallState();
 }

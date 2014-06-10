@@ -2,6 +2,7 @@ package most.voip.example;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import most.voip.api.CallState;
 import most.voip.api.Utils;
 import most.voip.api.VoipLib;
 import most.voip.api.VoipLibBackend;
@@ -149,7 +150,20 @@ public class MainActivity extends Activity {
     	this.myVoip.hangupCall();
     }
     
-    public void toggleHoldCall(View view) {}
+    public void toggleHoldCall(View view) 
+    {
+    	if (myVoip==null || myVoip.getCallState()==CallState.NONE)
+    		return;
+    	if (myVoip.getCallState()==CallState.ACTIVE)
+    	{  Log.d(TAG,"trying to hold the call...");
+    		this.myVoip.holdCall();
+    	}
+    	else if (myVoip.getCallState()==CallState.HOLDING)
+    	{   
+    		Log.d(TAG,"trying to unhold the call...");
+    		this.myVoip.unholdCall();
+    	}
+    }
     
     
     private void initializeGUI()
@@ -186,8 +200,6 @@ public class MainActivity extends Activity {
     
     public void runExample(String serverIp)
     {
-    	
-    	
     	this.clearInfoLines();
     	this.addInfoLine("Local IP Address:" + Utils.getIPAddress(true));
 		
@@ -231,8 +243,15 @@ public class MainActivity extends Activity {
     }
     
     public void addInfoLine(String info)
-    {
-    	this.infoArray.add(info);
+    {   
+    	String callStatus = "N.A";
+    	if  (this.myVoip!=null) {
+    		Log.d(TAG, "Voip Lib is not null");
+    		callStatus = myVoip.getCallState().name();	
+    	}
+    	
+    	String msg = "CallState:(" + callStatus + "):" + info;
+    	this.infoArray.add(msg);
     	if (arrayAdapter!=null)
     		arrayAdapter.notifyDataSetChanged();
     }

@@ -1,5 +1,7 @@
 package most.voip.api.test;
 
+import java.util.Currency;
+
 import junit.framework.TestCase;
 import most.voip.api.*;
 import android.os.*;
@@ -81,7 +83,7 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
 			curStateIndex++;
 			     if (myState.getState()==VoipState.INITIALIZED)   assertTrue(myVoip.registerAccount());	
 			else if (myState.getState()==VoipState.REGISTERED)    assertTrue(myVoip.makeCall("destination_test_extension"));	
-			else if (myState.getState()==VoipState.CALL_ACTIVE)   myVoip.hangupCall();	
+			else if (myState.getState()==VoipState.CALL_ACTIVE)   assertTrue(myVoip.hangupCall());	
 			else if (myState.getState()==VoipState.CALL_HANGUP)   assertTrue(myVoip.unregisterAccount());	
 			else if (myState.getState()==VoipState.UNREGISTERED)  assertTrue(myVoip.destroyLib());
 
@@ -112,6 +114,7 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
 			    VoipStateBundle myStateBundle = new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_INCOMING, "Incoming call from:" + "test_caller", null);
 			    Handler testHandler = new Handler(VoipLibTestSuite.this);
 				Log.d(TAG, "Called notifyState for state:" + myStateBundle.getState().name());
+				
 		    	Message m = Message.obtain(testHandler,myStateBundle.getMsgType().ordinal(), myStateBundle);
 				m.sendToTarget();
 		    }
@@ -126,12 +129,20 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
 			
 			assertEquals( myState.getState(), expectedStates[curStateIndex]);
 			curStateIndex++;
-			     if (myState.getState()==VoipState.INITIALIZED)   assertTrue(myVoip.registerAccount());	
+			     if (myState.getState()==VoipState.INITIALIZED)   { assertEquals(CallState.NONE, myVoip.getCallState()); assertTrue(myVoip.registerAccount());	}
 			else if (myState.getState()==VoipState.REGISTERED)    this.notifyIncomingCall();	
-			else if (myState.getState()==VoipState.CALL_INCOMING) assertTrue(myVoip.answerCall());	
-			else if (myState.getState()==VoipState.CALL_ACTIVE)   myVoip.hangupCall();	
-			else if (myState.getState()==VoipState.CALL_HANGUP)   assertTrue(myVoip.unregisterAccount());	
-			else if (myState.getState()==VoipState.UNREGISTERED)  assertTrue(myVoip.destroyLib());
+			else if (myState.getState()==VoipState.CALL_INCOMING) {  //assertEquals(CallState.INCOMING, myVoip.getCallState()); // non simulato...
+				                                                     assertTrue(myVoip.answerCall());
+																	}
+			else if (myState.getState()==VoipState.CALL_ACTIVE)   {assertEquals(CallState.ACTIVE, myVoip.getCallState());
+																   assertTrue(myVoip.hangupCall());}
+			     
+			else if (myState.getState()==VoipState.CALL_HANGUP)   {assertEquals(CallState.NONE, 
+					                                               myVoip.getCallState());assertTrue(myVoip.unregisterAccount());}
+			     
+			else if (myState.getState()==VoipState.UNREGISTERED)  {assertEquals(CallState.NONE, myVoip.getCallState());
+																   assertTrue(myVoip.destroyLib());
+																		}
 
 			return false;
 		}
