@@ -22,6 +22,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;	
+import android.widget.TextView;
 
 /**
  * This example application shows how to:
@@ -70,16 +71,6 @@ public class MainActivity extends Activity {
 	
 	private class AnswerCallHandler extends AbstractAppHandler {
 	 
-		private VoipState [] expectedStates = { VoipState.INITIALIZED , 
-				VoipState.REGISTERING, 
-				VoipState.REGISTERED, 
-				VoipState.CALL_INCOMING,
-				VoipState.CALL_ACTIVE,
-				VoipState.CALL_HANGUP,
-				VoipState.UNREGISTERING,
-				VoipState.UNREGISTERED,
-				VoipState.DEINITIALIZING,
-				VoipState.DEINITIALIZE_DONE};
 		
 		public AnswerCallHandler(MainActivity app, VoipLib myVoip) {
 			super(app, myVoip);
@@ -93,9 +84,7 @@ public class MainActivity extends Activity {
 		@Override
 		public void handleMessage(Message voipMessage) {
 			VoipStateBundle myState = getStateBundle(voipMessage);
-			
-			assert( myState.getState()==expectedStates[curStateIndex]);
-			curStateIndex++;
+			updateCallStateInfo();
 			// Register the account after the Lib Initialization
 			if (myState.getState()==VoipState.INITIALIZED)   myVoip.registerAccount();	
 			else if (myState.getState()==VoipState.REGISTERED)    this.app.addInfoLine("Ready to accept calls"); 														
@@ -240,6 +229,18 @@ public class MainActivity extends Activity {
     	this.infoArray.clear();
     	if (arrayAdapter!=null)
     		arrayAdapter.notifyDataSetChanged();
+    }
+    
+    private void updateCallStateInfo()
+    { String callState = "Not available";
+    
+    	if (this.myVoip!=null)
+    	{
+    		callState = this.myVoip.getCallState().name();
+    	}
+    
+		TextView labState = (TextView) findViewById(R.id.labCallState);
+		labState.setText(callState);
     }
     
     public void addInfoLine(String info)

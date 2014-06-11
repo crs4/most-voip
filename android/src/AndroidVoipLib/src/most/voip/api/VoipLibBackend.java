@@ -13,7 +13,7 @@ import org.pjsip.pjsua2.*;
 
 public class VoipLibBackend implements VoipLib   {
 	
-private CallState currentCallState = CallState.NONE;
+private CallState currentCallState = CallState.IDLE;
 
 	static {
 		System.out.println("LOADING LIB...");
@@ -59,8 +59,8 @@ private final static String TAG = "VoipLib";
 		case CALL_HOLDING: this.currentCallState = CallState.HOLDING; break;
 		case CALL_REMOTE_HOLDING: this.currentCallState = CallState.REMOTE_HOLDING; break;
 		case CALL_UNHOLDING: this.currentCallState = CallState.ACTIVE; break; // da gestire il caso di holding e remote holding...
-		case CALL_HANGUP: this.currentCallState = CallState.NONE; break;
-		case CALL_REMOTE_HANGUP: this.currentCallState = CallState.NONE; break;
+		case CALL_HANGUP: this.currentCallState = CallState.IDLE; break;
+		case CALL_REMOTE_HANGUP: this.currentCallState = CallState.IDLE; break;
 		default:
 			break;
     	}
@@ -420,12 +420,15 @@ private final static String TAG = "VoipLib";
 				
 				Log.d(TAG, "On Call State: CallInfo:" + ci.getStateText());
 				if (ci.getState()==pjsip_inv_state.PJSIP_INV_STATE_CALLING) {
+					currentCallState = CallState.DIALING;
 					notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_DIALING, "Dialing call to:" + ci.getRemoteUri(), null));
 				}
 				else if (ci.getState()==pjsip_inv_state.PJSIP_INV_STATE_CONFIRMED) {
+					currentCallState = CallState.ACTIVE;
 					notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_ACTIVE, "Call active with:" + ci.getRemoteUri(), null));
 				}
 				else if (ci.getState()==pjsip_inv_state.PJSIP_INV_STATE_DISCONNECTED) {
+					currentCallState = CallState.IDLE;
 					VoipLibBackend.currentCall = null;
 					notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_HANGUP, "Call hangup with:" + ci.getRemoteUri(), null));
 				}
@@ -467,6 +470,7 @@ private final static String TAG = "VoipLib";
 					}
 					else {
 						currentCallState = CallState.ACTIVE;
+						notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_ACTIVE, "Call Active", null));
 					}
 					// unfortunately, on Java too, the returned Media cannot be downcasted to AudioMedia 
 					Media m = getMedia(i);

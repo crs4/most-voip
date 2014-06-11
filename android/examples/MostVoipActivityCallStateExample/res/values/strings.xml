@@ -1,0 +1,9 @@
+<resources>
+
+    <string name="app_name">MostVoipAnswerCallExample</string>
+    <string name="ip_server">156.148.33.226</string>
+    <string name="ip_server_title">Sip Server IP:</string>
+    <string name="extension_title">Extension:</string>
+    <string name="call_state_title">Call State:</string>
+    <string name="call_state">Idle</string>
+</resources>

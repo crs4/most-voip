@@ -1,7 +1,7 @@
 package most.voip.api;
 
 public enum CallState {
-	  NONE,   		  // No call 
+	  IDLE,   		  // No call 
       DIALING ,   	  // The outcoming call is ringing
 	  INCOMING,       // The incoming call is ringing
 	  ACTIVE,    	  // The call is active
