@@ -288,11 +288,25 @@ private final static String TAG = "VoipLib";
 			Log.d(TAG,"There is no call to unhold");
 			return false;
 		}
-		CallOpParam prm = new CallOpParam();
-		prm.setOptions(pjsua_call_flag.PJSUA_CALL_UNHOLD.swigValue());
+		CallOpParam prm = new CallOpParam(true);
+		CallSetting cs;
+		Log.d(TAG,"Retrieving current call settings.");
+		try {
+			cs = VoipLibBackend.currentCall.getInfo().getSetting();
+			cs.setFlag(pjsua_call_flag.PJSUA_CALL_UNHOLD.swigValue());
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			Log.e(TAG,"Error retrieving call settings!");
+			return false;
+		}
+ 
+	    prm.setOpt(cs);
+	    //prm.setStatusCode(pjsip_status_code.PJSIP_SC_OK);
+		//prm.setOptions(pjsua_call_flag.PJSUA_CALL_UNHOLD.swigValue());
 		//prm.setOpt(CallSetting.this.
 		try {
-		Log.d(TAG,"Call unhold request...");
+		Log.d(TAG,"Call unhold request with OK status code and CALL UNHOLD FLAG...");
 		currentCall.reinvite(prm);
 		return true;
 		} catch (Exception e) {
@@ -432,6 +446,7 @@ private final static String TAG = "VoipLib";
 			try {
 				ci = getInfo();
 				Log.d(TAG, "On Call Media State: CallInfo:" + ci.getStateText());
+				
 			} catch (Exception e) {
 				return;
 			}
@@ -440,6 +455,7 @@ private final static String TAG = "VoipLib";
 			
 			for (int i = 0; i < cmiv.size(); i++) {
 				CallMediaInfo cmi = cmiv.get(i);
+				Log.d(TAG, "Received CALLMEDIAINFO: TYPE:" + cmi.getType() + " STATUS: " + cmi.getStatus());
 				if (cmi.getType() == pjmedia_type.PJMEDIA_TYPE_AUDIO &&
 				    (cmi.getStatus() == pjsua_call_media_status.PJSUA_CALL_MEDIA_ACTIVE ||
 				     cmi.getStatus() == pjsua_call_media_status.PJSUA_CALL_MEDIA_REMOTE_HOLD))
@@ -448,6 +464,9 @@ private final static String TAG = "VoipLib";
 					{
 					currentCallState = CallState.REMOTE_HOLDING;
 					notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_REMOTE_HOLDING, "Call Remote holding", null));
+					}
+					else {
+						currentCallState = CallState.ACTIVE;
 					}
 					// unfortunately, on Java too, the returned Media cannot be downcasted to AudioMedia 
 					Media m = getMedia(i);

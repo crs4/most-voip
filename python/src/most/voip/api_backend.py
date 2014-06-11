@@ -438,8 +438,8 @@ class VoipBackend:
                 logger.debug( 'Chiamata occupata')
                 call.answer(486, "Busy")
                 return
-            ru = str(call.info().remote_uri)
-            remote_contact = ru[ru.index('"')+1:ru.rindex('"')]
+            #ru = str(call.info().remote_uri)
+            #remote_contact = ru[ru.index('"')+1:ru.rindex('"')]
             logger.debug( "Incoming call from %s" % call.info().remote_uri)
 
         
