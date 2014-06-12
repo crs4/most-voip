@@ -56,11 +56,24 @@ class VoipLib:
         """
         return self.backend.unhold_call()
     
+    
+    def get_call_state(self):
+        """
+        @return: the state of the current call (if anY)
+        """
+        return self.backend.get_call_state()
+    
     def hangup_call(self):
         """
         Hangup the currently active call
         """
         return self.backend.hangup_call()
+    
+    def add_buddy(self, extension):
+        """
+        Add the specified buddy to this account (so its current state can be notified)
+        """
+        self.backend.add_buddy(extension)
     
     def destroy_lib(self):
         """

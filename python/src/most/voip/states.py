@@ -30,7 +30,7 @@ class VoipState(object):
     Calling                       = '%s__CALL_ACTIVE' % Name
     Holding                       = '%s__CALL_HOLDING' % Name
     RemoteHolding                 = '%s__CALL_REMOTE_HOLDING' % Name
-    RemoteLocalHolding            = '%s__CALL_LOCAL_HOLDING' % Name
+    RemoteLocalHolding            = '%s__CALL_REMOTE_AND_LOCAL_HOLDING' % Name
     Unholding                     = '%s__CALL_UNHOLDING' % Name
     Hangup                        = '%s__CALL_HANGUP' % Name
     RemoteHangup                  = '%s__CALL_REMOTE_HANGUP' % Name
@@ -39,3 +39,13 @@ class VoipState(object):
     Deinitializing              = '%s__DEINITIALIZING' % Name
     DeinitializeDone              = '%s__DEINITIALIZE_DONE' % Name
     DeinitializeFailed              = '%s__DEINITIALIZE_FAILED' % Name
+
+
+class CallState:
+    Name                    = 'CALL_STATE'
+    IDLE = '%s__IDLE' % Name
+    INCOMING = '%s__INCOMING' % Name
+    ACTIVE = '%s__ACTIVE' % Name
+    DIALING = '%s__DIALING' % Name
+    HOLDING = '%s__HOLDING' % Name
+    REMOTE_HOLDING = '%s__REMOTE_HOLDING' % Name

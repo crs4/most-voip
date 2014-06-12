@@ -4,6 +4,15 @@ from most.voip.states import VoipState
 
 import time
 
+"""
+For locally testing this application, assuming that you are using asterisk as Sip Server, do the following:
+
+1) Run this script
+2) from the Asterisk CLI console type the following command:
+   originate SIP/ste extension
+   where 'ste' is the user you have just registered  by this application on the SIP server from this application
+"""
+
 if __name__ == '__main__':
     
     def notify_events(voip_state, params):

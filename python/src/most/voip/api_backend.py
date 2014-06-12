@@ -7,7 +7,7 @@ Created on 05/mag/2014
 import pjsua as pj
 import logging
 import os , time
-from most.voip.states import VoipState
+from most.voip.states import VoipState, CallState
 
 
 
@@ -63,7 +63,7 @@ local_hungup = False
 
  
     
-   
+"""   
 class VoipBackendCallState:
     NONE = 0  # there isn't any call running, incoming or outcoming
     INCOMING = 1  # a new call is incoming
@@ -71,9 +71,9 @@ class VoipBackendCallState:
     BUSY = 3 # there is a current call
     LOCAL_HOLD = 4 # the local user put the call on hold
     ON_LINE = 5 # call is on line
+"""
 
-
-callState = VoipBackendCallState.NONE
+callState = CallState.IDLE
 
 # Logging callback
 def log_cb(level, msg, msg_len):
@@ -216,7 +216,7 @@ class VoipBackend:
 
             if self.call.info().state == pj.CallState.DISCONNECTED:
                 current_call = None
-                callState = VoipBackendCallState.NONE
+                callState = CallState.IDLE
 
                 logger.debug( "DISCONNECTION:Stopping call sound")
                 _stop_call_sound()
@@ -246,7 +246,7 @@ class VoipBackend:
                 logger.debug('Change internal state on CALLING')
                 #self.sip_controller.change_state(SipControllerState.Calling, callState)
                 self.notification_cb(VoipState.Calling, {'success': True, 'call_state' :callState})
-                callState = VoipBackendCallState.BUSY
+                callState = CallState.ACTIVE
 
 
 
@@ -273,7 +273,7 @@ class VoipBackend:
                 logger.debug( "Media is now active")
                 #self.messenger.send_info("Call online")
                 #self.messenger.update_call_button_label("Hangup")
-                callState = VoipBackendCallState.BUSY
+                callState = CallState.ACTIVE
 
 
                 #uri_to_call = self.call.info().remote_uri
@@ -281,7 +281,7 @@ class VoipBackend:
                 #self.call.send_pager(uri_to_call, "messaggio con la uri!!!", im_id="12345", content_type='text/plain')  #, hdr_list=["user=admin","secret=secret5"])
             elif self.call.info().media_state == pj.MediaState.LOCAL_HOLD:
                 logger.debug( 'Local Hold request')
-                callState = VoipBackendCallState.LOCAL_HOLD
+                callState = CallState.HOLDING
                 #self.sip_controller.change_state(SipControllerState.Holding, callState)
                 self.notification_cb(VoipState.Holding, {'success': True, 'call_state' :callState})
 
@@ -293,7 +293,7 @@ class VoipBackend:
                 #self.messenger.send_info("No Call")
                 #self.messenger.update_call_button_label("Call")
                 
-                callState = VoipBackendCallState.NONE
+                callState = CallState.IDLE
                 
 
 
@@ -321,14 +321,14 @@ class VoipBackend:
                 self.notification_cb(VoipState.Remote_user_connected, {'buddy_status' : buddy_status_text})
             elif is_buddy_on_hold:
                 logger.debug( 'Buddy in REMOTE HOLD!!!')
-                if callState == VoipBackendCallState.LOCAL_HOLD:
+                if callState == CallState.HOLDING:
                     #self.sip_controller.change_state(SipControllerState.RemoteLocalHolding,buddy_status_text)
                     self.notification_cb(VoipState.RemoteLocalHolding, {'buddy_status' : buddy_status_text})
-                    pass
+                    
                 else:
                     #self.sip_controller.change_state(SipControllerState.RemoteHolding,buddy_status_text)
                     self.notification_cb(VoipState.RemoteHolding, {'buddy_status' : buddy_status_text})
-                    pass
+                    callState = CallState.REMOTE_HOLDING
             elif is_buddy_off_line:
                 logger.debug('mando change state di Buddy DISCONNECTED')
                 #self.sip_controller.change_state(SipControllerState.Remote_user_disconnected, buddy_status_text)
@@ -373,12 +373,12 @@ class VoipBackend:
             self.SERVICE_UNAVAILABLE = 503
 
 
-        """
+        
         def on_incoming_subscribe(self, my_buddy, from_uri, contact_uri, pres_obj):
             print '\n\nrichiamato on subscribe del buddy:%s da %s a %s ' % (my_buddy, from_uri, contact_uri)
 
             return (200,None)
-        """
+  
         
         # Notification on local user registration change state (a request timeout status code implies that the sip server is disconnected)
         def on_reg_state(self):
@@ -434,7 +434,7 @@ class VoipBackend:
             refused = False
             
             if current_call:
-                callState = VoipBackendCallState.BUSY
+                callState = CallState.ACTIVE
                 logger.debug( 'Chiamata occupata')
                 call.answer(486, "Busy")
                 return
@@ -443,7 +443,7 @@ class VoipBackend:
             logger.debug( "Incoming call from %s" % call.info().remote_uri)
 
         
-            callState = VoipBackendCallState.INCOMING
+            callState = CallState.INCOMING
             #_start_call_sound(config.get("VoipBackend","in_call_ring_tone"))
             _start_call_sound_in()
             current_call = call
@@ -473,7 +473,7 @@ class VoipBackend:
             logger.debug( 'RISPOSTA AUTOMATICA!')
             self.auto_answer_call = None
              
-            if callState==VoipBackendCallState.INCOMING:
+            if callState==CallState.INCOMING:
                 current_call.answer(200)
 
 
@@ -949,7 +949,7 @@ class VoipBackend:
             logger.debug( "CURRENT CALL PRIMA:%s" % current_call)
 
 
-            callState = VoipBackendCallState.OUTCOMING
+            callState = CallState.DIALING
             current_call = acc.make_call(uri, cb=VoipBackend.MyCallCallback(self.notification_cb)) # todo inserire Listener
             _start_call_sound_out()
             #self.messenger.update_call_button_label("Hangup")
@@ -1054,7 +1054,8 @@ class VoipBackend:
             return False
 
 
-  
+    def get_call_state(self):
+        return callState
     
     def serialize_values(self):
         if not self.lib:
