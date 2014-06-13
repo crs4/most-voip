@@ -76,4 +76,25 @@ public interface VoipLib {
      * @return the state of the current call (if any), CallState.NONE if there is no call
      */
     public CallState getCallState();
+    
+    /**
+     * Add a buddy to this account.
+     * @param extension the buddy extension
+     * @return True if the buddy was added to the buddy list, False otherwise
+     */
+    public boolean addBuddy(String extension);
+    
+    /**
+     * Remove the buddy from this account
+     * @param extension The extension of the buddy to remove
+     * @return True if the buddy was found and it saw successfully removed, False otherwise
+     */
+    public boolean removeBuddy(String extension);
+    
+    /**
+     * Get the current state of the buddy with the given extension, or null if it is not found
+     * @param extension the buddy extension
+     * @return  the current state of the buddy with the provided extension, or null if it is not found
+     */
+    public BuddyState getBuddyState(String extension);
 }

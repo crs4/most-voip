@@ -28,7 +28,7 @@ if __name__ == '__main__':
     
     voip_params0 = {u'username': u'ste', 
                    u'sip_pwd': u'ste', 
-                   u'sip_server': u'192.168.1.80' , #'u'192.168.1.79',  u'156.148.33.223' 
+                   u'sip_server': u'156.148.33.226' , #'u'192.168.1.79',  u'156.148.33.223' 
                    u'sip_user': u'ste', 
                    u'transport' :u'udp',
                    # u'turn_server': u'192.168.1.79', 

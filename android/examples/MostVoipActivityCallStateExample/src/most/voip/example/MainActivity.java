@@ -2,10 +2,12 @@ package most.voip.example;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import most.voip.api.BuddyInterface;
 import most.voip.api.CallState;
 import most.voip.api.Utils;
 import most.voip.api.VoipLib;
 import most.voip.api.VoipLibBackend;
+import most.voip.api.VoipMessageType;
 import most.voip.api.VoipState;
 import most.voip.api.VoipStateBundle;
 import most.voip.example1.R;
@@ -71,6 +73,7 @@ public class MainActivity extends Activity {
 	
 	private class AnswerCallHandler extends AbstractAppHandler {
 	 
+		private String buddyExtension = "ste";
 		
 		public AnswerCallHandler(MainActivity app, VoipLib myVoip) {
 			super(app, myVoip);
@@ -83,11 +86,23 @@ public class MainActivity extends Activity {
 
 		@Override
 		public void handleMessage(Message voipMessage) {
+			
 			VoipStateBundle myState = getStateBundle(voipMessage);
+			Log.d(TAG, "CHIAMATO HANDLE MESSAGE CON MESSAGE TYPE:" + myState.getMsgType());
+			Log.d(TAG, "CHIAMATO HANDLE MESSAGE CON VOIP STATE:" + myState.getState());
 			updateCallStateInfo();
+			if (myState.getMsgType()==VoipMessageType.BUDDY_STATE)
+			{
+				Log.d(TAG, "In handle Message for BUDDY STATE");
+				BuddyInterface myBuddy = (BuddyInterface) myState.getData();
+				this.app.addInfoLine("Buddy (" + myBuddy.getUri() + ") ->" + myBuddy.getStatusText());
+				updateBuddyStateInfo(myBuddy);
+			}
 			// Register the account after the Lib Initialization
 			if (myState.getState()==VoipState.INITIALIZED)   myVoip.registerAccount();	
-			else if (myState.getState()==VoipState.REGISTERED)    this.app.addInfoLine("Ready to accept calls"); 														
+			else if (myState.getState()==VoipState.REGISTERED)    {this.app.addInfoLine("Ready to accept calls (adding buddy...)");
+			                                                       myVoip.addBuddy(buddyExtension);
+			                                                      }														
 			else if (myState.getState()==VoipState.CALL_INCOMING)  handleIncomingCall();
 			else if  (myState.getState()==VoipState.CALL_ACTIVE)    {
 				//this.app.waitForSeconds(20);
@@ -99,7 +114,7 @@ public class MainActivity extends Activity {
 			// Deinitialize the Voip Lib and release all allocated resources
 			else if (myState.getState()==VoipState.UNREGISTERED)  myVoip.destroyLib();
 			     
-		}
+		} // end of handleMessage()
 	   
 	}
      
@@ -241,6 +256,12 @@ public class MainActivity extends Activity {
     
 		TextView labState = (TextView) findViewById(R.id.labCallState);
 		labState.setText(callState);
+    }
+    
+    private void updateBuddyStateInfo(BuddyInterface buddy)
+    { 
+    	TextView labBuddyState = (TextView) findViewById(R.id.labBuddyState);
+    	labBuddyState.setText(buddy.getStatusText());
     }
     
     public void addInfoLine(String info)

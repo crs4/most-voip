@@ -30,6 +30,7 @@ private TransportConfig sipTpConfig = new TransportConfig();
 private MyAccount acc = null;
 private AccountConfig acfg = null;
 private static MyCall currentCall = null;	
+private MyBuddy myBuddy = null;
 private String sipServerIp = null;
 
 private final int SIP_PORT  = 5060;
@@ -57,7 +58,7 @@ private final static String TAG = "VoipLib";
 		case CALL_DIALING: this.currentCallState = CallState.DIALING; break;
 		case CALL_INCOMING: this.currentCallState = CallState.INCOMING; break;
 		case CALL_HOLDING: this.currentCallState = CallState.HOLDING; break;
-		case CALL_REMOTE_HOLDING: this.currentCallState = CallState.REMOTE_HOLDING; break;
+		//case CALL_REMOTE_HOLDING: this.currentCallState = CallState.REMOTE_HOLDING; break;
 		case CALL_UNHOLDING: this.currentCallState = CallState.ACTIVE; break; // da gestire il caso di holding e remote holding...
 		case CALL_HANGUP: this.currentCallState = CallState.IDLE; break;
 		case CALL_REMOTE_HANGUP: this.currentCallState = CallState.IDLE; break;
@@ -497,7 +498,7 @@ private final static String TAG = "VoipLib";
 	
 	// Subclass to extend the Account and get notifications etc.
 	class MyAccount extends Account {
-		public ArrayList<MyBuddy> buddyList = new ArrayList<MyBuddy>();
+		public HashMap<String,MyBuddy> buddyList = new HashMap<String,MyBuddy>();
 		public AccountConfig cfg;
 		
 		
@@ -517,7 +518,7 @@ private final static String TAG = "VoipLib";
 			}
 			
 			if (bud != null) {
-				buddyList.add(bud);
+				buddyList.put(bud_cfg.getUri(), bud);
 				if (bud_cfg.getSubscribe())
 					try {
 						bud.subscribePresence(true);
@@ -527,13 +528,10 @@ private final static String TAG = "VoipLib";
 			return bud;
 		}
 		
-		public void delBuddy(MyBuddy buddy) {
-			buddyList.remove(buddy);
+		public MyBuddy delBuddy(String uri) {
+			return buddyList.remove(uri);
 		}
 		
-		public void delBuddy(int index) {
-			buddyList.remove(index);
-		}
 		
 		@Override
 		public void onRegState(OnRegStateParam prm) {
@@ -566,8 +564,6 @@ private final static String TAG = "VoipLib";
 						notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.UNREGISTRATION_FAILED, "Unregistration Failed: Code:" +
 		                        prm.getCode().swigValue() + " " + prm.getReason(), null)); 
 					}
-					
-				
 				}
 				
 			} catch (Exception e) {
@@ -575,11 +571,6 @@ private final static String TAG = "VoipLib";
 				e.printStackTrace();
 				Log.e(TAG,"Error reatrieving account info:" + e.getMessage());
 			}
-			
-			
-			
-			
-				
 		}
 
 		@Override
@@ -610,42 +601,83 @@ private final static String TAG = "VoipLib";
 		}
 	}
 	
-	class MyBuddy extends Buddy {
+	class MyBuddy extends Buddy implements BuddyInterface {
 		public BuddyConfig cfg;
-		
 		MyBuddy(BuddyConfig config) {
 			super();
 			cfg = config;
 		}
 		
-		String getStatusText() {
-			BuddyInfo bi;
+		private BuddyState buddyState = BuddyState.NOT_FOUND;
+		private String statusText = "?";
+		
+		void updateBuddyStatus() {
+			BuddyInfo bi=null;
 			
 			try {
 				bi = getInfo();
 			} catch (Exception e) {
-				return "?";
+				this.buddyState = BuddyState.NOT_FOUND;
+				this.statusText = "Not Found";
+				return;
 			}
 			
-			String status = "";
 			if (bi.getSubState() == pjsip_evsub_state.PJSIP_EVSUB_STATE_ACTIVE) {
 				if (bi.getPresStatus().getStatus() == pjsua_buddy_status.PJSUA_BUDDY_STATUS_ONLINE) {
-					status = bi.getPresStatus().getStatusText();
-					if (status == null || status.isEmpty()) {
-						status = "Online";
+					statusText = bi.getPresStatus().getStatusText();
+					if (statusText == null || statusText.isEmpty()) {
+						statusText = "Online";
+						this.buddyState = BuddyState.ON_LINE;
+					}
+					else if(statusText!=null && statusText.equalsIgnoreCase("On hold")){
+						this.buddyState = BuddyState.ON_HOLD;
 					}
 				} else if (bi.getPresStatus().getStatus() == pjsua_buddy_status.PJSUA_BUDDY_STATUS_OFFLINE) {
-					status = "Offline";
+					statusText = "Offline";
+					this.buddyState = BuddyState.OFF_LINE;
 				} else {
-					status = "Unknown";
+					this.buddyState = BuddyState.UNKNOWN;
+					statusText = "Unknown";
 				}
 			}
-			return status;
 		}
 
 		@Override
 		public void onBuddyState() {
 			//MyApp.observer.notifyBuddyState(this);
+			Log.d(TAG,"ON BUDDY STATE");
+			updateBuddyStatus();
+			if (this.buddyState==BuddyState.ON_LINE)
+			{
+				notifyState(new VoipStateBundle(VoipMessageType.BUDDY_STATE, VoipState.REMOTE_USER_CONNECTED, "BuddyStateChanged:::" + this.statusText, this));
+			}
+			
+			else if (this.buddyState==BuddyState.ON_HOLD)
+			{
+				notifyState(new VoipStateBundle(VoipMessageType.BUDDY_STATE, VoipState.CALL_REMOTE_HOLDING, "BuddyStateChanged:::" + this.statusText, this)); 
+			}
+			else if (this.buddyState==BuddyState.OFF_LINE || this.buddyState == BuddyState.UNKNOWN)
+			{
+				notifyState(new VoipStateBundle(VoipMessageType.BUDDY_STATE, VoipState.REMOTE_USER_DISCONNECTED, "BuddyStateChanged:::" + this.statusText, this)); 
+			}
+			
+		}
+
+		@Override
+		public BuddyState getState() {
+		
+			return this.buddyState;
+		}
+
+		@Override
+		public String getUri() {
+			// TODO Auto-generated method stub
+			return this.cfg.getUri();
+		}
+
+		@Override
+		public String getStatusText() {	 
+			return this.statusText;
 		}
 		
 	}
@@ -751,6 +783,38 @@ private final static String TAG = "VoipLib";
 	@Override
 	public CallState getCallState() {
 		return this.currentCallState;
+	}
+
+	@Override
+	public boolean addBuddy(String extension) {
+		if (this.acc!=null)
+		{
+			BuddyConfig buddyConfig = new BuddyConfig();
+			//dest_uri = "sip:%s@%s;transport=tcp" % (str(dest_extension), self.sip_server)
+			String buddyUri = "sip:" + extension + "@" + sipServerIp ;
+			buddyConfig.setUri(buddyUri);
+			buddyConfig.setSubscribe(true);
+			notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REMOTE_USER_SUBSCRIBING, "Subscribing buddy with uri:" + buddyUri, buddyUri)); 
+			return (this.acc.addBuddy(buddyConfig)!=null);
+			
+		}
+		return false;
+	}
+
+	@Override
+	public boolean removeBuddy(String extension) {
+		if (this.acc!=null)
+		{
+			String buddyUri = "sip:" + extension + "@" + sipServerIp ;
+			return (this.acc.delBuddy(buddyUri)!=null);
+		}
+		return false;
+	}
+
+	@Override
+	public BuddyState getBuddyState(String extension) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 }
