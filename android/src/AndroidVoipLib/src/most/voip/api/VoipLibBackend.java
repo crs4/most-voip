@@ -205,8 +205,14 @@ private final static String TAG = "VoipLib";
 		
 		/* Only one call at anytime */
 		if (currentCall != null) {
+			Log.d(TAG, "Incoming second call!!! Accept for testing!");
 			prm.setStatusCode(pjsip_status_code.PJSIP_SC_BUSY_HERE);
+			
+			this.notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_INCOMING, "Incoming call during another call!", null));
+			
+			/*
 			this.notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_INCOMING_REJECTED, "Incoming call rejected beacuse there is already an other active call", null));
+			
 			try {
 				call.hangup(prm);
 			} catch (Exception e) {
@@ -214,8 +220,10 @@ private final static String TAG = "VoipLib";
 				Log.e(TAG,"Exception hanging up the call:" +e);
 			}
 			return false;
+			*/
 		}
-
+         
+			
 		/* Answer with ringing */
 		prm.setStatusCode(pjsip_status_code.PJSIP_SC_RINGING);
 		try {
@@ -522,9 +530,10 @@ private final static String TAG = "VoipLib";
 				if (bud_cfg.getSubscribe())
 					try {
 						bud.subscribePresence(true);
-					} catch (Exception e) {}
+					} catch (Exception e) {
+						Log.e(TAG, "Error subscribing the buddy:" + e);
+					}
 			}
-			
 			return bud;
 		}
 		
@@ -532,6 +541,11 @@ private final static String TAG = "VoipLib";
 			return buddyList.remove(uri);
 		}
 		
+		@Override
+		public void onIncomingSubscribe(OnIncomingSubscribeParam prm) 
+		{
+			Log.d(TAG,"\n ****** \nonIncomingSubscribe from:" + prm.getFromUri() +  " " + prm.toString());	
+		}
 		
 		@Override
 		public void onRegState(OnRegStateParam prm) {
@@ -700,7 +714,9 @@ private final static String TAG = "VoipLib";
 			acfg.getRegConfig().setRegistrarUri(registrar_uri); // "sip:192.168.1.83"
 			AuthCredInfo cred = new AuthCredInfo("digest", "*", user_name, 0, user_pwd);
 			acfg.getSipConfig().getAuthCreds().add( cred );
-			
+			AccountPresConfig apc = new AccountPresConfig();
+			apc.setPublishEnabled(true);
+			acfg.setPresConfig(apc);
 			// Transport Config
 			if (configParams.containsKey("sipPort"))
 			

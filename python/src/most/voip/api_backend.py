@@ -7,7 +7,7 @@ Created on 05/mag/2014
 import pjsua as pj
 import logging
 import os , time
-from most.voip.states import VoipState, CallState
+from most.voip.states import VoipState, CallState, BuddyState, ServerState
 
 
 
@@ -19,9 +19,11 @@ logger = None
 voip_data_root_dir = "../../data"
 is_server_on = False
 
-buddy = None
-is_buddy_on_line = False
-is_buddy_on_hold = False
+#buddy = None
+#is_buddy_on_line = False
+#is_buddy_on_hold = False
+
+buddies_dict = {}
 
 transport = None
 input_volume = 0.5
@@ -166,12 +168,12 @@ class VoipBackend:
         print "CALLED INIT!!!"
         _setup_logger()
 
-        global is_server_on, is_buddy_on_line, buddy_status_text
+        global is_server_on #is_buddy_on_line, buddy_status_text
         self.lib = None
         
         is_server_on = False
-        is_buddy_on_line = False
-        buddy_status_text = 'Unavailable'
+        #is_buddy_on_line = False
+        #buddy_status_text = 'Unavailable'
         #self.sip_server = TecapConfig().getConfig().get('VoipBackend','sip_server')
         #self.turn_server = TecapConfig().getConfig().get('VoipBackend','turn_server')
         self.lib = None
@@ -201,7 +203,7 @@ class VoipBackend:
 
         # Notification when call state has changed
         def on_state(self):
-            global current_call, callState, local_hungup, is_buddy_on_line
+            global current_call, callState, local_hungup #, is_buddy_on_line
 
             
             logger.debug( "STATO DELLA CALL (on_state):%s" %  self.call.info().state)
@@ -228,7 +230,7 @@ class VoipBackend:
                     self.notification_cb(VoipState.Hangup, {'success': True, 'call_state' :callState})
                     local_hungup = False
                 else:
-                    if is_buddy_on_line:
+                    if is_server_on:   #is_buddy_on_line:
                         logger.debug( 'Change internal state on HANGUP from on_state  dopo REMOTE HUNGUP')
                         self.notification_cb(VoipState.RemoteHangup, {'success': True, 'call_state' :callState})
                     else:
@@ -239,14 +241,17 @@ class VoipBackend:
 
             elif self.call.info().state==pj.CallState.CALLING:
                 logger.debug("Dialing call to %s" % uri_to_call)
+                callState = CallState.DIALING
                 self.notification_cb(VoipState.Dialing, {'success': True, 'call_state' :callState})
+                
                 
             elif self.call.info().state==pj.CallState.CONFIRMED:
                 logger.debug( "CALL CONFIRMED") #. sending REQUEST to %s" % uri_to_call
                 logger.debug('Change internal state on CALLING')
                 #self.sip_controller.change_state(SipControllerState.Calling, callState)
+                #callState = CallState.ACTIVE
                 self.notification_cb(VoipState.Calling, {'success': True, 'call_state' :callState})
-                callState = CallState.ACTIVE
+                
 
 
 
@@ -309,7 +314,8 @@ class VoipBackend:
                                                                  self.buddy.info().online_text))
             
 
-            global is_buddy_on_line, is_buddy_on_hold, buddy_status_text, callState
+            #global is_buddy_on_line, is_buddy_on_hold, buddy_status_text, callState
+            global callState
             is_buddy_on_line = self.buddy.info().online_status==1 and self.buddy.info().online_text != 'On hold'
             is_buddy_on_hold = self.buddy.info().online_status==1 and self.buddy.info().online_text == 'On hold'
             is_buddy_off_line = self.buddy.info().online_status==2
@@ -625,7 +631,6 @@ class VoipBackend:
         global acc
         global transport
         global current_call
-        global buddy
         global player_out_id
         global player_in_id
 
@@ -662,21 +667,13 @@ class VoipBackend:
         
         logger.debug('Deallocating buddies...')
         try:
-            if buddy!=None:
-                buddy.unsubscribe()
-                buddy.delete()
-                del buddy
-                buddy = None
-                
-                              
+            self._delete_buddies()
+                               
             logger.debug('Deallocating account...')  
             if acc!=None:
                 acc.delete()
                 del acc
                 acc = None
-            
-            
-
             
             # Shutdown the library
             
@@ -712,7 +709,8 @@ class VoipBackend:
         
     def init_lib(self,params, notification_cb):
         print "INITIALIZE FROM PRINT"
-        logging.getLogger("Voip").debug("\nCalled init_lib method!!!\n")
+        global logger
+        #logging.getLogger("Voip").debug("\nCalled init_lib method!!!\n")
         # Create library instance
         # Create pjsua before anything else
         
@@ -812,6 +810,18 @@ class VoipBackend:
             self.notification_cb(VoipState.Initialize_failed, {'success': False, 'error' :str(e)})
             #self.sip_controller.do_fsm(SipControllerState.Initialize_failed,self.params)
 
+
+    def set_online_status(self, is_online):
+        global acc
+        if acc:
+            acc.set_basic_status(is_online)
+         
+    def is_online(self):
+        if not acc:
+            return False
+        
+        return acc.info().online_status   
+    
     def register_account(self):
         try:
             global acc
@@ -877,18 +887,23 @@ class VoipBackend:
                 #codec.priority=0
 
 
+    def _get_buddy_uri_key(self, extension):
+        return "sip:%s@%s;transport=tcp" % (str(extension), self.sip_server)
     
     def add_buddy(self, dest_extension):
+        global buddies_dict
         logger.debug( '\nADDING REMOTE USER...\n')
-        global buddy
         try:
             global acc
-            dest_uri = "sip:%s@%s;transport=tcp" % (str(dest_extension), self.sip_server)
+            dest_uri = self._get_buddy_uri_key(dest_extension)
             
             logger.debug( 'adding buddy:%s' % dest_uri)
             buddy = acc.add_buddy(dest_uri,cb=VoipBackend.MyBuddyCallback(self.notification_cb))
             buddy.subscribe()
             logger.debug( 'REMOTE USER ADDED')
+            # add the buddy to the buddy dict
+            buddies_dict[dest_extension]= buddy
+            
             #self.sip_controller.do_fsm(SipControllerState.Remote_user_subscribed,dest_extension)
             self.notification_cb(VoipState.Remote_user_subscribed, {'success': True, 'dest_extension' : dest_extension})
             #self.sip_controller.change_state(SipControllerState.Remote_user_subscribed, dest_extension)
@@ -899,7 +914,47 @@ class VoipBackend:
             #self.sip_controller.change_state(SipControllerState.Remote_user_subscribing_failed, dest_extension)
 
 
-
+    def delete_buddy(self, extension):
+        global buddies_dict
+        if self.get_buddy_state(extension)== BuddyState.NOT_FOUND:
+            return False
+        else:
+            buddy = buddies_dict[self._get_buddy_uri_key(extension)]
+            buddy.unsubscribe()
+            buddy.delete()
+            del buddy
+            buddy = None
+            del buddies_dict[self._get_buddy_uri_key(extension)]
+            return True
+        
+    def _delete_buddies(self):    
+        for extension in buddies_dict.keys():
+            self.delete_buddy(extension)                                             
+        
+    def get_buddy_state(self, extension):
+        global buddies_dict
+        dest_uri = self._get_buddy_uri_key(extension)
+        if not buddies_dict.has_key(dest_uri):
+            return BuddyState.NOT_FOUND
+        else:
+            buddy = buddies_dict[dest_uri]
+            if (buddy.info().online_status==1 and self.buddy.info().online_text != 'On hold'):
+                return BuddyState.ON_LINE
+            elif buddy.info().online_status==1 and self.buddy.info().online_text == 'On hold':
+                return BuddyState.ON_HOLD
+            elif self.buddy.info().online_status==2:
+                return BuddyState.OFF_LINE
+            else:
+                return BuddyState.UNKNOWN
+            
+    def get_server_state(self):
+        global  is_server_on
+        if is_server_on:
+            return ServerState.CONNECTED
+        else:
+            return ServerState.DISCONNECTED
+   
+    """       
     def is_buddy_on_line(self):
         global is_buddy_on_line
         return is_buddy_on_line
@@ -911,7 +966,7 @@ class VoipBackend:
     def get_buddy_status_text(self):
         global buddy_status_text
         return buddy_status_text
-
+    """
 
     # Function to make call
     def make_call(self,dest_extension):
@@ -1014,14 +1069,16 @@ class VoipBackend:
             if current_call:
                 logger.debug( 'holding current call...')
                 current_call.hold()
+                """
                 if self.is_buddy_on_hold():
                     #self.sip_controller.change_state(SipControllerState.RemoteLocalHolding,'')
                     self.notification_cb(VoipState.RemoteLocalHolding, {'success': True})
                     logger.debug("remote local holding!")
                 else:
+                """
                     #self.sip_controller.change_state(SipControllerState.Holding,'')
-                    self.notification_cb(VoipState.Holding, {'success': True})
-                    logger.debug("remote holding!")
+                self.notification_cb(VoipState.Holding, {'success': True})
+                #logger.debug("remote holding!")
                 return True
             else:
                 logger.debug( "There is no call to hold")
@@ -1036,14 +1093,16 @@ class VoipBackend:
             global current_call
             if current_call:
                 current_call.unhold()
+                """
                 if self.is_buddy_on_hold():
                     #self.sip_controller.change_state(SipControllerState.RemoteHolding,'') ### TODO : check if this is correct or not
                     self.notification_cb(VoipState.RemoteHolding, {'success': True}) ## REMOTE BUG?!?!
                     logger.debug( "remote unholding!")
-                else:   
-                    #self.sip_controller.change_state(SipControllerState.Calling,'')
-                    self.notification_cb(VoipState.Calling, {'success': True})
-                    logger.debug( "remote local unholding!")
+                else: 
+                """  
+                #self.sip_controller.change_state(SipControllerState.Calling,'')
+                self.notification_cb(VoipState.Calling, {'success': True})
+                logger.debug( "unholding!")
                 return True
             else:
                 logger.debug( "There is no call to unhold")

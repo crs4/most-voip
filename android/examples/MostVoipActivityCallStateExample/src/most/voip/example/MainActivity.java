@@ -101,6 +101,7 @@ public class MainActivity extends Activity {
 			// Register the account after the Lib Initialization
 			if (myState.getState()==VoipState.INITIALIZED)   myVoip.registerAccount();	
 			else if (myState.getState()==VoipState.REGISTERED)    {this.app.addInfoLine("Ready to accept calls (adding buddy...)");
+			 													   //add a buddy so that we can receive presence notifications from it
 			                                                       myVoip.addBuddy(buddyExtension);
 			                                                      }														
 			else if (myState.getState()==VoipState.CALL_INCOMING)  handleIncomingCall();
@@ -268,7 +269,7 @@ public class MainActivity extends Activity {
     {   
     	String callStatus = "N.A";
     	if  (this.myVoip!=null) {
-    		Log.d(TAG, "Voip Lib is not null");
+    		Log.d(TAG, "Voip Lib is not NULL: Test with multiple calls!");
     		callStatus = myVoip.getCallState().name();	
     	}
     	

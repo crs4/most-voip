@@ -49,3 +49,19 @@ class CallState:
     DIALING = '%s__DIALING' % Name
     HOLDING = '%s__HOLDING' % Name
     REMOTE_HOLDING = '%s__REMOTE_HOLDING' % Name
+    
+    
+class BuddyState:
+    Name      = 'BUDDY_STATE' 
+    NOT_FOUND = "%s__NOT_FOUND" % Name
+    OFF_LINE= "%s__OFF_LINE" % Name
+    ON_LINE= "%s__ON_LINE" % Name
+    ON_HOLD= "%s__ON_HOLD" % Name
+    UNKNOWN= "%s__UNKNOWN" % Name
+ 
+
+class ServerState:
+    Name      = 'SIP_SERVER_STATE' 
+    NOT_FOUND = "%s__NOT_FOUND" % Name
+    DISCONNECTED = "%s__DISCONNECTED" % Name
+    CONNECTED = "%s__CONNECTED" % Name

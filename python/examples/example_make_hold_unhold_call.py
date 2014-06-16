@@ -55,20 +55,35 @@ if __name__ == '__main__':
     print "Registering the account on the Sip Server..."
     myVoip.register_account()
     
+    print "Server State:%s" % myVoip.get_server_state()
+    print "Call State:%s" % myVoip.get_call_state()
     while True:
+
         if myVoip.get_call_state()==CallState.ACTIVE:
-            cmd = raw_input("Enter 'h' to put on hold the call, 'e' to hangup:")
+            print "Server State:%s" % myVoip.get_server_state()
+            print "Call State:%s" % myVoip.get_call_state()
+            print "Buddy State:%s" % myVoip.get_buddy_state(extension)
+            cmd = raw_input("Enter 'h' to put on hold the call,  'e' to hangup:")
             if (cmd=='h' and myVoip.get_call_state()==CallState.ACTIVE):
                 myVoip.hold_call()
             elif (cmd=='e'):
                 myVoip.hangup_call()
+                
         elif myVoip.get_call_state()==CallState.HOLDING:
-            cmd = raw_input("Enter 'u' to put on unhold the call, 'e' to hangup:")
+            print "Server State:%s" % myVoip.get_server_state()
+            print "Call State:%s" % myVoip.get_call_state()
+            cmd = raw_input("Enter 'u' to put on unhold the call,'e' to hangup:")
             if (cmd=='u' and myVoip.get_call_state()==CallState.HOLDING):
+                
                 myVoip.unhold_call()
-            elif (cmd=='e'):
-                myVoip.hangup_call()
-  
+           
+            elif (cmd=='e'): 
+                
+                 myVoip.hangup_call()
+                 print "Server State:%s" % myVoip.get_server_state()
+                 print "Call State:%s" % myVoip.get_call_state()
+                
+          
    
     
     
