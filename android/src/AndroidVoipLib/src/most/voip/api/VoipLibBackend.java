@@ -8,6 +8,12 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import most.voip.api.states.BuddyState;
+import most.voip.api.states.CallState;
+import most.voip.api.states.RegistrationState;
+import most.voip.api.states.VoipMessageType;
+import most.voip.api.states.VoipState;
+
 import org.pjsip.pjsua2.*;
 
 
@@ -538,7 +544,12 @@ private final static String TAG = "VoipLib";
 		}
 		
 		public MyBuddy delBuddy(String uri) {
-			return buddyList.remove(uri);
+			 MyBuddy mb =  buddyList.remove(uri);
+			 if (mb!=null)
+			 {
+				mb.delete();
+			 }
+			 return mb;
 		}
 		
 		@Override

@@ -1,5 +1,8 @@
 package most.voip.api;
 
+import most.voip.api.states.VoipMessageType;
+import most.voip.api.states.VoipState;
+
 
 public class VoipStateBundle {
 

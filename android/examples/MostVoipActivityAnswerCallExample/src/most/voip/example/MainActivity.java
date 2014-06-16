@@ -2,12 +2,12 @@ package most.voip.example;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import most.voip.api.CallState;
 import most.voip.api.Utils;
 import most.voip.api.VoipLib;
 import most.voip.api.VoipLibBackend;
-import most.voip.api.VoipState;
 import most.voip.api.VoipStateBundle;
+import most.voip.api.states.CallState;
+import most.voip.api.states.VoipState;
 import most.voip.example1.R;
 import android.app.Activity;
 import android.app.Service;

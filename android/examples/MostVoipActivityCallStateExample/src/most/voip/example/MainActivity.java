@@ -3,13 +3,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import most.voip.api.BuddyInterface;
-import most.voip.api.CallState;
 import most.voip.api.Utils;
 import most.voip.api.VoipLib;
 import most.voip.api.VoipLibBackend;
-import most.voip.api.VoipMessageType;
-import most.voip.api.VoipState;
 import most.voip.api.VoipStateBundle;
+import most.voip.api.states.CallState;
+import most.voip.api.states.VoipMessageType;
+import most.voip.api.states.VoipState;
 import most.voip.example1.R;
 import android.app.Activity;
 import android.app.Service;
@@ -43,9 +43,10 @@ public class MainActivity extends Activity {
 	//private final Handler handler = new Handler(this);
 	
 	private ArrayList<String> infoArray = null;
+	private ArrayList<BuddyInterface> buddiesArray = null;
 	private VoipLib myVoip =  null;
 	private ArrayAdapter<String> arrayAdapter = null;
-	
+	private ArrayAdapter<BuddyInterface> buddyArrayAdapter = null;
 	
 
 	private static class AbstractAppHandler extends Handler{
@@ -74,6 +75,7 @@ public class MainActivity extends Activity {
 	private class AnswerCallHandler extends AbstractAppHandler {
 	 
 		private String buddyExtension = "ste";
+		private String buddyExtension2 = "ste2";
 		
 		public AnswerCallHandler(MainActivity app, VoipLib myVoip) {
 			super(app, myVoip);
@@ -103,6 +105,7 @@ public class MainActivity extends Activity {
 			else if (myState.getState()==VoipState.REGISTERED)    {this.app.addInfoLine("Ready to accept calls (adding buddy...)");
 			 													   //add a buddy so that we can receive presence notifications from it
 			                                                       myVoip.addBuddy(buddyExtension);
+			                                                       myVoip.addBuddy(buddyExtension2);
 			                                                      }														
 			else if (myState.getState()==VoipState.CALL_INCOMING)  handleIncomingCall();
 			else if  (myState.getState()==VoipState.CALL_ACTIVE)    {
@@ -175,10 +178,18 @@ public class MainActivity extends Activity {
     {
     	setContentView(R.layout.activity_main);
         ListView listView = (ListView)findViewById(R.id.listOperations);
+        ListView buddiesView = (ListView) findViewById(R.id.listBuddies);
+        
         this.infoArray = new ArrayList<String>();
-        arrayAdapter =
+        this.arrayAdapter =
                 new ArrayAdapter<String>(this, R.layout.row, R.id.textViewList, this.infoArray);
         listView.setAdapter(arrayAdapter);
+        
+        this.buddiesArray = new ArrayList<BuddyInterface>();
+        
+        this.buddyArrayAdapter = new BuddyArrayAdapter(this, R.layout.buddy_row, this.buddiesArray);
+        buddiesView.setAdapter(this.buddyArrayAdapter);
+
         this.setupButtons(false);
         //this.addInfoLine("Most Voip Lib Test Example 1");
     }
@@ -261,8 +272,22 @@ public class MainActivity extends Activity {
     
     private void updateBuddyStateInfo(BuddyInterface buddy)
     { 
+    	Log.d(TAG, "Called updateBuddyStateInfo");
     	TextView labBuddyState = (TextView) findViewById(R.id.labBuddyState);
     	labBuddyState.setText(buddy.getStatusText());
+    	int buddyPosition = this.buddyArrayAdapter.getPosition(buddy);
+    	if (buddyPosition<0)
+    	{
+    		Log.d(TAG, "Adding buddy to listView!");
+    		this.buddiesArray.add(buddy);
+    		
+    	}
+    	else 
+    	{
+    		Log.d(TAG, "Replacing buddy into the listView!");
+    		this.buddiesArray.set(buddyPosition, buddy);
+    	}
+    	this.buddyArrayAdapter.notifyDataSetChanged();
     }
     
     public void addInfoLine(String info)

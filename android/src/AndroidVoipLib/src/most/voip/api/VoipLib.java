@@ -2,6 +2,9 @@ package most.voip.api;
 
 import java.util.HashMap;
 
+import most.voip.api.states.BuddyState;
+import most.voip.api.states.CallState;
+
 import android.os.Handler;
 
 public interface VoipLib {
