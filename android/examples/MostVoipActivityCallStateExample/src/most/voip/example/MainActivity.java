@@ -124,7 +124,7 @@ public class MainActivity extends Activity {
 	{
 		 String buddyExtension = "ste";
 		 String buddyExtension2 = "ste2";
-		 Log.d(TAG, "adding buddies!");
+		 Log.d(TAG, "adding buddies...");
 		 myVoip.addBuddy(buddyExtension);
          myVoip.addBuddy(buddyExtension2);
 	}
@@ -244,7 +244,7 @@ public class MainActivity extends Activity {
 		// Initialize the library providing custom initialization params and an handler where
 		// to receive event notifications. Following Voip methods are called form the handleMassage() callback method
 		//boolean result = myVoip.initLib(params, new RegistrationHandler(this, myVoip));
-		boolean result = myVoip.initLib(params, new AnswerCallHandler(this, myVoip));
+		boolean result = myVoip.initLib(this.getApplicationContext(), params, new AnswerCallHandler(this, myVoip));
     }
     
     public void waitForSeconds(int secs)

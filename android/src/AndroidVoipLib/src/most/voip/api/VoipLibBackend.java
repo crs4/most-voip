@@ -1,8 +1,14 @@
 package most.voip.api;
 
 
+
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import android.app.Application;
+import android.content.Context;
+import android.media.MediaPlayer;
+import android.net.Uri;
 
 import android.os.Handler;
 import android.os.Message;
@@ -16,11 +22,12 @@ import most.voip.api.states.VoipMessageType;
 import most.voip.api.states.VoipState;
 
 import org.pjsip.pjsua2.*;
+ 
 
-
-public class VoipLibBackend implements VoipLib   {
+public class VoipLibBackend extends Application implements VoipLib   {
 	
 private CallState currentCallState = CallState.IDLE;
+private AudioMediaPlayer player = null;
 
 	static {
 		System.out.println("LOADING LIB...");
@@ -43,6 +50,9 @@ private ServerState serverState = ServerState.DISCONNECTED;
 
 private final int SIP_PORT  = 5060;
 private Handler notificationHandler = null;
+
+MediaPlayer mediaPlayer = null;
+private Context context;
 
 private final static String TAG = "VoipLib"; 
     public VoipLibBackend()
@@ -76,10 +86,11 @@ private final static String TAG = "VoipLib";
     }
     
     @Override
-    public boolean initLib(HashMap<String,String> configParams, Handler notificationHandler)
+    public boolean initLib(Context context, HashMap<String,String> configParams, Handler notificationHandler)
     {
     	Log.d((TAG), "initializing");
     	
+    	this.context = context;
     	this.notificationHandler = notificationHandler;
     	/* Create endpoint */
 		try {
@@ -109,6 +120,10 @@ private final static String TAG = "VoipLib";
 			// Start the library
 			Log.d(TAG,"Lib startig....");
 			ep.libStart();
+			
+			// instance the player
+			this.player = new AudioMediaPlayer();
+			 
 			// print the json config
 			Log.d(TAG,"Lib initialized and started");
 		    this.notifyState(new VoipStateBundle(VoipMessageType.LIB_STATE, VoipState.INITIALIZED, "Inizialization Ok", null));
@@ -404,6 +419,9 @@ private final static String TAG = "VoipLib";
 	
  // ########## ACCESSORY METHODS ###############################
 	
+	
+	
+	
 	private void buildAccConfigs() {
 		/* Sync accCfgs from accList */
 		accCfgs.clear();
@@ -488,6 +506,7 @@ private final static String TAG = "VoipLib";
 					notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_REMOTE_HOLDING, "Call Remote holding", null));
 					}
 					else {
+						stopOnHoldSound();
 						currentCallState = CallState.ACTIVE;
 						notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_ACTIVE, "Call Active", null));
 					}
@@ -509,9 +528,47 @@ private final static String TAG = "VoipLib";
 				{
 					currentCallState = CallState.HOLDING;
 					notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_HOLDING, "Call holding", null));
+					playOnHoldSound();
 				}
 			}  // end FOR
 		}
+	}
+	
+	private void playOnHoldSound()  
+	{
+		//if (currentCall==null) return;
+	     
+		//String file_name = "assets/queue-reporthold.gsm";
+		//Uri fileUri = Uri.parse("android.resource://most.voip/" + most.voip.R.raw.test_hold);
+		
+		
+		
+		 
+		try {
+			Log.d(TAG,"Instancing media player....");
+			Log.d(TAG,"Application Context:" + this.context);
+			this.mediaPlayer = MediaPlayer.create(this.context , most.voip.R.raw.test_hold);
+			Log.d(TAG,"Trying playing audio file");
+			mediaPlayer.setLooping(true);
+			mediaPlayer.start(); // no need to call prepare(); create() does that for you
+			
+			/*
+			AudioMedia am = this.ep.audDevManager().getPlaybackDevMedia();
+			player.createPlayer(fileUri.getPath());
+			player.startTransmit(am);
+			*/
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			Log.e(TAG, "Error playing the file:"  + e.getMessage());
+		}
+		 
+	}
+	
+	private void stopOnHoldSound()
+	{
+		if (this.mediaPlayer!=null)
+			this.mediaPlayer.stop();
 	}
 	
 	// Subclass to extend the Account and get notifications etc.
@@ -617,6 +674,8 @@ private final static String TAG = "VoipLib";
 					// Account registered
 					if (prm.getExpiration()>0  && acc.getInfo().getRegIsActive()){
 						notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REGISTERED, "Registration Success:::" + prm.getReason(), null));
+					     
+						
 					}
 					
 					// Account unregistered
@@ -772,11 +831,15 @@ private final static String TAG = "VoipLib";
 	        
 	        // Account Config
 	        acfg.setIdUri(id_uri); //"sip:ste@192.168.1.83");
+	        
 			acfg.getRegConfig().setRegistrarUri(registrar_uri); // "sip:192.168.1.83"
 			AuthCredInfo cred = new AuthCredInfo("digest", "*", user_name, 0, user_pwd);
 			acfg.getSipConfig().getAuthCreds().add( cred );
 			AccountPresConfig apc = new AccountPresConfig();
+			
 			apc.setPublishEnabled(true);
+			
+			acfg.getRegConfig().setTimeoutSec(60); // minimal auto-registration used to check server connection!
 			acfg.setPresConfig(apc);
 			// Transport Config
 			if (configParams.containsKey("sipPort"))

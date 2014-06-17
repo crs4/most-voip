@@ -6,12 +6,14 @@ import most.voip.api.states.BuddyState;
 import most.voip.api.states.CallState;
 import most.voip.api.states.ServerState;
 
+import android.content.Context;
 import android.os.Handler;
 
 public interface VoipLib {
 	
 	/**
 	 * Initialize the Voip Lib
+	 * @param context application context of the activity that uses this library
 	 * @param configParams All needed configuration string params. All the supported parameters are the following:
 	 * <ul>
 	 * <li>serverIp: the ip address of the Sip Server (e.g Asterisk)</li>
@@ -23,7 +25,7 @@ public interface VoipLib {
 	 * @param notificationHandler
 	 * @return
 	 */
-	public boolean initLib(HashMap<String,String> configParams, Handler notificationHandler);
+	public boolean initLib(Context context, HashMap<String,String> configParams, Handler notificationHandler);
 	
 	/**
 	 * Destroy the Voip Lib
