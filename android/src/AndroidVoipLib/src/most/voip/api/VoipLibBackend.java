@@ -11,6 +11,7 @@ import android.util.Log;
 import most.voip.api.states.BuddyState;
 import most.voip.api.states.CallState;
 import most.voip.api.states.RegistrationState;
+import most.voip.api.states.ServerState;
 import most.voip.api.states.VoipMessageType;
 import most.voip.api.states.VoipState;
 
@@ -38,6 +39,7 @@ private AccountConfig acfg = null;
 private static MyCall currentCall = null;	
 private MyBuddy myBuddy = null;
 private String sipServerIp = null;
+private ServerState serverState = ServerState.DISCONNECTED;
 
 private final int SIP_PORT  = 5060;
 private Handler notificationHandler = null;
@@ -212,14 +214,16 @@ private final static String TAG = "VoipLib";
 		/* Only one call at anytime */
 		if (currentCall != null) {
 			Log.d(TAG, "Incoming second call!!! Accept for testing!");
-			prm.setStatusCode(pjsip_status_code.PJSIP_SC_BUSY_HERE);
 			
-			this.notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_INCOMING, "Incoming call during another call!", null));
+			
+			this.notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_INCOMING, "Incoming call during another call!", call));
 			
 			/*
 			this.notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_INCOMING_REJECTED, "Incoming call rejected beacuse there is already an other active call", null));
 			
 			try {
+				
+			    prm.setStatusCode(pjsip_status_code.PJSIP_SC_BUSY_HERE);
 				call.hangup(prm);
 			} catch (Exception e) {
 				
@@ -515,14 +519,36 @@ private final static String TAG = "VoipLib";
 		public HashMap<String,MyBuddy> buddyList = new HashMap<String,MyBuddy>();
 		public AccountConfig cfg;
 		
+		private int REQUEST_TIMEOUT = 408;
+		private int FORBIDDEN = 403;
+		private int NOT_FOUND = 404;
+		private int OK = 200;
+		private int SERVICE_UNAVAILABLE = 503;
+		
 		
 		MyAccount(AccountConfig config) {
 			super();
 			cfg = config;
 		}
 		
+		
+		public boolean hasBuddy(String uri)
+		{
+			return buddyList.containsKey(uri);
+		}
+		
+		/***
+		 * add a buddy to this account , if not already added
+		 * @param bud_cfg
+		 * @return the added buddy, null idf the buddy was previuosly added or an error occurred
+		 */
 		public MyBuddy addBuddy(BuddyConfig bud_cfg)
 		{
+			if  (buddyList.containsKey(bud_cfg.getUri()))
+			{
+				Log.d(TAG,"Buddy with extension:" + bud_cfg.getUri() + " already added" );
+				return null;
+			}
 			/* Create Buddy */
 			MyBuddy bud = new MyBuddy(bud_cfg);
 			try {
@@ -543,10 +569,23 @@ private final static String TAG = "VoipLib";
 			return bud;
 		}
 		
+		/**
+		 * delete the buddy with the given uri  from the account
+		 * @param uri
+		 * @return the removed buddy, or null if the buddy to remove was not found.
+		 */
 		public MyBuddy delBuddy(String uri) {
 			 MyBuddy mb =  buddyList.remove(uri);
 			 if (mb!=null)
 			 {
+				/*
+				try {
+					mb.subscribePresence(false);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				*/
 				mb.delete();
 			 }
 			 return mb;
@@ -564,27 +603,38 @@ private final static String TAG = "VoipLib";
 			Log.d(TAG,"onRegState Code:" +  prm.getCode() + ": Reg Expire:" + prm.getExpiration() + " Reason:" + prm.getReason());
 			try {
 				Log.d(TAG,"onRegState ACCOUNT REG ACTIVE ? : " + acc.getInfo().getRegIsActive());
-				
-				// Registration Ok
-				if (prm.getCode().swigValue() == RegistrationState.OK.intValue())
+				int regStatus = prm.getCode().swigValue();
+				if (regStatus==RegistrationState.REQUEST_TIMEOUT.intValue() || regStatus==RegistrationState.SERVICE_UNAVAILABLE.intValue())
 				{
+					serverState = ServerState.DISCONNECTED;
+					notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.CONNECTION_FAILED, "Connection Failed: Code:" +
+	                        prm.getCode().swigValue() + " " + prm.getReason(), null)); 
+				}
+				// Registration Ok
+				else if (regStatus == RegistrationState.OK.intValue())
+				{
+					serverState = ServerState.CONNECTED;
+					// Account registered
 					if (prm.getExpiration()>0  && acc.getInfo().getRegIsActive()){
 						notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REGISTERED, "Registration Success:::" + prm.getReason(), null));
 					}
 					
+					// Account unregistered
 					else  if (prm.getExpiration()==0  && !acc.getInfo().getRegIsActive()) {
 						notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.UNREGISTERED, "Unregistration Success:::" + prm.getReason(), null));
 					}
 					
 				}
-				// There was an error registering or unsregistering the account
+				// There was an error registering or unregistering the account
 				else
 				{
+					// Account NOT registered
 					if (!acc.getInfo().getRegIsActive()) 
 					{
 						notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REGISTRATION_FAILED, "Registration Failed: Code:" +
 		                        prm.getCode().swigValue() + " " + prm.getReason(), null)); 
 					}
+					// Account NOT unregistered
 					else {
 						notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.UNREGISTRATION_FAILED, "Unregistration Failed: Code:" +
 		                        prm.getCode().swigValue() + " " + prm.getReason(), null)); 
@@ -594,7 +644,7 @@ private final static String TAG = "VoipLib";
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-				Log.e(TAG,"Error reatrieving account info:" + e.getMessage());
+				Log.e(TAG,"Error retrieving account info:" + e.getMessage());
 			}
 		}
 
@@ -812,13 +862,24 @@ private final static String TAG = "VoipLib";
 		return this.currentCallState;
 	}
 
+	private String getBuddyUri(String extension)
+	{
+		return "sip:" + extension + "@" + sipServerIp ;
+	}
+	
 	@Override
 	public boolean addBuddy(String extension) {
 		if (this.acc!=null)
 		{
+			String buddyUri = getBuddyUri(extension);
+			if (this.acc.hasBuddy(buddyUri))
+			{
+				Log.d(TAG,"Buddy with extension:" + buddyUri + " already added" );
+				return false;
+			}
 			BuddyConfig buddyConfig = new BuddyConfig();
 			//dest_uri = "sip:%s@%s;transport=tcp" % (str(dest_extension), self.sip_server)
-			String buddyUri = "sip:" + extension + "@" + sipServerIp ;
+			
 			buddyConfig.setUri(buddyUri);
 			buddyConfig.setSubscribe(true);
 			notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REMOTE_USER_SUBSCRIBING, "Subscribing buddy with uri:" + buddyUri, buddyUri)); 
@@ -832,7 +893,7 @@ private final static String TAG = "VoipLib";
 	public boolean removeBuddy(String extension) {
 		if (this.acc!=null)
 		{
-			String buddyUri = "sip:" + extension + "@" + sipServerIp ;
+			String buddyUri = getBuddyUri(extension);
 			return (this.acc.delBuddy(buddyUri)!=null);
 		}
 		return false;
@@ -842,6 +903,11 @@ private final static String TAG = "VoipLib";
 	public BuddyState getBuddyState(String extension) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public ServerState getServerState() {
+		return this.serverState;
 	}
 	
 }

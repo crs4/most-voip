@@ -74,9 +74,6 @@ public class MainActivity extends Activity {
 	
 	private class AnswerCallHandler extends AbstractAppHandler {
 	 
-		private String buddyExtension = "ste";
-		private String buddyExtension2 = "ste2";
-		
 		public AnswerCallHandler(MainActivity app, VoipLib myVoip) {
 			super(app, myVoip);
 			//EditText txtView =(EditText) findViewById(R.id.txtExtension);
@@ -92,7 +89,10 @@ public class MainActivity extends Activity {
 			VoipStateBundle myState = getStateBundle(voipMessage);
 			Log.d(TAG, "CHIAMATO HANDLE MESSAGE CON MESSAGE TYPE:" + myState.getMsgType());
 			Log.d(TAG, "CHIAMATO HANDLE MESSAGE CON VOIP STATE:" + myState.getState());
+			
 			updateCallStateInfo();
+			updateServerStateInfo();
+			
 			if (myState.getMsgType()==VoipMessageType.BUDDY_STATE)
 			{
 				Log.d(TAG, "In handle Message for BUDDY STATE");
@@ -102,16 +102,14 @@ public class MainActivity extends Activity {
 			}
 			// Register the account after the Lib Initialization
 			if (myState.getState()==VoipState.INITIALIZED)   myVoip.registerAccount();	
-			else if (myState.getState()==VoipState.REGISTERED)    {this.app.addInfoLine("Ready to accept calls (adding buddy...)");
-			 													   //add a buddy so that we can receive presence notifications from it
-			                                                       myVoip.addBuddy(buddyExtension);
-			                                                       myVoip.addBuddy(buddyExtension2);
+			else if (myState.getState()==VoipState.REGISTERED)    {
+																	this.app.addInfoLine("Ready to accept calls (adding buddy...)");
+			 													    //add a buddy so that we can receive presence notifications from it
+			                                                        subscribeBuddies();
 			                                                      }														
 			else if (myState.getState()==VoipState.CALL_INCOMING)  handleIncomingCall();
-			else if  (myState.getState()==VoipState.CALL_ACTIVE)    {
-				//this.app.waitForSeconds(20);
-				//myVoip.hangupCall();
-			}
+			//else if  (myState.getState()==VoipState.CALL_ACTIVE)    {}
+			
 			// Unregister the account
 			else if (myState.getState()==VoipState.CALL_HANGUP)    {    setupButtons(false);
 				                                                        myVoip.unregisterAccount();	}
@@ -121,7 +119,16 @@ public class MainActivity extends Activity {
 		} // end of handleMessage()
 	   
 	}
-     
+    
+	private void subscribeBuddies()
+	{
+		 String buddyExtension = "ste";
+		 String buddyExtension2 = "ste2";
+		 Log.d(TAG, "adding buddies!");
+		 myVoip.addBuddy(buddyExtension);
+         myVoip.addBuddy(buddyExtension2);
+	}
+	
     private void handleIncomingCall()
     {
     	setupButtons(true);
@@ -254,6 +261,9 @@ public class MainActivity extends Activity {
     private void clearInfoLines()
     {
     	this.infoArray.clear();
+    	this.buddiesArray.clear();
+    	if (this.buddyArrayAdapter!=null)
+    		this.buddyArrayAdapter.notifyDataSetChanged();
     	if (arrayAdapter!=null)
     		arrayAdapter.notifyDataSetChanged();
     }
@@ -270,11 +280,16 @@ public class MainActivity extends Activity {
 		labState.setText(callState);
     }
     
+    private void updateServerStateInfo()
+    {
+    	TextView labBuddyState = (TextView) findViewById(R.id.labServerState);
+    	labBuddyState.setText(myVoip.getServerState().toString());
+    }
+    
     private void updateBuddyStateInfo(BuddyInterface buddy)
     { 
     	Log.d(TAG, "Called updateBuddyStateInfo");
-    	TextView labBuddyState = (TextView) findViewById(R.id.labBuddyState);
-    	labBuddyState.setText(buddy.getStatusText());
+    	
     	int buddyPosition = this.buddyArrayAdapter.getPosition(buddy);
     	if (buddyPosition<0)
     	{

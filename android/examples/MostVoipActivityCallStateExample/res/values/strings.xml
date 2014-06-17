@@ -6,6 +6,6 @@
     <string name="extension_title">Extension:</string>
     <string name="call_state_title">Call State:</string>
     <string name="call_state">Idle</string>
-    <string name="buddy_state_title">Buddy State:</string>
-    <string name="buddy_state">Off Line</string>
+    <string name="server_state_title">Server State:</string>
+    <string name="server_state">N.A</string>
 </resources>

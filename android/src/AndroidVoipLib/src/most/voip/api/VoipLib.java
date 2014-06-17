@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import most.voip.api.states.BuddyState;
 import most.voip.api.states.CallState;
+import most.voip.api.states.ServerState;
 
 import android.os.Handler;
 
@@ -79,6 +80,8 @@ public interface VoipLib {
      * @return the state of the current call (if any), CallState.NONE if there is no call
      */
     public CallState getCallState();
+    
+    public ServerState getServerState();
     
     /**
      * Add a buddy to this account.

@@ -59,30 +59,23 @@
     android:orientation="horizontal" 
     android:focusableInTouchMode="true"
     >
-    <TextView android:id="@+id/labBuddyStateTitle" 
-                android:text="@string/buddy_state_title" 
+    <TextView android:id="@+id/labServerStateTitle" 
+                android:text="@string/server_state_title" 
                 android:layout_width="wrap_content" 
                 android:layout_gravity="left" 
                 android:layout_height="fill_parent" />
     
-    <TextView android:id="@+id/labBuddyState"
+    <TextView android:id="@+id/labServerState"
         android:layout_width="0sp"
         android:layout_height="fill_parent"
         android:layout_weight="1"
-        android:text="@string/buddy_state" 
+        android:text="@string/server_state" 
         android:maxLines="1"
         android:gravity="left"/>
       
     </LinearLayout>
     
-       <ListView
-        android:id="@+id/listBuddies"
-        android:layout_width="match_parent"
-        android:layout_height="0dip"
-        android:layout_weight="1"
-        android:focusable="true" android:descendantFocusability="beforeDescendants"
-        >
-    </ListView>
+       
     
     <LinearLayout 
     android:layout_width="fill_parent"
@@ -110,6 +103,15 @@
                 android:onClick="hangupCall" />
      
     </LinearLayout>
+    
+    <ListView
+        android:id="@+id/listBuddies"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"
+        android:focusable="true" android:descendantFocusability="beforeDescendants"
+        >
+    </ListView>
     
     <ListView
         android:id="@+id/listOperations"
