@@ -620,6 +620,8 @@ class VoipBackend:
             
     
     def destroy_lib(self):
+        if (self.lib==None):
+            return False
         
         self.notification_cb(VoipState.Deinitializing, {'Success' : True, 'account_info' : self.my_account[0]})
         if not self.lib:
@@ -671,6 +673,8 @@ class VoipBackend:
                                
             logger.debug('Deallocating account...')  
             if acc!=None:
+                acc.set_basic_status(False)
+                acc.set_registration(False)
                 acc.delete()
                 del acc
                 acc = None

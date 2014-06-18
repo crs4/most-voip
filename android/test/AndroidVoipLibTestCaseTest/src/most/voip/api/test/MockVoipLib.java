@@ -8,6 +8,7 @@ import most.voip.api.enums.CallState;
 import most.voip.api.enums.ServerState;
 import most.voip.api.enums.VoipEvent;
 import most.voip.api.enums.VoipEventType;
+import most.voip.api.interfaces.IBuddy;
 import most.voip.api.VoipEventBundle;
 import android.content.Context;
 import android.os.Handler;
@@ -28,8 +29,7 @@ public class MockVoipLib implements VoipLib{
 			case CALL_DIALING: this.currentCallState = CallState.DIALING; break;
 			case CALL_INCOMING: this.currentCallState = CallState.INCOMING; break;
 			case CALL_HOLDING: this.currentCallState = CallState.HOLDING; break;
-			case CALL_REMOTE_HOLDING: this.currentCallState = CallState.REMOTE_HOLDING; break;
-			case CALL_UNHOLDING: this.currentCallState = CallState.ACTIVE; break; // da gestire il caso di holding e remote holding...
+			case CALL_UNHOLDING: this.currentCallState = CallState.ACTIVE; break; 
 			case CALL_HANGUP: this.currentCallState = CallState.IDLE; break;
 			case CALL_REMOTE_HANGUP: this.currentCallState = CallState.IDLE; break;
 		default:
@@ -155,7 +155,13 @@ public class MockVoipLib implements VoipLib{
 	}
 
 	@Override
-	public BuddyState getBuddyState(String extension) {
+	public IBuddy getBuddy(String extension) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IBuddy[] getBuddies() {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -1,7 +1,5 @@
 package most.voip.api.test;
 
-import java.util.Currency;
-
 import junit.framework.TestCase;
 import most.voip.api.enums.CallState;
 import most.voip.api.enums.VoipEvent;

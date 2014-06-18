@@ -2,7 +2,7 @@ package most.voip.example;
 
 import java.util.List;
 
-import most.voip.api.IBuddy;
+import most.voip.api.interfaces.IBuddy;
 import most.voip.example1.R;
 import android.content.Context;
 import android.view.LayoutInflater;

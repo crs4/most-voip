@@ -5,6 +5,7 @@ import java.util.HashMap;
 import most.voip.api.enums.BuddyState;
 import most.voip.api.enums.CallState;
 import most.voip.api.enums.ServerState;
+import most.voip.api.interfaces.IBuddy;
 
 import android.content.Context;
 import android.os.Handler;
@@ -87,22 +88,28 @@ public interface VoipLib {
     
     /**
      * Add a buddy to this account.
-     * @param extension the buddy extension
+     * @param uri the buddy sip uri
      * @return True if the buddy was added to the buddy list, False otherwise
      */
-    public boolean addBuddy(String extension);
+    public boolean addBuddy(String uri);
     
     /**
      * Remove the buddy from this account
-     * @param extension The extension of the buddy to remove
-     * @return True if the buddy was found and it saw successfully removed, False otherwise
+     * @param uri The sip uri of the buddy to remove
+     * @return True if the buddy was found and it was successfully removed, False otherwise
      */
-    public boolean removeBuddy(String extension);
+    public boolean removeBuddy(String uri);
     
     /**
-     * Get the current state of the buddy with the given extension, or null if it is not found
-     * @param extension the buddy extension
-     * @return  the current state of the buddy with the provided extension, or null if it is not found
+     * Get  the buddy with the given extension, or null if it is not found
+     * @param uri the buddy uri
+     * @return  the buddy with the provided uri, or null if it is not found
      */
-    public BuddyState getBuddyState(String extension);
+    public IBuddy getBuddy(String uri);
+    
+    /**
+     * Get the list of buddies of the current registered account
+     * @return the list of the buddies of the currently registered account
+     */
+    public IBuddy [] getBuddies();
 }

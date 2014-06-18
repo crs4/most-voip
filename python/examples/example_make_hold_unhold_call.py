@@ -17,8 +17,8 @@ if __name__ == '__main__':
             myVoip.make_call(extension)
             
         elif (voip_state in [VoipState.RemoteDisconnectionHangup, VoipState.RemoteHangup, VoipState.Hangup]):
-            print "End of call. Destroying lib..."
-            myVoip.destroy_lib()
+            print "End of call!"
+            #myVoip.destroy_lib()
             
         elif (voip_state==VoipState.DeinitializeDone):
             print "Lib Destroyed. Exiting from the app."
@@ -82,6 +82,12 @@ if __name__ == '__main__':
                  myVoip.hangup_call()
                  print "Server State:%s" % myVoip.get_server_state()
                  print "Call State:%s" % myVoip.get_call_state()
+                 
+        elif myVoip.get_call_state()==CallState.IDLE:
+            cmd = raw_input("Enter 'q' to quit the app")
+            if cmd=='q':
+                myVoip.destroy_lib()
+            
                 
           
    

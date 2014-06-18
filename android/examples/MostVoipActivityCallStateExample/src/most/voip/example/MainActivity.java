@@ -2,14 +2,16 @@ package most.voip.example;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import most.voip.api.IBuddy;
 import most.voip.api.Utils;
 import most.voip.api.VoipLib;
 import most.voip.api.VoipLibBackend;
 import most.voip.api.VoipEventBundle;
+import most.voip.api.enums.BuddyState;
 import most.voip.api.enums.CallState;
 import most.voip.api.enums.VoipEventType;
 import most.voip.api.enums.VoipEvent;
+import most.voip.api.interfaces.IBuddy;
+import most.voip.api.interfaces.ICallInfo;
 import most.voip.example1.R;
 import android.app.Activity;
 import android.app.Service;
@@ -47,11 +49,14 @@ public class MainActivity extends Activity {
 	private VoipLib myVoip =  null;
 	private ArrayAdapter<String> arrayAdapter = null;
 	private ArrayAdapter<IBuddy> buddyArrayAdapter = null;
+	private String serverIp = null;
+   
+	private AnswerCallHandler voipHandler = null; 
 	
-
 	private static class AbstractAppHandler extends Handler{
 		protected MainActivity app = null;
 		protected VoipLib myVoip = null;
+		@SuppressWarnings("unused")
 		protected  int curStateIndex = 0;
 		
  		public AbstractAppHandler(MainActivity app, VoipLib myVoip) {
@@ -60,7 +65,7 @@ public class MainActivity extends Activity {
 			this.myVoip = myVoip;
 		}
  		
- 		protected VoipEventBundle getStateBundle(Message voipMessage)
+ 		protected VoipEventBundle getEventBundle(Message voipMessage)
  		{
  			//int msg_type = voipMessage.what;
 			VoipEventBundle myState = (VoipEventBundle) voipMessage.obj;
@@ -73,48 +78,65 @@ public class MainActivity extends Activity {
 	
 	
 	private class AnswerCallHandler extends AbstractAppHandler {
-	 
+	    
+		boolean reinitRequest = false;
+		
 		public AnswerCallHandler(MainActivity app, VoipLib myVoip) {
 			super(app, myVoip);
 			//EditText txtView =(EditText) findViewById(R.id.txtExtension);
 			//this.extension = txtView.getText().toString();
-			
 		}
 		
 		
 
 		@Override
 		public void handleMessage(Message voipMessage) {
-			
-			VoipEventBundle myState = getStateBundle(voipMessage);
-			Log.d(TAG, "CHIAMATO HANDLE MESSAGE CON MESSAGE TYPE:" + myState.getMsgType());
-			Log.d(TAG, "CHIAMATO HANDLE MESSAGE CON VOIP STATE:" + myState.getEvent());
+		
+			VoipEventBundle myEventBundle = getEventBundle(voipMessage);
+			Log.d(TAG, "CHIAMATO HANDLE MESSAGE CON MESSAGE TYPE:" + myEventBundle.getMsgType());
+			Log.d(TAG, "CHIAMATO HANDLE MESSAGE CON VOIP EVENT:" + myEventBundle.getEvent());
 			
 			updateCallStateInfo();
 			updateServerStateInfo();
 			
-			if (myState.getMsgType()==VoipEventType.BUDDY_EVENT)
+			
+			if (myEventBundle.getMsgType()==VoipEventType.BUDDY_EVENT)
 			{
 				Log.d(TAG, "In handle Message for BUDDY STATE");
-				IBuddy myBuddy = (IBuddy) myState.getData();
+				IBuddy myBuddy = (IBuddy) myEventBundle.getData();
 				this.app.addInfoLine("Buddy (" + myBuddy.getUri() + ") ->" + myBuddy.getStatusText());
 				updateBuddyStateInfo(myBuddy);
 			}
 			// Register the account after the Lib Initialization
-			if (myState.getEvent()==VoipEvent.INITIALIZED)   myVoip.registerAccount();	
-			else if (myState.getEvent()==VoipEvent.REGISTERED)    {
+			if (myEventBundle.getEvent()==VoipEvent.INITIALIZED)   myVoip.registerAccount();	
+			else if (myEventBundle.getEvent()==VoipEvent.REGISTERED)    {
 																	this.app.addInfoLine("Ready to accept calls (adding buddy...)");
 			 													    //add a buddy so that we can receive presence notifications from it
 			                                                        subscribeBuddies();
 			                                                      }														
-			else if (myState.getEvent()==VoipEvent.CALL_INCOMING)  handleIncomingCall();
+			else if (myEventBundle.getEvent()==VoipEvent.CALL_INCOMING)  handleIncomingCall();
 			//else if  (myState.getState()==VoipState.CALL_ACTIVE)    {}
 			
 			// Unregister the account
-			else if (myState.getEvent()==VoipEvent.CALL_HANGUP)    {    setupButtons(false);
-				                                                        myVoip.unregisterAccount();	}
+			else if (myEventBundle.getEvent()==VoipEvent.CALL_HANGUP)    {    setupButtons(false);
+																		ICallInfo callInfo = (ICallInfo) myEventBundle.getData();
+																		Log.d(TAG, "Hangup from uri:" + callInfo.getRemoteUri());
+																		IBuddy myBuddy = myVoip.getBuddy(callInfo.getRemoteUri());
+																		Log.d(TAG, "Current Buddy Status Text:" + myBuddy.getStatusText());
+																		updateBuddyStateInfo(myBuddy);
+				                                                       // myVoip.unregisterAccount();
+				                                                   }
 			// Deinitialize the Voip Lib and release all allocated resources
-			else if (myState.getEvent()==VoipEvent.UNREGISTERED)  myVoip.destroyLib();
+			else if (myEventBundle.getEvent()==VoipEvent.DEINITIALIZE_DONE || myEventBundle.getEvent()==VoipEvent.DEINITIALIZE_FAILED) 
+			{
+				Log.d(TAG,"Setting to null MyVoipLib");
+				this.app.myVoip = null;
+				
+				if (this.reinitRequest)
+				{	this.reinitRequest = false;
+					this.app.runExample();
+				}
+			}
 			     
 		} // end of handleMessage()
 	   
@@ -125,8 +147,8 @@ public class MainActivity extends Activity {
 		 String buddyExtension = "ste";
 		 String buddyExtension2 = "ste2";
 		 Log.d(TAG, "adding buddies...");
-		 myVoip.addBuddy(buddyExtension);
-         myVoip.addBuddy(buddyExtension2);
+		 myVoip.addBuddy(getBuddyUri(buddyExtension));
+         myVoip.addBuddy(getBuddyUri(buddyExtension2));
 	}
 	
     private void handleIncomingCall()
@@ -143,16 +165,34 @@ public class MainActivity extends Activity {
         //this.runExample();
     }
     
+    private String getBuddyUri(String extension)
+	{
+		return "sip:" + extension + "@" + this.serverIp ;
+	}
+    
+    private boolean isAtleastOneBuddyOnPhone()
+	{
+		
+			IBuddy [] buddies = this.myVoip.getBuddies();
+			for (IBuddy buddy : buddies)
+			{
+				if (buddy.getState()==BuddyState.ON_LINE)
+					return true;
+			}
+		
+	 return false;
+	}
+    
     /**
      * Invoked when the 'Go' button is clicked
      */
     public void doVoipTest(View view) {
     	EditText txtView =(EditText) this.findViewById(R.id.txtServerIp);
-    	String serverIp = txtView.getText().toString();
+    	this.serverIp = txtView.getText().toString();
     	InputMethodManager imm = (InputMethodManager)this.getSystemService(Service.INPUT_METHOD_SERVICE);
     	imm.hideSoftInputFromWindow(txtView.getWindowToken(), 0); 
     	
-    	this.runExample(serverIp);
+    	this.runExample();
     }
     
     public void answerCall(View view) 
@@ -221,7 +261,7 @@ public class MainActivity extends Activity {
 		butHangup.setEnabled(active);
 	}
     
-    public void runExample(String serverIp)
+    private void runExample()
     {
     	this.clearInfoLines();
     	this.addInfoLine("Local IP Address:" + Utils.getIPAddress(true));
@@ -239,12 +279,20 @@ public class MainActivity extends Activity {
 		{
 			Log.d(TAG,"Voip null... Initialization.....");
 			myVoip = new  VoipLibBackend();
+			this.voipHandler = new AnswerCallHandler(this, myVoip);
+			
+			// Initialize the library providing custom initialization params and an handler where
+			// to receive event notifications. Following Voip methods are called form the handleMassage() callback method
+			//boolean result = myVoip.initLib(params, new RegistrationHandler(this, myVoip));
+			myVoip.initLib(this.getApplicationContext(), params, this.voipHandler);
 		}
-		
-		// Initialize the library providing custom initialization params and an handler where
-		// to receive event notifications. Following Voip methods are called form the handleMassage() callback method
-		//boolean result = myVoip.initLib(params, new RegistrationHandler(this, myVoip));
-		boolean result = myVoip.initLib(this.getApplicationContext(), params, new AnswerCallHandler(this, myVoip));
+		else 
+			{
+			Log.d(TAG,"Voip is not null... Destroying the lib before reinitializing.....");
+			// Reinitialization will be done after deinitialization event callback
+			this.voipHandler.reinitRequest = true;
+			myVoip.destroyLib();
+			}
     }
     
     public void waitForSeconds(int secs)
@@ -287,8 +335,14 @@ public class MainActivity extends Activity {
     }
     
     private void updateBuddyStateInfo(IBuddy buddy)
-    { 
-    	Log.d(TAG, "Called updateBuddyStateInfo");
+    { Log.d(TAG, "Called updateBuddyStateInfo on buddy");
+    	if (buddy==null)
+    	{
+    		Log.e(TAG, "Called updateBuddyStateInfo on NULL buddy");
+    		return;
+    	}
+    	
+    	Log.d(TAG, "Called updateBuddyStateInfo on buddy:" + buddy.getUri());
     	
     	int buddyPosition = this.buddyArrayAdapter.getPosition(buddy);
     	if (buddyPosition<0)
