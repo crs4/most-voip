@@ -1,4 +1,4 @@
-package most.voip.api.states;
+package most.voip.api.enums;
 
 public enum CallState {
 	  IDLE,   		  // No call 

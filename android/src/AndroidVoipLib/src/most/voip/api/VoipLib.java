@@ -2,9 +2,9 @@ package most.voip.api;
 
 import java.util.HashMap;
 
-import most.voip.api.states.BuddyState;
-import most.voip.api.states.CallState;
-import most.voip.api.states.ServerState;
+import most.voip.api.enums.BuddyState;
+import most.voip.api.enums.CallState;
+import most.voip.api.enums.ServerState;
 
 import android.content.Context;
 import android.os.Handler;

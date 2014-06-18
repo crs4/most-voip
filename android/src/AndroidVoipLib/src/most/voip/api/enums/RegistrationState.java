@@ -1,4 +1,4 @@
-package most.voip.api.states;
+package most.voip.api.enums;
 
 public enum RegistrationState {
 	REQUEST_TIMEOUT("REQUEST_TIMEOUT", 408),	

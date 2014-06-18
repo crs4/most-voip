@@ -2,14 +2,14 @@ package most.voip.example;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import most.voip.api.BuddyInterface;
+import most.voip.api.IBuddy;
 import most.voip.api.Utils;
 import most.voip.api.VoipLib;
 import most.voip.api.VoipLibBackend;
-import most.voip.api.VoipStateBundle;
-import most.voip.api.states.CallState;
-import most.voip.api.states.VoipMessageType;
-import most.voip.api.states.VoipState;
+import most.voip.api.VoipEventBundle;
+import most.voip.api.enums.CallState;
+import most.voip.api.enums.VoipEventType;
+import most.voip.api.enums.VoipEvent;
 import most.voip.example1.R;
 import android.app.Activity;
 import android.app.Service;
@@ -43,10 +43,10 @@ public class MainActivity extends Activity {
 	//private final Handler handler = new Handler(this);
 	
 	private ArrayList<String> infoArray = null;
-	private ArrayList<BuddyInterface> buddiesArray = null;
+	private ArrayList<IBuddy> buddiesArray = null;
 	private VoipLib myVoip =  null;
 	private ArrayAdapter<String> arrayAdapter = null;
-	private ArrayAdapter<BuddyInterface> buddyArrayAdapter = null;
+	private ArrayAdapter<IBuddy> buddyArrayAdapter = null;
 	
 
 	private static class AbstractAppHandler extends Handler{
@@ -60,11 +60,11 @@ public class MainActivity extends Activity {
 			this.myVoip = myVoip;
 		}
  		
- 		protected VoipStateBundle getStateBundle(Message voipMessage)
+ 		protected VoipEventBundle getStateBundle(Message voipMessage)
  		{
  			//int msg_type = voipMessage.what;
-			VoipStateBundle myState = (VoipStateBundle) voipMessage.obj;
-			String infoMsg = "State:" + myState.getState() + ":" + myState.getInfo();
+			VoipEventBundle myState = (VoipEventBundle) voipMessage.obj;
+			String infoMsg = "State:" + myState.getEvent() + ":" + myState.getInfo();
 			Log.d(TAG, "Called handleMessage with state info:" + infoMsg);
 			this.app.addInfoLine(infoMsg);
 			return myState;
@@ -86,35 +86,35 @@ public class MainActivity extends Activity {
 		@Override
 		public void handleMessage(Message voipMessage) {
 			
-			VoipStateBundle myState = getStateBundle(voipMessage);
+			VoipEventBundle myState = getStateBundle(voipMessage);
 			Log.d(TAG, "CHIAMATO HANDLE MESSAGE CON MESSAGE TYPE:" + myState.getMsgType());
-			Log.d(TAG, "CHIAMATO HANDLE MESSAGE CON VOIP STATE:" + myState.getState());
+			Log.d(TAG, "CHIAMATO HANDLE MESSAGE CON VOIP STATE:" + myState.getEvent());
 			
 			updateCallStateInfo();
 			updateServerStateInfo();
 			
-			if (myState.getMsgType()==VoipMessageType.BUDDY_STATE)
+			if (myState.getMsgType()==VoipEventType.BUDDY_EVENT)
 			{
 				Log.d(TAG, "In handle Message for BUDDY STATE");
-				BuddyInterface myBuddy = (BuddyInterface) myState.getData();
+				IBuddy myBuddy = (IBuddy) myState.getData();
 				this.app.addInfoLine("Buddy (" + myBuddy.getUri() + ") ->" + myBuddy.getStatusText());
 				updateBuddyStateInfo(myBuddy);
 			}
 			// Register the account after the Lib Initialization
-			if (myState.getState()==VoipState.INITIALIZED)   myVoip.registerAccount();	
-			else if (myState.getState()==VoipState.REGISTERED)    {
+			if (myState.getEvent()==VoipEvent.INITIALIZED)   myVoip.registerAccount();	
+			else if (myState.getEvent()==VoipEvent.REGISTERED)    {
 																	this.app.addInfoLine("Ready to accept calls (adding buddy...)");
 			 													    //add a buddy so that we can receive presence notifications from it
 			                                                        subscribeBuddies();
 			                                                      }														
-			else if (myState.getState()==VoipState.CALL_INCOMING)  handleIncomingCall();
+			else if (myState.getEvent()==VoipEvent.CALL_INCOMING)  handleIncomingCall();
 			//else if  (myState.getState()==VoipState.CALL_ACTIVE)    {}
 			
 			// Unregister the account
-			else if (myState.getState()==VoipState.CALL_HANGUP)    {    setupButtons(false);
+			else if (myState.getEvent()==VoipEvent.CALL_HANGUP)    {    setupButtons(false);
 				                                                        myVoip.unregisterAccount();	}
 			// Deinitialize the Voip Lib and release all allocated resources
-			else if (myState.getState()==VoipState.UNREGISTERED)  myVoip.destroyLib();
+			else if (myState.getEvent()==VoipEvent.UNREGISTERED)  myVoip.destroyLib();
 			     
 		} // end of handleMessage()
 	   
@@ -192,7 +192,7 @@ public class MainActivity extends Activity {
                 new ArrayAdapter<String>(this, R.layout.row, R.id.textViewList, this.infoArray);
         listView.setAdapter(arrayAdapter);
         
-        this.buddiesArray = new ArrayList<BuddyInterface>();
+        this.buddiesArray = new ArrayList<IBuddy>();
         
         this.buddyArrayAdapter = new BuddyArrayAdapter(this, R.layout.buddy_row, this.buddiesArray);
         buddiesView.setAdapter(this.buddyArrayAdapter);
@@ -286,7 +286,7 @@ public class MainActivity extends Activity {
     	labBuddyState.setText(myVoip.getServerState().toString());
     }
     
-    private void updateBuddyStateInfo(BuddyInterface buddy)
+    private void updateBuddyStateInfo(IBuddy buddy)
     { 
     	Log.d(TAG, "Called updateBuddyStateInfo");
     	

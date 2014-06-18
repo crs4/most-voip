@@ -1,7 +1,7 @@
-package most.voip.api.states;
+package most.voip.api.enums;
 
 
-public enum VoipState {
+public enum VoipEvent {
 	
   INITIALIZE,
   INITIALIZED,

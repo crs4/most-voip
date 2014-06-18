@@ -2,11 +2,14 @@ package most.voip.api.test;
 
 import java.util.HashMap;
 
-import most.voip.api.CallState;
 import most.voip.api.VoipLib;
-import most.voip.api.VoipMessageType;
-import most.voip.api.VoipState;
-import most.voip.api.VoipStateBundle;
+import most.voip.api.enums.BuddyState;
+import most.voip.api.enums.CallState;
+import most.voip.api.enums.ServerState;
+import most.voip.api.enums.VoipEvent;
+import most.voip.api.enums.VoipEventType;
+import most.voip.api.VoipEventBundle;
+import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -15,20 +18,20 @@ public class MockVoipLib implements VoipLib{
 	
 	private static final String TAG = "VoipLibMock";
 	private Handler notificationHandler =null;
-	private CallState currentCallState = CallState.NONE;
+	private CallState currentCallState = CallState.IDLE;
 	
-	private void notifyState(VoipStateBundle myStateBundle)
+	private void notifyState(VoipEventBundle myStateBundle)
     {
-		Log.d(TAG, "Called notifyState for state:" + myStateBundle.getState().name());
-		switch (myStateBundle.getState()){
+		Log.d(TAG, "Called notifyState for state:" + myStateBundle.getEvent().name());
+		switch (myStateBundle.getEvent()){
 			case CALL_ACTIVE: this.currentCallState = CallState.ACTIVE; break;
 			case CALL_DIALING: this.currentCallState = CallState.DIALING; break;
 			case CALL_INCOMING: this.currentCallState = CallState.INCOMING; break;
 			case CALL_HOLDING: this.currentCallState = CallState.HOLDING; break;
 			case CALL_REMOTE_HOLDING: this.currentCallState = CallState.REMOTE_HOLDING; break;
 			case CALL_UNHOLDING: this.currentCallState = CallState.ACTIVE; break; // da gestire il caso di holding e remote holding...
-			case CALL_HANGUP: this.currentCallState = CallState.NONE; break;
-			case CALL_REMOTE_HANGUP: this.currentCallState = CallState.NONE; break;
+			case CALL_HANGUP: this.currentCallState = CallState.IDLE; break;
+			case CALL_REMOTE_HANGUP: this.currentCallState = CallState.IDLE; break;
 		default:
 			break;}
 				
@@ -37,22 +40,22 @@ public class MockVoipLib implements VoipLib{
     }
 
 	@Override
-	public boolean initLib(HashMap<String, String> configParams,
+	public boolean initLib(Context context, HashMap<String, String> configParams,
 			Handler notificationHandler) {
 		Log.d(TAG, "Called initLib");
-		this.currentCallState = CallState.NONE;
+		this.currentCallState = CallState.IDLE;
 		this.notificationHandler = notificationHandler;
-		this.notifyState(new VoipStateBundle(VoipMessageType.LIB_STATE, VoipState.INITIALIZED, "Inizialization Ok", null));
+		this.notifyState(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.INITIALIZED, "Inizialization Ok", null));
 		return true;
 	}
 
 	@Override
 	public boolean destroyLib() {
-		this.currentCallState = CallState.NONE;
+		this.currentCallState = CallState.IDLE;
 		Log.d(TAG, "Called destroyLib");
-		this.notifyState(new VoipStateBundle(VoipMessageType.LIB_STATE, VoipState.DEINITIALIZING, "Voip Lib destroying...", null));
+		this.notifyState(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.DEINITIALIZING, "Voip Lib destroying...", null));
 		this.simulatePause(1);
-		this.notifyState(new VoipStateBundle(VoipMessageType.LIB_STATE, VoipState.DEINITIALIZE_DONE, "Voip Lib destroyed", null));
+		this.notifyState(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.DEINITIALIZE_DONE, "Voip Lib destroyed", null));
 		return true;
 	}
     
@@ -69,18 +72,18 @@ public class MockVoipLib implements VoipLib{
 	@Override
 	public boolean registerAccount() {
 		Log.d(TAG, "Called registerAccount");
-		this.notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REGISTERING, "Account Registration request sent", null));
+		this.notifyState(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.REGISTERING, "Account Registration request sent", null));
 		this.simulatePause(1);
-		this.notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.REGISTERED, "Account Registered", null));
+		this.notifyState(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.REGISTERED, "Account Registered", null));
 		return true;
 	}
 
 	@Override
 	public boolean unregisterAccount() {
 		Log.d(TAG, "Called unregisterAccount");
-		this.notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.UNREGISTERING, "Account Unregistration request sent", null));
+		this.notifyState(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.UNREGISTERING, "Account Unregistration request sent", null));
 		this.simulatePause(1);
-		this.notifyState(new VoipStateBundle(VoipMessageType.ACCOUNT_STATE, VoipState.UNREGISTERED, "Account Unregistered", null));
+		this.notifyState(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.UNREGISTERED, "Account Unregistered", null));
 		return true;
 	}
 
@@ -89,10 +92,10 @@ public class MockVoipLib implements VoipLib{
 		Log.d(TAG, "Called makeCall");
 		{
 		this.currentCallState = CallState.DIALING;
-		notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_DIALING, "Dialing call to:" + extension, null));
+		notifyState(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_DIALING, "Dialing call to:" + extension, null));
 		this.simulatePause(1);
 		this.currentCallState = CallState.ACTIVE;
-		notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_ACTIVE, "Call active with:" + extension, null));
+		notifyState(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_ACTIVE, "Call active with:" + extension, null));
 		}
 		return true;
 	}
@@ -101,7 +104,7 @@ public class MockVoipLib implements VoipLib{
 	public boolean answerCall() {
 		Log.d(TAG, "Called answerCall");
 		this.currentCallState = CallState.ACTIVE;
-		notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_ACTIVE, "Call active after answering", null));
+		notifyState(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_ACTIVE, "Call active after answering", null));
 		return true;
 	}
 
@@ -109,7 +112,7 @@ public class MockVoipLib implements VoipLib{
 	public boolean holdCall() {
 		Log.d(TAG, "Called holdCall");
 		this.currentCallState = CallState.HOLDING;
-		notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_HOLDING, "Call holding", null));
+		notifyState(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_HOLDING, "Call holding", null));
 		return true;
 	}
 
@@ -117,20 +120,44 @@ public class MockVoipLib implements VoipLib{
 	public boolean unholdCall() {
 		Log.d(TAG, "Called unholdCall");
 		this.currentCallState = CallState.ACTIVE;
-		notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_UNHOLDING, "Call unholding", null));
+		notifyState(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_UNHOLDING, "Call unholding", null));
 		return true;
 	}
 
 	@Override
 	public boolean hangupCall() {
-		this.currentCallState = CallState.NONE;
-		notifyState(new VoipStateBundle(VoipMessageType.CALL_STATE, VoipState.CALL_HANGUP, "Call hangup" , null));
+		this.currentCallState = CallState.IDLE;
+		notifyState(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_HANGUP, "Call hangup" , null));
 		return true;
 	}
 
 	@Override
 	public CallState getCallState() {
 		return this.currentCallState;
+	}
+
+	@Override
+	public ServerState getServerState() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean addBuddy(String extension) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean removeBuddy(String extension) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public BuddyState getBuddyState(String extension) {
+		// TODO Auto-generated method stub
+		return null;
 	}
   
 }

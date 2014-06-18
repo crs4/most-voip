@@ -1,8 +1,8 @@
 package most.voip.api;
 
-import most.voip.api.states.BuddyState;
+import most.voip.api.enums.BuddyState;
 
-public interface BuddyInterface {
+public interface IBuddy {
    BuddyState getState();
    String getUri();
    String getStatusText();

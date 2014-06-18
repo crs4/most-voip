@@ -2,7 +2,7 @@ package most.voip.example;
 
 import java.util.List;
 
-import most.voip.api.BuddyInterface;
+import most.voip.api.IBuddy;
 import most.voip.example1.R;
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -11,10 +11,10 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-public class BuddyArrayAdapter extends ArrayAdapter<BuddyInterface> {
+public class BuddyArrayAdapter extends ArrayAdapter<IBuddy> {
 
     public BuddyArrayAdapter(Context context, int textViewResourceId,
-                 List<BuddyInterface> objects) {
+                 List<IBuddy> objects) {
         super(context, textViewResourceId, objects);
     }
 
@@ -36,7 +36,7 @@ public class BuddyArrayAdapter extends ArrayAdapter<BuddyInterface> {
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
-        BuddyInterface buddy = getItem(position);
+        IBuddy buddy = getItem(position);
         viewHolder.uri.setText(buddy.getUri());
         viewHolder.status.setText(buddy.getStatusText());
         return convertView;
