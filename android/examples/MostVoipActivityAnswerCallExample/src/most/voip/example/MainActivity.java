@@ -70,16 +70,16 @@ public class MainActivity extends Activity {
 	
 	private class AnswerCallHandler extends AbstractAppHandler {
 	 
-		private VoipEvent [] expectedStates = { VoipEvent.INITIALIZED , 
-				VoipEvent.REGISTERING, 
-				VoipEvent.REGISTERED, 
+		private VoipEvent [] expectedStates = { VoipEvent.LIB_INITIALIZED , 
+				VoipEvent.ACCOUNT_REGISTERING, 
+				VoipEvent.ACCOUNT_REGISTERED, 
 				VoipEvent.CALL_INCOMING,
 				VoipEvent.CALL_ACTIVE,
 				VoipEvent.CALL_HANGUP,
-				VoipEvent.UNREGISTERING,
-				VoipEvent.UNREGISTERED,
-				VoipEvent.DEINITIALIZING,
-				VoipEvent.DEINITIALIZE_DONE};
+				VoipEvent.ACCOUNT_UNREGISTERING,
+				VoipEvent.ACCOUNT_UNREGISTERED,
+				VoipEvent.LIB_DEINITIALIZING,
+				VoipEvent.LIB_DEINITIALIZE_DONE};
 		
 		public AnswerCallHandler(MainActivity app, VoipLib myVoip) {
 			super(app, myVoip);
@@ -97,8 +97,8 @@ public class MainActivity extends Activity {
 			assert( myState.getEvent()==expectedStates[curStateIndex]);
 			curStateIndex++;
 			// Register the account after the Lib Initialization
-			if (myState.getEvent()==VoipEvent.INITIALIZED)   myVoip.registerAccount();	
-			else if (myState.getEvent()==VoipEvent.REGISTERED)    this.app.addInfoLine("Ready to accept calls"); 														
+			if (myState.getEvent()==VoipEvent.LIB_INITIALIZED)   myVoip.registerAccount();	
+			else if (myState.getEvent()==VoipEvent.ACCOUNT_REGISTERED)    this.app.addInfoLine("Ready to accept calls"); 														
 			else if (myState.getEvent()==VoipEvent.CALL_INCOMING)  handleIncomingCall();
 			else if  (myState.getEvent()==VoipEvent.CALL_ACTIVE)    {
 				//this.app.waitForSeconds(20);
@@ -108,7 +108,7 @@ public class MainActivity extends Activity {
 			else if (myState.getEvent()==VoipEvent.CALL_HANGUP)    {    setupButtons(false);
 				                                                        myVoip.unregisterAccount();	}
 			// Deinitialize the Voip Lib and release all allocated resources
-			else if (myState.getEvent()==VoipEvent.UNREGISTERED)  myVoip.destroyLib();
+			else if (myState.getEvent()==VoipEvent.ACCOUNT_UNREGISTERED)  myVoip.destroyLib();
 			     
 		}
 	   

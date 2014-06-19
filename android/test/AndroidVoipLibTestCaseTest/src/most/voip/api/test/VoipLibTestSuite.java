@@ -28,13 +28,13 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
 		
 		AccountRegistrationHandlerTest () {
 			
-			this.expectedEvents = new VoipEvent[] {VoipEvent.INITIALIZED , 
-					VoipEvent.REGISTERING, 
-					VoipEvent.REGISTERED, 
-					VoipEvent.UNREGISTERING,
-					VoipEvent.UNREGISTERED,
-					VoipEvent.DEINITIALIZING,
-					VoipEvent.DEINITIALIZE_DONE};
+			this.expectedEvents = new VoipEvent[] {VoipEvent.LIB_INITIALIZED , 
+					VoipEvent.ACCOUNT_REGISTERING, 
+					VoipEvent.ACCOUNT_REGISTERED, 
+					VoipEvent.ACCOUNT_UNREGISTERING,
+					VoipEvent.ACCOUNT_UNREGISTERED,
+					VoipEvent.LIB_DEINITIALIZING,
+					VoipEvent.LIB_DEINITIALIZE_DONE};
 		}
  
 		
@@ -47,9 +47,9 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
 			
 			assertEquals( myEvent.getEvent(), expectedEvents[curStateIndex]);
 			curStateIndex++;
-			     if (myEvent.getEvent()==VoipEvent.INITIALIZED)   assertTrue(myVoip.registerAccount());	
-			else if (myEvent.getEvent()==VoipEvent.REGISTERED)    assertTrue(myVoip.unregisterAccount());	
-			else if (myEvent.getEvent()==VoipEvent.UNREGISTERED)  assertTrue(myVoip.destroyLib());
+			     if (myEvent.getEvent()==VoipEvent.LIB_INITIALIZED)   assertTrue(myVoip.registerAccount());	
+			else if (myEvent.getEvent()==VoipEvent.ACCOUNT_REGISTERED)    assertTrue(myVoip.unregisterAccount());	
+			else if (myEvent.getEvent()==VoipEvent.ACCOUNT_UNREGISTERED)  assertTrue(myVoip.destroyLib());
 
 			return false;
 		}
@@ -60,16 +60,16 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
 		
 		 MakeCallHandlerTest () {
 			
-			this.expectedEvents = new VoipEvent[] {VoipEvent.INITIALIZED , 
-					VoipEvent.REGISTERING, 
-					VoipEvent.REGISTERED, 
+			this.expectedEvents = new VoipEvent[] {VoipEvent.LIB_INITIALIZED , 
+					VoipEvent.ACCOUNT_REGISTERING, 
+					VoipEvent.ACCOUNT_REGISTERED, 
 					VoipEvent.CALL_DIALING,
 					VoipEvent.CALL_ACTIVE,
 					VoipEvent.CALL_HANGUP,
-					VoipEvent.UNREGISTERING,
-					VoipEvent.UNREGISTERED,
-					VoipEvent.DEINITIALIZING,
-					VoipEvent.DEINITIALIZE_DONE};
+					VoipEvent.ACCOUNT_UNREGISTERING,
+					VoipEvent.ACCOUNT_UNREGISTERED,
+					VoipEvent.LIB_DEINITIALIZING,
+					VoipEvent.LIB_DEINITIALIZE_DONE};
 		}
  
 		
@@ -83,11 +83,11 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
 			
 			assertEquals( myEvent.getEvent(), expectedEvents[curStateIndex]);
 			curStateIndex++;
-			     if (myEvent.getEvent()==VoipEvent.INITIALIZED)   assertTrue(myVoip.registerAccount());	
-			else if (myEvent.getEvent()==VoipEvent.REGISTERED)    assertTrue(myVoip.makeCall("destination_test_extension"));	
+			     if (myEvent.getEvent()==VoipEvent.LIB_INITIALIZED)   assertTrue(myVoip.registerAccount());	
+			else if (myEvent.getEvent()==VoipEvent.ACCOUNT_REGISTERED)    assertTrue(myVoip.makeCall("destination_test_extension"));	
 			else if (myEvent.getEvent()==VoipEvent.CALL_ACTIVE)   assertTrue(myVoip.hangupCall());	
 			else if (myEvent.getEvent()==VoipEvent.CALL_HANGUP)   assertTrue(myVoip.unregisterAccount());	
-			else if (myEvent.getEvent()==VoipEvent.UNREGISTERED)  assertTrue(myVoip.destroyLib());
+			else if (myEvent.getEvent()==VoipEvent.ACCOUNT_UNREGISTERED)  assertTrue(myVoip.destroyLib());
 
 			return false;
 		}
@@ -99,16 +99,16 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
 		
 		 AnswerCallHandlerTest () {
 			
-			this.expectedEvents = new VoipEvent[] {VoipEvent.INITIALIZED , 
-					VoipEvent.REGISTERING, 
-					VoipEvent.REGISTERED, 
+			this.expectedEvents = new VoipEvent[] {VoipEvent.LIB_INITIALIZED , 
+					VoipEvent.ACCOUNT_REGISTERING, 
+					VoipEvent.ACCOUNT_REGISTERED, 
 					VoipEvent.CALL_INCOMING,
 					VoipEvent.CALL_ACTIVE,
 					VoipEvent.CALL_HANGUP,
-					VoipEvent.UNREGISTERING,
-					VoipEvent.UNREGISTERED,
-					VoipEvent.DEINITIALIZING,
-					VoipEvent.DEINITIALIZE_DONE};
+					VoipEvent.ACCOUNT_UNREGISTERING,
+					VoipEvent.ACCOUNT_UNREGISTERED,
+					VoipEvent.LIB_DEINITIALIZING,
+					VoipEvent.LIB_DEINITIALIZE_DONE};
 		}
 
 		 private void notifyIncomingCall()
@@ -131,8 +131,8 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
 			
 			assertEquals( myEvent.getEvent(), expectedEvents[curStateIndex]);
 			curStateIndex++;
-			     if (myEvent.getEvent()==VoipEvent.INITIALIZED)   { assertEquals(CallState.IDLE, myVoip.getCallState()); assertTrue(myVoip.registerAccount());	}
-			else if (myEvent.getEvent()==VoipEvent.REGISTERED)    this.notifyIncomingCall();	
+			     if (myEvent.getEvent()==VoipEvent.LIB_INITIALIZED)   { assertEquals(CallState.IDLE, myVoip.getCallState()); assertTrue(myVoip.registerAccount());	}
+			else if (myEvent.getEvent()==VoipEvent.ACCOUNT_REGISTERED)    this.notifyIncomingCall();	
 			else if (myEvent.getEvent()==VoipEvent.CALL_INCOMING) {  //assertEquals(CallState.INCOMING, myVoip.getCallState()); // non simulato...
 				                                                     assertTrue(myVoip.answerCall());
 																	}
@@ -142,7 +142,7 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
 			else if (myEvent.getEvent()==VoipEvent.CALL_HANGUP)   {assertEquals(CallState.IDLE, 
 					                                               myVoip.getCallState());assertTrue(myVoip.unregisterAccount());}
 			     
-			else if (myEvent.getEvent()==VoipEvent.UNREGISTERED)  {assertEquals(CallState.IDLE, myVoip.getCallState());
+			else if (myEvent.getEvent()==VoipEvent.ACCOUNT_UNREGISTERED)  {assertEquals(CallState.IDLE, myVoip.getCallState());
 																   assertTrue(myVoip.destroyLib());
 																		}
 

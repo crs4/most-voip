@@ -4,7 +4,7 @@ Created on 28/apr/2014
 @author: smonni
 '''
 import logging
-from most.voip.states import VoipState
+from most.voip.states import VoipEvent
 import time
 
 class MockVoipState:
@@ -36,17 +36,17 @@ class MockVoipBackend:
         self.rootLogger.debug("Initialing with params:%s" % params)
         self.notification_cb = notification_cb
         self.params = params
-        self.notification_cb(VoipState.Initializing, { 'State': VoipState.Initializing ,'Success' : True})
+        self.notification_cb(VoipEvent.Initializing, { 'State': VoipEvent.Initializing ,'Success' : True})
         time.sleep(0.5)
         self.state = MockVoipState.INITIALIZED
-        self.notification_cb(VoipState.Initialized, { 'State': VoipState.Initialized ,'Success' : True})
+        self.notification_cb(VoipEvent.Initialized, { 'State': VoipEvent.Initialized ,'Success' : True})
         return True
     
     def destroy_lib(self):
-        self.notification_cb(VoipState.Deinitializing, { 'State': VoipState.Deinitializing ,'Success' : True})
+        self.notification_cb(VoipEvent.Deinitializing, { 'State': VoipEvent.Deinitializing ,'Success' : True})
         time.sleep(0.5);
         self.state = MockVoipState.NOT_INITIALIZED
-        self.notification_cb(VoipState.DeinitializeDone, { 'State': VoipState.DeinitializeDone ,'Success' : True})
+        self.notification_cb(VoipEvent.DeinitializeDone, { 'State': VoipEvent.DeinitializeDone ,'Success' : True})
          
         return True
     
@@ -55,51 +55,51 @@ class MockVoipBackend:
         if self.state == MockVoipState.NOT_INITIALIZED:
             return False
         self.rootLogger.debug("Registering account...")
-        self.notification_cb(VoipState.Registering, { 'State': VoipState.Registering ,'Success' : True})
+        self.notification_cb(VoipEvent.Registering, { 'State': VoipEvent.Registering ,'Success' : True})
         time.sleep(0.5)
         self.state = MockVoipState.OK
-        self.notification_cb(VoipState.Registered, { 'State': VoipState.Registered ,'Success' : True})
+        self.notification_cb(VoipEvent.Registered, { 'State': VoipEvent.Registered ,'Success' : True})
         return True
     
     def unregister_account(self):
         if self.state != MockVoipState.OK:
-            self.notification_cb(VoipState.Unregistration_failed, { 'State': VoipState.Unregistration_failed ,'Success' : False, 'Reason': 'No account to unregister found'})
+            self.notification_cb(VoipEvent.Unregistration_failed, { 'State': VoipEvent.Unregistration_failed ,'Success' : False, 'Reason': 'No account to unregister found'})
             return False
-        self.notification_cb(VoipState.Unregistering, { 'State': VoipState.Unregistering ,'Success' : True})
+        self.notification_cb(VoipEvent.Unregistering, { 'State': VoipEvent.Unregistering ,'Success' : True})
         time.sleep(0.5)
         self.state = MockVoipState.INITIALIZED
-        self.notification_cb(VoipState.Unregistered, { 'State': VoipState.Unregistered ,'Success' : True})
+        self.notification_cb(VoipEvent.Unregistered, { 'State': VoipEvent.Unregistered ,'Success' : True})
         return True
     
     def make_call(self, extension):
         if self.state != MockVoipState.OK:
             return False
-        self.notification_cb(VoipState.Dialing, { 'State': VoipState.Dialing ,'Success' : True})
+        self.notification_cb(VoipEvent.Dialing, { 'State': VoipEvent.Dialing ,'Success' : True})
         time.sleep(0.5)
-        self.notification_cb(VoipState.Calling, { 'State': VoipState.Calling ,'Success' : True})
+        self.notification_cb(VoipEvent.Calling, { 'State': VoipEvent.Calling ,'Success' : True})
         return True
     
     def answer_call(self):
-        self.notification_cb(VoipState.Dialing, { 'State': VoipState.Dialing ,'Success' : True})
+        self.notification_cb(VoipEvent.Dialing, { 'State': VoipEvent.Dialing ,'Success' : True})
         if self.state != MockVoipState.OK:
             return False
-        self.notification_cb(VoipState.Calling, { 'State': VoipState.Calling ,'Success' : True})
+        self.notification_cb(VoipEvent.Calling, { 'State': VoipEvent.Calling ,'Success' : True})
         return True
     
     def hold_call(self):
         if self.state != MockVoipState.OK:
             return False
-        self.notification_cb(VoipState.Holding, { 'State': VoipState.Holding ,'Success' : True})
+        self.notification_cb(VoipEvent.Holding, { 'State': VoipEvent.Holding ,'Success' : True})
         return True
     
     def unhold_call(self):
         if self.state != MockVoipState.OK:
             return False
-        self.notification_cb(VoipState.Unholding, { 'State': VoipState.Unholding ,'Success' : True})
+        self.notification_cb(VoipEvent.Unholding, { 'State': VoipEvent.Unholding ,'Success' : True})
         return True
     
     def hangup_call(self):
         if self.state != MockVoipState.OK:
             return False
-        self.notification_cb(VoipState.Hangup, { 'State': VoipState.Hangup ,'Success' : True})
+        self.notification_cb(VoipEvent.Hangup, { 'State': VoipEvent.Hangup ,'Success' : True})
         return True

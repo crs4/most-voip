@@ -3,9 +3,9 @@ Created on 06/mag/2014
 
 @author: smonni
 '''
-class VoipState(object):
+class VoipEvent(object):
 
-    Name                    = 'VOIP_STATE'
+    Name                    = 'VOIP_EVENT'
 
     Null                          = '%s__NULL' % Name
     Initializing                    = '%s__INITIALIZING' % Name               # VOIP NO YET INITIALIZED
@@ -22,11 +22,11 @@ class VoipState(object):
     Unregistration_failed           = '%s__UNREGISTRATION_FAILED' % Name
     Remote_user_subscribing       = '%s__REMOTE_USER_SUBSCRIBING' % Name  # REGISTERING REMOTE USER AS BUDDY
     Remote_user_subscribing_failed  = '%s__REMOTE_USER_SUBSCRIBING_FAILED' % Name
-    Remote_user_subscribed        = '%s__REMOTE_USER_SUBSCRIBED' % Name
-    Remote_user_connected         = '%s__REMOTE_USER_CONNECTED' % Name
+    Remote_user_subscribed        = '%s__REMOTE_USER_SUBSCRIBED' % Name    # REMOTE BUDDY REGISTERED
+    Remote_user_connected         = '%s__REMOTE_USER_CONNECTED' % Name     # REMOTE BUDDY CONNECTED
     Remote_user_disconnected      = '%s__REMOTE_USER_DISCONNECTED' % Name
-    Dialing                       = '%s__CALL_DIALING' % Name
-    Incoming                       = '%s__CALL_INCOMING' % Name
+    Dialing                       = '%s__CALL_DIALING' % Name          # OUTCOMING CALL
+    Incoming                       = '%s__CALL_INCOMING' % Name        # INCOMING CALL
     Calling                       = '%s__CALL_ACTIVE' % Name
     Holding                       = '%s__CALL_HOLDING' % Name
     RemoteHolding                 = '%s__CALL_REMOTE_HOLDING' % Name
@@ -35,7 +35,6 @@ class VoipState(object):
     Hangup                        = '%s__CALL_HANGUP' % Name
     RemoteHangup                  = '%s__CALL_REMOTE_HANGUP' % Name
     RemoteDisconnectionHangup     = '%s__CALL_REMOTE_DISCONNECTION_HANGUP' % Name
-    ExitingDone                   = '%s__EXITING_DONE' % Name
     Deinitializing              = '%s__DEINITIALIZING' % Name
     DeinitializeDone              = '%s__DEINITIALIZE_DONE' % Name
     DeinitializeFailed              = '%s__DEINITIALIZE_FAILED' % Name

@@ -20,6 +20,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
@@ -92,9 +94,17 @@ public class MainActivity extends Activity {
 		@Override
 		public void handleMessage(Message voipMessage) {
 		
+			if (voipMessage.what == -1) {
+				Log.d(TAG,"App exiting request");
+				myVoip.destroyLib();
+				finish();
+				Runtime.getRuntime().gc();
+				android.os.Process.killProcess(android.os.Process.myPid());
+				return;
+			} 
+
 			VoipEventBundle myEventBundle = getEventBundle(voipMessage);
-			Log.d(TAG, "CHIAMATO HANDLE MESSAGE CON MESSAGE TYPE:" + myEventBundle.getMsgType());
-			Log.d(TAG, "CHIAMATO HANDLE MESSAGE CON VOIP EVENT:" + myEventBundle.getEvent());
+			Log.d(TAG, "HANDLE MESSAGE TYPE:" + myEventBundle.getMsgType() + " EVENT:" + myEventBundle.getEvent());
 			
 			updateCallStateInfo();
 			updateServerStateInfo();
@@ -108,8 +118,8 @@ public class MainActivity extends Activity {
 				updateBuddyStateInfo(myBuddy);
 			}
 			// Register the account after the Lib Initialization
-			if (myEventBundle.getEvent()==VoipEvent.INITIALIZED)   myVoip.registerAccount();	
-			else if (myEventBundle.getEvent()==VoipEvent.REGISTERED)    {
+			if (myEventBundle.getEvent()==VoipEvent.LIB_INITIALIZED)   myVoip.registerAccount();	
+			else if (myEventBundle.getEvent()==VoipEvent.ACCOUNT_REGISTERED)    {
 																	this.app.addInfoLine("Ready to accept calls (adding buddy...)");
 			 													    //add a buddy so that we can receive presence notifications from it
 			                                                        subscribeBuddies();
@@ -127,7 +137,7 @@ public class MainActivity extends Activity {
 				                                                       // myVoip.unregisterAccount();
 				                                                   }
 			// Deinitialize the Voip Lib and release all allocated resources
-			else if (myEventBundle.getEvent()==VoipEvent.DEINITIALIZE_DONE || myEventBundle.getEvent()==VoipEvent.DEINITIALIZE_FAILED) 
+			else if (myEventBundle.getEvent()==VoipEvent.LIB_DEINITIALIZE_DONE || myEventBundle.getEvent()==VoipEvent.LIB_DEINITIALIZE_FAILED) 
 			{
 				Log.d(TAG,"Setting to null MyVoipLib");
 				this.app.myVoip = null;
@@ -164,6 +174,41 @@ public class MainActivity extends Activity {
         
         //this.runExample();
     }
+    
+    @Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.main, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		 
+
+		case R.id.action_quit:
+			if (this.voipHandler!=null)
+			{
+				Message m = Message.obtain(this.voipHandler, -1);
+				m.sendToTarget();
+				break;
+			}
+			else
+			{
+				Log.d(TAG,"Exiting app");
+				finish();
+				Runtime.getRuntime().gc();
+				android.os.Process.killProcess(android.os.Process.myPid());
+			}
+			
+			
+		default:
+			break;
+		}
+
+		return true;
+	} 	
     
     private String getBuddyUri(String extension)
 	{

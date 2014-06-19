@@ -45,7 +45,7 @@ public class MockVoipLib implements VoipLib{
 		Log.d(TAG, "Called initLib");
 		this.currentCallState = CallState.IDLE;
 		this.notificationHandler = notificationHandler;
-		this.notifyState(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.INITIALIZED, "Inizialization Ok", null));
+		this.notifyState(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_INITIALIZED, "Inizialization Ok", null));
 		return true;
 	}
 
@@ -53,9 +53,9 @@ public class MockVoipLib implements VoipLib{
 	public boolean destroyLib() {
 		this.currentCallState = CallState.IDLE;
 		Log.d(TAG, "Called destroyLib");
-		this.notifyState(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.DEINITIALIZING, "Voip Lib destroying...", null));
+		this.notifyState(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZING, "Voip Lib destroying...", null));
 		this.simulatePause(1);
-		this.notifyState(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.DEINITIALIZE_DONE, "Voip Lib destroyed", null));
+		this.notifyState(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZE_DONE, "Voip Lib destroyed", null));
 		return true;
 	}
     
@@ -72,18 +72,18 @@ public class MockVoipLib implements VoipLib{
 	@Override
 	public boolean registerAccount() {
 		Log.d(TAG, "Called registerAccount");
-		this.notifyState(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.REGISTERING, "Account Registration request sent", null));
+		this.notifyState(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_REGISTERING, "Account Registration request sent", null));
 		this.simulatePause(1);
-		this.notifyState(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.REGISTERED, "Account Registered", null));
+		this.notifyState(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_REGISTERED, "Account Registered", null));
 		return true;
 	}
 
 	@Override
 	public boolean unregisterAccount() {
 		Log.d(TAG, "Called unregisterAccount");
-		this.notifyState(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.UNREGISTERING, "Account Unregistration request sent", null));
+		this.notifyState(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_UNREGISTERING, "Account Unregistration request sent", null));
 		this.simulatePause(1);
-		this.notifyState(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.UNREGISTERED, "Account Unregistered", null));
+		this.notifyState(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_UNREGISTERED, "Account Unregistered", null));
 		return true;
 	}
 
