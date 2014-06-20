@@ -53,6 +53,8 @@ private Handler notificationHandler = null;
 
 MediaPlayer mediaPlayer = null;
 private Context context;
+private HashMap<String,String> configParams = new HashMap<String,String>();
+private boolean onHoldSoundIsPlaying = false;
 
 private final static String TAG = "VoipLib"; 
     public VoipLibBackend()
@@ -88,8 +90,9 @@ private final static String TAG = "VoipLib";
     public boolean initLib(Context context, HashMap<String,String> configParams, Handler notificationHandler)
     {
     	Log.d((TAG), "initializing");
-    	
+    	//Utils.copyAssets(context);
     	this.context = context;
+    	this.configParams = configParams;
     	this.notificationHandler = notificationHandler;
     	/* Create endpoint */
 		try {
@@ -590,49 +593,54 @@ private final static String TAG = "VoipLib";
 	
 	private void playOnHoldSound()  
 	{
-		Log.d(TAG,"playOnHoldSound....DISABLED");
+		Log.d(TAG,"playOnHoldSound....");
 		
-		//if (currentCall==null) return;
-	     
-		//String file_name = "assets/queue-reporthold.gsm";
-		//Uri fileUri = Uri.parse("android.resource://most.voip/" + most.voip.R.raw.test_hold);
+		 if (!this.configParams.containsKey("onHoldSound"))
+		 {
+			 Log.d(TAG,"No OnHold Sound found in configuration!");
+			 return;
+		 }
 		
-		/*
+		//String file_name = "/storage/sdcard0/Android/data/most.voip.example1/files/test_hold.wav";
+		String file_name = this.configParams.get("onHoldSound");
+		
 		try {
-			Log.d(TAG,"Instancing media player....DISABLED");
+			Log.d(TAG,"Instancing AudioMedia for OnHoldSound:" + file_name);
 			Log.d(TAG,"Application Context:" + this.context);
 		 
-			//this.mediaPlayer = MediaPlayer.create(this.context , most.voip.R.raw.test_hold);
-		    Log.d(TAG,"Trying playing audio file");
-			mediaPlayer.setLooping(true);
-			mediaPlayer.start(); // no need to call prepare(); create() does that for you
-		 
-			
-			 
 			AudioMedia am = this.ep.audDevManager().getPlaybackDevMedia();
-			player.createPlayer(fileUri.getPath());
+			player.createPlayer(file_name);
 			player.startTransmit(am);
-		 
+			onHoldSoundIsPlaying = true;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			Log.e(TAG, "Error playing the file:"  + e.getMessage());
 		}
-		 */
+		  
 	}
 	
 	private void stopOnHoldSound()
 	{
-		
-		Log.d(TAG,"Trying to stop audio file DISABLED");
-		/*
-		if (this.mediaPlayer!=null)
+		Log.d(TAG,"Trying to stop audio file");
+	 
+		if (player!=null && onHoldSoundIsPlaying)
 		{
-			Log.d(TAG,"Stop  audio file...");
-			this.mediaPlayer.stop();
-			Log.d(TAG,"Audio File Stopped");
+			AudioMedia sink;
+			try {
+				Log.d(TAG,"get sink...");
+				sink = this.ep.audDevManager().getPlaybackDevMedia();
+				Log.d(TAG,"Sink:" + sink);
+				Log.d(TAG,"Stopping sink");
+				player.stopTransmit(sink);
+				Log.d(TAG,"Sink stopped");
+				onHoldSoundIsPlaying = false;
+				
+			} catch (Exception e) {
+				Log.e(TAG, "Exception stopping the sink " + e);
+				e.printStackTrace();
+			}
 		}
-		*/
 	}
 	
 	// Subclass to extend the Account and get notifications etc.

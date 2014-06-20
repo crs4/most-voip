@@ -118,7 +118,8 @@ public class MainActivity extends Activity {
 				updateBuddyStateInfo(myBuddy);
 			}
 			// Register the account after the Lib Initialization
-			if (myEventBundle.getEvent()==VoipEvent.LIB_INITIALIZED)   myVoip.registerAccount();	
+			if (myEventBundle.getEvent()==VoipEvent.LIB_INITIALIZED)   {myVoip.registerAccount();
+																			}	
 			else if (myEventBundle.getEvent()==VoipEvent.ACCOUNT_REGISTERED)    {
 																	this.app.addInfoLine("Ready to accept calls (adding buddy...)");
 			 													    //add a buddy so that we can receive presence notifications from it
@@ -201,8 +202,6 @@ public class MainActivity extends Activity {
 				Runtime.getRuntime().gc();
 				android.os.Process.killProcess(android.os.Process.myPid());
 			}
-			
-			
 		default:
 			break;
 		}
@@ -306,6 +305,20 @@ public class MainActivity extends Activity {
 		butHangup.setEnabled(active);
 	}
     
+    
+    private HashMap<String,String> buildParams()
+    {
+    	HashMap<String,String> params = new HashMap<String,String>();
+		params.put("sipServerIp",serverIp);  //"156.148.33.223";"192.168.1.83"
+		params.put("userName","steand");
+		params.put("userPwd","steand");
+		String onHoldSoundPath = Utils.getResourcePathByAssetCopy(this.getApplicationContext(), "", "test_hold.wav");
+		Log.d(TAG,"OnHoldSoundPath:" + onHoldSoundPath);
+		params.put("onHoldSound", onHoldSoundPath);
+		//params.put("sipPort","5060"); // optional: default 5060
+		return params;
+    	
+    }
     private void runExample()
     {
     	this.clearInfoLines();
@@ -313,11 +326,7 @@ public class MainActivity extends Activity {
 		
     	// Voip Lib Initialization Params
 
-		HashMap<String,String> params = new HashMap<String,String>();
-		params.put("sipServerIp",serverIp);  //"156.148.33.223";"192.168.1.83"
-		params.put("userName","steand");
-		params.put("userPwd","steand");
-		//params.put("sipPort","5060"); // optional: default 5060
+		HashMap<String,String> params = buildParams();
 		
 		Log.d(TAG, "Initializing the lib...");
 		if (myVoip==null)
