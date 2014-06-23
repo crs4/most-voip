@@ -2,12 +2,20 @@ package most.voip.api;
 
 import java.util.HashMap;
 
+import most.voip.api.enums.BuddyState;
+import most.voip.api.enums.CallState;
+import most.voip.api.enums.ServerState;
+import most.voip.api.interfaces.IBuddy;
+
+import android.content.Context;
 import android.os.Handler;
+
 
 public interface VoipLib {
 	
 	/**
 	 * Initialize the Voip Lib
+	 * @param context application context of the activity that uses this library
 	 * @param configParams All needed configuration string params. All the supported parameters are the following:
 	 * <ul>
 	 * <li>serverIp: the ip address of the Sip Server (e.g Asterisk)</li>
@@ -19,7 +27,7 @@ public interface VoipLib {
 	 * @param notificationHandler
 	 * @return
 	 */
-	public boolean initLib(HashMap<String,String> configParams, Handler notificationHandler);
+	public boolean initLib(Context context, HashMap<String,String> configParams, Handler notificationHandler);
 	
 	/**
 	 * Destroy the Voip Lib
@@ -55,17 +63,58 @@ public interface VoipLib {
     
     /**
      * Put the active call on hold status
+     * @return true if no error occurred during this operation, false otherwise
      */
-    public void holdCall();
+    public boolean holdCall();
     
     /**
      *  Put the active call on active status
+     *  @return true if no error occurred during this operation, false otherwise
      */
-    public void unholdCall();
+    public boolean unholdCall();
     
     /**
      * Close the current active call
+     * @return true if no error occurred during this operation, false otherwise
      */
-    public void hangupCall();
-       
+    public boolean hangupCall();
+     
+    /**
+     * Get the state of the current call (if any)
+     * @return the state of the current call (if any), CallState.NONE if there is no call
+     */
+    public CallState getCallState();
+    
+    /**
+     *  Get the current state of the remote Sip Server
+     * @return the current state of the remote Sip Server
+     */
+    public ServerState getServerState();
+    
+    /**
+     * Add a buddy to this account.
+     * @param uri the buddy sip uri
+     * @return True if the buddy was added to the buddy list, False otherwise
+     */
+    public boolean addBuddy(String uri);
+    
+    /**
+     * Remove the buddy from this account
+     * @param uri The sip uri of the buddy to remove
+     * @return True if the buddy was found and it was successfully removed, False otherwise
+     */
+    public boolean removeBuddy(String uri);
+    
+    /**
+     * Get  the buddy with the given extension, or null if it is not found
+     * @param uri the buddy uri
+     * @return  the buddy with the provided uri, or null if it is not found
+     */
+    public IBuddy getBuddy(String uri);
+    
+    /**
+     * Get the list of buddies of the current registered account
+     * @return the list of the buddies of the currently registered account
+     */
+    public IBuddy [] getBuddies();
 }

@@ -4,6 +4,15 @@ from most.voip.states import VoipState
 
 import time
 
+"""
+For locally testing this application, assuming that you are using asterisk as Sip Server, do the following:
+
+1) Run this script
+2) from the Asterisk CLI console type the following command:
+   originate SIP/ste extension
+   where 'ste' is the user you have just registered  by this application on the SIP server from this application
+"""
+
 if __name__ == '__main__':
     
     def notify_events(voip_state, params):
@@ -12,16 +21,29 @@ if __name__ == '__main__':
             print "Ready to accept call!"
         
         if (voip_state==VoipState.Incoming):
-            print "INCOMiNG CALL From %s" % params["from"]
+            print "INCOMING CALL From %s" % params["from"]
             time.sleep(2)
             print "Answering!"
             myVoip.answer_call()
             
         elif(voip_state==VoipState.Calling):
-            dur = 4
+            dur = 2
+            print "Waiting %s seconds before holding..."  % dur
+            time.sleep(dur)
+            myVoip.hold_call()
+              
+        elif(voip_state==VoipState.Holding):
+            dur = 2
+            print "Waiting %s seconds before unholding..."  % dur
+            time.sleep(dur)
+            myVoip.unhold_call()
+        
+        elif(voip_state==VoipState.Unholding):
+            dur = 2
             print "Waiting %s seconds before hanging up..."  % dur
             time.sleep(dur)
             myVoip.hangup_call()
+             
             
         elif (voip_state in [VoipState.RemoteDisconnectionHangup, VoipState.RemoteHangup, VoipState.Hangup]):
             print "End of call. Destroying lib..."
@@ -31,6 +53,9 @@ if __name__ == '__main__':
         elif (voip_state==VoipState.DeinitializeDone):
             print "Call End. Exiting from the app."
             sys.exit(0)
+            
+        else:
+            print "Received unhandled state:%s" % voip_state
         
         
     voip_params0 = {u'username': u'ste', 
@@ -38,7 +63,7 @@ if __name__ == '__main__':
                    u'sip_server': u'156.148.33.226' , #'u'192.168.1.79',  u'156.148.33.223' 
                    u'sip_user': u'ste', 
                    u'transport' :u'udp',
-                   # u'turn_server': u'192.168.1.79', 
+                   #u'turn_server': u'192.168.1.79', 
                    #u'turn_user': u'', 
                    #u'turn_pwd': u'',
                    u'log_level' : 1,
@@ -51,9 +76,11 @@ if __name__ == '__main__':
                           u'sip_user': u'specialista', 
                           u'turn_user': u'specialista', 
                           u'turn_pwd': u'sha1$40fcf$4718177db1b6966f64d2d436f212',
-                          u'log_level' : 1,
+                          u'log_level' : 5,
                           u'debug' : True 
                           }
+    
+    
     
     
     myVoip = VoipLib()

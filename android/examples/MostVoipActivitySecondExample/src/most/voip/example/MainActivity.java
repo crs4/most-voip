@@ -5,8 +5,8 @@ import java.util.HashMap;
 import most.voip.api.Utils;
 import most.voip.api.VoipLib;
 import most.voip.api.VoipLibBackend;
-import most.voip.api.VoipState;
-import most.voip.api.VoipStateBundle;
+import most.voip.api.VoipEventBundle;
+import most.voip.api.enums.VoipEvent;
 import most.voip.example1.R;
 import android.app.Activity;
 import android.app.Service;
@@ -54,11 +54,11 @@ public class MainActivity extends Activity {
 			this.myVoip = myVoip;
 		}
  		
- 		protected VoipStateBundle getStateBundle(Message voipMessage)
+ 		protected VoipEventBundle getStateBundle(Message voipMessage)
  		{
  			//int msg_type = voipMessage.what;
-			VoipStateBundle myState = (VoipStateBundle) voipMessage.obj;
-			String infoMsg = "State:" + myState.getState() + ":" + myState.getInfo();
+			VoipEventBundle myState = (VoipEventBundle) voipMessage.obj;
+			String infoMsg = "State:" + myState.getEvent() + ":" + myState.getInfo();
 			Log.d(TAG, "Called handleMessage with state info:" + infoMsg);
 			this.app.addInfoLine(infoMsg);
 			return myState;
@@ -70,16 +70,16 @@ public class MainActivity extends Activity {
 		
 		private String extension = null;
 		
-		private VoipState [] expectedStates = { VoipState.INITIALIZED , 
-				VoipState.REGISTERING, 
-				VoipState.REGISTERED, 
-				VoipState.CALL_DIALING,
-				VoipState.CALL_ACTIVE,
-				VoipState.CALL_HANGUP,
-				VoipState.UNREGISTERING,
-				VoipState.UNREGISTERED,
-				VoipState.DEINITIALIZING,
-				VoipState.DEINITIALIZE_DONE};
+		private VoipEvent [] expectedStates = { VoipEvent.LIB_INITIALIZED , 
+				VoipEvent.ACCOUNT_REGISTERING, 
+				VoipEvent.ACCOUNT_REGISTERED, 
+				VoipEvent.CALL_DIALING,
+				VoipEvent.CALL_ACTIVE,
+				VoipEvent.CALL_HANGUP,
+				VoipEvent.ACCOUNT_UNREGISTERING,
+				VoipEvent.ACCOUNT_UNREGISTERED,
+				VoipEvent.LIB_DEINITIALIZING,
+				VoipEvent.LIB_DEINITIALIZED};
 		
 		public MakeCallHandler(MainActivity app, VoipLib myVoip) {
 			super(app, myVoip);
@@ -89,21 +89,21 @@ public class MainActivity extends Activity {
 
 		@Override
 		public void handleMessage(Message voipMessage) {
-			VoipStateBundle myState = getStateBundle(voipMessage);
+			VoipEventBundle myState = getStateBundle(voipMessage);
 			
-			assert( myState.getState()==expectedStates[curStateIndex]);
+			assert( myState.getEvent()==expectedStates[curStateIndex]);
 			curStateIndex++;
 			// Register the account after the Lib Initialization
-			if (myState.getState()==VoipState.INITIALIZED)   myVoip.registerAccount();	
-			else if (myState.getState()==VoipState.REGISTERED)    myVoip.makeCall(extension);	
-			else if  (myState.getState()==VoipState.CALL_ACTIVE)    {
+			if (myState.getEvent()==VoipEvent.LIB_INITIALIZED)   myVoip.registerAccount();	
+			else if (myState.getEvent()==VoipEvent.ACCOUNT_REGISTERED)    myVoip.makeCall(extension);	
+			else if  (myState.getEvent()==VoipEvent.CALL_ACTIVE)    {
 				//this.app.waitForSeconds(20);
 				//myVoip.hangupCall();
 			}
 			// Unregister the account
-			else if (myState.getState()==VoipState.CALL_HANGUP)    myVoip.unregisterAccount();	
+			else if (myState.getEvent()==VoipEvent.CALL_HANGUP)    myVoip.unregisterAccount();	
 			// Deinitialize the Voip Lib and release all allocated resources
-			else if (myState.getState()==VoipState.UNREGISTERED)  myVoip.destroyLib();
+			else if (myState.getEvent()==VoipEvent.ACCOUNT_UNREGISTERED)  myVoip.destroyLib();
 			     
 		}
 	   
@@ -177,7 +177,7 @@ public class MainActivity extends Activity {
 		// Initialize the library providing custom initialization params and an handler where
 		// to receive event notifications. Following Voip methods are called form the handleMassage() callback method
 		//boolean result = myVoip.initLib(params, new RegistrationHandler(this, myVoip));
-		boolean result = myVoip.initLib(params, new MakeCallHandler(this, myVoip));
+		boolean result = myVoip.initLib(this.getApplicationContext(),params, new MakeCallHandler(this, myVoip));
     }
     
     public void waitForSeconds(int secs)

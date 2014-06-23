@@ -1,7 +1,7 @@
 import unittest
 
 from most.voip.api import VoipLib
-from most.voip.states import VoipState
+from most.voip.states import VoipEvent
 from most.voip.api_backend import VoipBackend
 from mock_voip import MockVoipBackend
 
@@ -14,7 +14,7 @@ class VoipTestCase(unittest.TestCase):
         super(VoipTestCase,self).__init__(test_method)
      
         self.voip = VoipLib(backend)
-        
+        self.holding_event_already_triggered = False
         self.curStateIndex = 0
     
         self.extension = "1234"; #"REMOTE0002"; # "1234"
@@ -59,13 +59,13 @@ class VoipTestCase(unittest.TestCase):
 
         self.curStateIndex+=1
          
-        if (voip_state==VoipState.Initialized):
+        if (voip_state==VoipEvent.LIB_INITIALIZED):
             self.assertTrue(self.voip.register_account());    
-        elif (voip_state==VoipState.Registered):
+        elif (voip_state==VoipEvent.ACCOUNT_REGISTERED):
             self.assertTrue(self.voip.unregister_account());    
-        elif (voip_state==VoipState.Unregistered):
+        elif (voip_state==VoipEvent.ACCOUNT_UNREGISTERED):
             self.assertTrue(self.voip.destroy_lib());
-        elif (voip_state==VoipState.DeinitializeDone):
+        elif (voip_state==VoipEvent.LIB_DEINITIALIZED):
             print "Ok."
    
     def make_call_notification_cb(self, voip_state, params):
@@ -76,32 +76,32 @@ class VoipTestCase(unittest.TestCase):
 
         self.curStateIndex+=1
          
-        if (voip_state==VoipState.Initialized):
+        if (voip_state==VoipEvent.LIB_INITIALIZED):
             self.assertTrue(self.voip.register_account());    
-        elif (voip_state==VoipState.Registered):
+        elif (voip_state==VoipEvent.ACCOUNT_REGISTERED):
             self.assertTrue(self.voip.make_call(self.extension)); 
-        elif (voip_state==VoipState.Dialing):
+        elif (voip_state==VoipEvent.CALL_DIALING):
             pass   
-        elif (voip_state==VoipState.Calling):
+        elif (voip_state==VoipEvent.CALL_ACTIVE):
             time.sleep(2)
-            #self.assertTrue(self.voip.hold_call()); 
+            self.assertTrue(self.voip.hold_call()); 
+                
+        elif (voip_state==VoipEvent.CALL_HOLDING):
+            time.sleep(0.5)
+            self.assertTrue(self.voip.unhold_call()); 
+        elif (voip_state==VoipEvent.CALL_UNHOLDING):
             self.assertTrue(self.voip.hangup_call()); 
-#         elif (voip_state==VoipState.Holding):
-#             time.sleep(0.5)
-#             self.assertTrue(self.voip.unhold_call()); 
-#         elif (voip_state==VoipState.Unholding):
-#            self.assertTrue(self.voip.hangup_call()); 
-        elif (voip_state==VoipState.Hangup):
+        elif (voip_state==VoipEvent.CALL_HANGUP):
             self.assertTrue(self.voip.unregister_account());  
-        elif (voip_state==VoipState.Unregistered):
+        elif (voip_state==VoipEvent.ACCOUNT_UNREGISTERED):
             self.assertTrue(self.voip.destroy_lib());
-        elif (voip_state==VoipState.DeinitializeDone):
+        elif (voip_state==VoipEvent.LIB_DEINITIALIZED):
             print "Ok."
         
     def setUp(self):
         print "Running test:%s" % self._testMethodName
         self.curStateIndex = 0
-        self.voipState = VoipState.Null
+        self.voipState = VoipEvent.Null
        
     def tearDown(self):
         print "Test:%s completed." % self._testMethodName
@@ -111,14 +111,14 @@ class VoipTestCase(unittest.TestCase):
     def etest_account_registration(self):
         
         self.expectedStates = [
-                        VoipState.Initializing, 
-                        VoipState.Initialized , 
-                        VoipState.Registering, 
-                        VoipState.Registered, 
-                        VoipState.Unregistering,
-                        VoipState.Unregistered,
-                        VoipState.Deinitializing,
-                        VoipState.DeinitializeDone
+                        VoipEvent.LIB_INITIALIZING, 
+                        VoipEvent.LIB_INITIALIZED , 
+                        VoipEvent.ACCOUNT_REGISTERING, 
+                        VoipEvent.ACCOUNT_REGISTERED, 
+                        VoipEvent.ACCOUNT_UNREGISTERING,
+                        VoipEvent.ACCOUNT_UNREGISTERED,
+                        VoipEvent.LIB_DEINITIALIZING,
+                        VoipEvent.LIB_DEINITIALIZED
                         ]
          
         result = self.voip.init_lib(self.params, self.account_reg_notification_cb)
@@ -132,19 +132,19 @@ class VoipTestCase(unittest.TestCase):
     def test_make_call(self):
         
         self.expectedStates = [
-                        VoipState.Initializing, 
-                        VoipState.Initialized , 
-                        VoipState.Registering, 
-                        VoipState.Registered, 
-                        VoipState.Dialing,
-                        VoipState.Calling,
-#                         VoipState.Holding,
-#                         VoipState.Unholding,
-                        VoipState.Hangup,
-                        VoipState.Unregistering,
-                        VoipState.Unregistered,
-                        VoipState.Deinitializing,
-                        VoipState.DeinitializeDone
+                        VoipEvent.LIB_INITIALIZING, 
+                        VoipEvent.LIB_INITIALIZED , 
+                        VoipEvent.ACCOUNT_REGISTERING, 
+                        VoipEvent.ACCOUNT_REGISTERED, 
+                        VoipEvent.CALL_DIALING,
+                        VoipEvent.CALL_ACTIVE,
+                        VoipEvent.CALL_HOLDING,
+                        VoipEvent.CALL_UNHOLDING,
+                        VoipEvent.CALL_HANGUP,
+                        VoipEvent.ACCOUNT_UNREGISTERING,
+                        VoipEvent.ACCOUNT_UNREGISTERED,
+                        VoipEvent.LIB_DEINITIALIZING,
+                        VoipEvent.LIB_DEINITIALIZED
                         ]
          
         result = self.voip.init_lib(self.params, self.make_call_notification_cb)
@@ -157,16 +157,16 @@ class VoipTestCase(unittest.TestCase):
 #      
 #     def test_register_account(self):
 #         self.assertTrue(self.voip.register_account(), "Error registering the account!")
-#         self.assertEquals(self.voipState, VoipState.Registered,"Registration state failed") 
+#         self.assertEquals(self.voipState, VoipEvent.Registered,"Registration state failed") 
 #         
 #     def test_unregister_account(self):
 #         self.assertTrue(self.voip.unregister_account(), "Error unregistering the account!")
-#         self.assertEquals(self.voipState, VoipState.Unregistered,"Unregistration state failed") 
+#         self.assertEquals(self.voipState, VoipEvent.Unregistered,"Unregistration state failed") 
 #     
 #    
 #     def test_make_call(self):
 #         self.assertTrue(self.voip.make_call(self.extension), "Failed making a call to extension %s" % self.extension)
-#         #self.assertEquals(self.voipState, VoipState.Dialing,"Dialing state failed") 
+#         #self.assertEquals(self.voipState, VoipEvent.Dialing,"Dialing state failed") 
 #     
 #     
 #     def test_answer_call(self):
@@ -174,15 +174,15 @@ class VoipTestCase(unittest.TestCase):
 #          
 #     def test_hold(self):
 #         self.assertTrue(self.voip.hold_call(), "Failed holding the call")
-#         self.assertEquals(self.voipState, VoipState.Holding,"Holding state failed") 
+#         self.assertEquals(self.voipState, VoipEvent.Holding,"Holding state failed") 
 #         
 #     def test_unhold(self):
 #         self.assertTrue(self.voip.unhold_call(), "Failed unholding the call")
-#         self.assertEquals(self.voipState, VoipState.Unholding,"Unholding state failed") 
+#         self.assertEquals(self.voipState, VoipEvent.Unholding,"Unholding state failed") 
 #      
 #     def test_hungup(self):
 #         self.assertTrue(self.voip.hungup_call(), "Failed hunging up the call")
-#         self.assertEquals(self.voipState, VoipState.Hungup,"Hungup state failed") 
+#         self.assertEquals(self.voipState, VoipEvent.Hungup,"Hungup state failed") 
 #     
 #      
 #     def test_finalize(self):
@@ -207,10 +207,10 @@ def getRealVoipSuite():
 
  
 if __name__ == '__main__':
-    pass
-    #myDummySuite = getDummyVoipSuite()
-    myRealSuite = getRealVoipSuite()
+    #pass
+    myDummySuite = getDummyVoipSuite()
+    #myRealSuite = getRealVoipSuite()
     runner = unittest.TextTestRunner()
-    #runner.run(myDummySuite)
-    runner.run(myRealSuite)
+    runner.run(myDummySuite)
+    #runner.run(myRealSuite)
     

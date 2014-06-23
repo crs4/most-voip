@@ -1,3 +1,7 @@
+[Jun 11 15:41:45] WARNING[1888][C-00000011]: chan_sip.c:10098 process_sdp: Ignoring audio media offer because port number is zero
+[Jun 11 15:41:45] WARNING[1888][C-00000011]: chan_sip.c:10497 process_sdp: Insufficient information in SDP (c=)...
+
+
 // Auth creds
  
 D/VoipLib (27001):          "authCreds":            [ 
