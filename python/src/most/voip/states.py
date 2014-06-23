@@ -7,37 +7,41 @@ class VoipEvent(object):
 
     Name                    = 'VOIP_EVENT'
 
-    Null                          = '%s__NULL' % Name
-    Initializing                    = '%s__INITIALIZING' % Name               # VOIP NO YET INITIALIZED
-    Initialized                   = '%s__INITIALIZED' % Name              # VOIP INITIALIZED
-    Initialize_failed             = '%s__INITIALIZE_FAILED' % Name         # VOIP INITIALIZATION FAILED
-    Connecting                    = '%s__CONNECTING' % Name               # CONNECTING TO SIP SERVER
-    Connected                     = '%s__CONNECTED' % Name                # SIP SERVER ON LINE
-    Connection_failed             = '%s__CONNECTION_FAILED' % Name
-    Registering                   = '%s__REGISTERING' % Name             # REGISTERING LOCAL USER TO SIP SERVER
-    Unregistering                   = '%s__UNREGISTERING' % Name             # UNREGISTERING LOCAL USER FROM SIP SERVER
-    Registered                    = '%s__REGISTERED' % Name
-    Unregistered                    = '%s__UNREGISTERED' % Name
-    Registration_failed           = '%s__REGISTRATION_FAILED' % Name
-    Unregistration_failed           = '%s__UNREGISTRATION_FAILED' % Name
-    Remote_user_subscribing       = '%s__REMOTE_USER_SUBSCRIBING' % Name  # REGISTERING REMOTE USER AS BUDDY
-    Remote_user_subscribing_failed  = '%s__REMOTE_USER_SUBSCRIBING_FAILED' % Name
-    Remote_user_subscribed        = '%s__REMOTE_USER_SUBSCRIBED' % Name    # REMOTE BUDDY REGISTERED
-    Remote_user_connected         = '%s__REMOTE_USER_CONNECTED' % Name     # REMOTE BUDDY CONNECTED
-    Remote_user_disconnected      = '%s__REMOTE_USER_DISCONNECTED' % Name
-    Dialing                       = '%s__CALL_DIALING' % Name          # OUTCOMING CALL
-    Incoming                       = '%s__CALL_INCOMING' % Name        # INCOMING CALL
-    Calling                       = '%s__CALL_ACTIVE' % Name
-    Holding                       = '%s__CALL_HOLDING' % Name
+    Null                           = '%s__NULL' % Name
+    LIB_INITIALIZING                    = '%s__LIB_INITIALIZING' % Name        # VOIP NO YET INITIALIZED
+    LIB_INITIALIZED                = '%s__LIB_INITIALIZED' % Name              # VOIP INITIALIZED
+    LIB_INITIALIZATION_FAILED      = '%s__LIB_INITIALIZATION_FAILED' % Name    # VOIP INITIALIZATION FAILED
+    #Connecting                    = '%s__CONNECTING' % Name                   # CONNECTING TO SIP SERVER
+    #Connected                     = '%s__CONNECTED' % Name                    # SIP SERVER ON LINE
+    LIB_CONNECTION_FAILED             = '%s__LIB_CONNECTION_FAILED' % Name     # SERVER CONNECTION TIMEOUT
+    LIB_DEINITIALIZING             = '%s__LIB_DEINITIALIZING' % Name
+    LIB_DEINITIALIZED              = '%s__LIB_DEINITIALIZED' % Name
+    LIB_DEINITIALIZATION_FAILED    = '%s__LIB_DEINITIALIZATION_FAILED' % Name
+    
+    ACCOUNT_REGISTERING            = '%s__ACCOUNT_REGISTERING' % Name                   # REGISTERING LOCAL USER TO SIP SERVER
+    ACCOUNT_UNREGISTERING                  = '%s__ACCOUNT_UNREGISTERING' % Name               # UNREGISTERING LOCAL USER FROM SIP SERVER
+    ACCOUNT_REGISTERED                     = '%s__ACCOUNT_REGISTERED' % Name
+    ACCOUNT_UNREGISTERED                    = '%s__ACCOUNT_UNREGISTERED' % Name
+    ACCOUNT_REGISTRATION_FAILED           = '%s__ACCOUNT_REGISTRATION_FAILED' % Name
+    ACCOUNT_UNREGISTRATION_FAILED         = '%s__ACCOUNT_UNREGISTRATION_FAILED' % Name
+    BUDDY_SUBSCRIBING                   = '%s__BUDDY_SUBSCRIBING' % Name  # REGISTERING REMOTE USER AS BUDDY
+    BUDDY_SUBSCRIPTION_FAILED  = '%s__BUDDY_SUBSCRIPTION_FAILED' % Name
+    BUDDY_SUBSCRIBED        = '%s__BUDDY_SUBSCRIBED' % Name    # REMOTE BUDDY REGISTERED
+    BUDDY_CONNECTED         = '%s__BUDDY_CONNECTED' % Name     # REMOTE BUDDY CONNECTED
+    BUDDY_DISCONNECTED      = '%s__REMOTE_BUDDY_DISCONNECTED' % Name
+    
+    CALL_DIALING                  = '%s__CALL_DIALING' % Name          # OUTCOMING CALL
+    CALL_INCOMING                 = '%s__CALL_INCOMING' % Name        # INCOMING CALL
+    CALL_INCOMING_REJECTED        = '%s__CALL_INCOMING_REJECTED' % Name        # INCOMING CALL REJECTED 
+    CALL_ACTIVE                       = '%s__CALL_ACTIVE' % Name
+    CALL_HOLDING                       = '%s__CALL_HOLDING' % Name
     RemoteHolding                 = '%s__CALL_REMOTE_HOLDING' % Name
     RemoteLocalHolding            = '%s__CALL_REMOTE_AND_LOCAL_HOLDING' % Name
-    Unholding                     = '%s__CALL_UNHOLDING' % Name
-    Hangup                        = '%s__CALL_HANGUP' % Name
-    RemoteHangup                  = '%s__CALL_REMOTE_HANGUP' % Name
-    RemoteDisconnectionHangup     = '%s__CALL_REMOTE_DISCONNECTION_HANGUP' % Name
-    Deinitializing              = '%s__DEINITIALIZING' % Name
-    DeinitializeDone              = '%s__DEINITIALIZE_DONE' % Name
-    DeinitializeFailed              = '%s__DEINITIALIZE_FAILED' % Name
+    CALL_UNHOLDING                     = '%s__CALL_UNHOLDING' % Name
+    CALL_HANGUP                        = '%s__CALL_HANGUP' % Name
+    CALL_REMOTE_HANGUP                  = '%s__CALL_REMOTE_HANGUP' % Name
+    CALL_REMOTE_DISCONNECTION_HANGUP     = '%s__CALL_REMOTE_DISCONNECTION_HANGUP' % Name
+    
 
 
 class CallState:
@@ -64,3 +68,13 @@ class ServerState:
     NOT_FOUND = "%s__NOT_FOUND" % Name
     DISCONNECTED = "%s__DISCONNECTED" % Name
     CONNECTED = "%s__CONNECTED" % Name
+    
+    
+class VoipEventType:
+    
+    Name      = 'EVENT_TYPE' 
+    LIB_EVENT  = "%s__LIB_EVENT" % Name   # voip library general events: (de) init, server disconnection
+    ACCOUNT_EVENT = "%s__ACCOUNT_EVENT" % Name  # account (un)registration
+    CALL_EVENT = "%s__CALL_EVENT" % Name # incoming, dialing, active, (un)holding, hanging up CALL
+    BUDDY_EVENT = "%s__buddy_EVENT" % Name  # buddy presence notification: (un)subsscribing, (dis)connection,  remote (un)holding
+

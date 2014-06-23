@@ -568,7 +568,10 @@ private final static String TAG = "VoipLib";
 					else {
 						stopOnHoldSound();
 						//currentCallState = CallState.ACTIVE;
-						notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_ACTIVE, "Call Active", getICallInfo(ci)));
+						if (getCallState()==CallState.HOLDING)
+							notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_UNHOLDING, "Call Unholding", getICallInfo(ci)));
+						else
+							notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_ACTIVE, "Call Active", getICallInfo(ci)));
 					}
 					// unfortunately, on Java too, the returned Media cannot be downcasted to AudioMedia 
 					Media m = getMedia(i);

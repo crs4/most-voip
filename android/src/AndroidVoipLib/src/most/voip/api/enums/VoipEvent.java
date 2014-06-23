@@ -35,6 +35,6 @@ public enum VoipEvent {
   CALL_UNHOLDING,  // local user resumes the call on active state
   CALL_HANGUP,
   CALL_REMOTE_HANGUP, // not triggered yet
-  REMOTE_DISCONNECTION_HANGUP  // not triggered yet
+  CALL_REMOTE_DISCONNECTION_HANGUP  // not triggered yet
 }
    

@@ -10,17 +10,17 @@ if __name__ == '__main__':
     def notify_events(voip_state, params):
         print "Received state:%s -> Params: %s" % (voip_state, params)
         print "Current Call State:%s" % myVoip.get_call_state()
-        if (voip_state==VoipEvent.Registered):
+        if (voip_state==VoipEvent.ACCOUNT_REGISTERED):
             print "Adding a buddy for extension: %s" % extension
             myVoip.add_buddy(extension)
             print "Making a call dialing the extension: %s" % extension
             myVoip.make_call(extension)
             
-        elif (voip_state in [VoipEvent.RemoteDisconnectionHangup, VoipEvent.RemoteHangup, VoipEvent.Hangup]):
+        elif (voip_state in [VoipEvent.CALL_REMOTE_DISCONNECTION_HANGUP, VoipEvent.CALL_REMOTE_HANGUP, VoipEvent.CALL_HANGUP]):
             print "End of call!"
             #myVoip.destroy_lib()
             
-        elif (voip_state==VoipEvent.DeinitializeDone):
+        elif (voip_state==VoipEvent.LIB_DEINITIALIZED):
             print "Lib Destroyed. Exiting from the app."
             sys.exit(0)
     
