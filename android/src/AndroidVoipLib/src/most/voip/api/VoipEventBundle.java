@@ -7,31 +7,50 @@ import most.voip.api.enums.VoipEventType;
 public class VoipEventBundle {
 
 	 
-	private VoipEventType msgType = null;
+	private VoipEventType eventType = null;
 	private VoipEvent event = null;
 	private String info = null;
 	private Object data = null;
 	
-	public VoipEventBundle(VoipEventType msgType, VoipEvent event, String info, Object data)
+	/**
+	 * This object contains all the informations of a Sip Event triggered by the Voip Library
+	 * @param eventType the type of this event
+	 * @param event the event
+	 * @param info a textual information describing this event
+	 * @param data a generic object containing event-specific informations (the object type depends on the type of the event)
+	 */
+	public VoipEventBundle(VoipEventType eventType, VoipEvent event, String info, Object data)
 	{
-		this.msgType = msgType;
+		this.eventType = eventType;
 		this.event = event;
 		this.info = info;
 		this.data = data;
 	}
 
-	public VoipEventType getMsgType() {
-		return msgType;
+	/**
+	 * Get the event type
+	 * @return the event type
+	 */
+	public VoipEventType getEventType() {
+		return eventType;
 	}
 
 	public VoipEvent getEvent() {
 		return event;
 	}
 
+	/**
+	 * Get a textual description of this event
+	 * @return a textual description of this event
+	 */
 	public String getInfo() {
 		return info;
 	}
 
+	/**
+	 * Get a generic object containing event-specific informations (the object type depends on the type of the event)
+	 * @return a generic object containing event-specific informations
+	 */
 	public Object getData() {
 		return data;
 	}

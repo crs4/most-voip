@@ -8,6 +8,7 @@ import java.util.HashMap;
 import android.app.Application;
 import android.content.Context;
 import android.media.MediaPlayer;
+import android.media.ToneGenerator;
  
 
 import android.os.Handler;
@@ -67,7 +68,7 @@ private final static String TAG = "VoipLib";
     	Log.d(TAG, "notify state:" + myStateBundle.getEvent());
     	this.updateCallStateByVoipEvent(myStateBundle.getEvent());
     	Log.d(TAG, "New Current State:" + this.getCallState());
-    	Message m = Message.obtain(this.notificationHandler,myStateBundle.getMsgType().ordinal(), myStateBundle);
+    	Message m = Message.obtain(this.notificationHandler,myStateBundle.getEventType().ordinal(), myStateBundle);
 		m.sendToTarget();
     }
     
@@ -94,6 +95,9 @@ private final static String TAG = "VoipLib";
     	this.context = context;
     	this.configParams = configParams;
     	this.notificationHandler = notificationHandler;
+    	
+    	this.notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_INITIALIZING, "Voip Lib initialization", this.configParams));
+    	
     	/* Create endpoint */
 		try {
 			Log.d(TAG,"Lib create...");
@@ -128,13 +132,13 @@ private final static String TAG = "VoipLib";
 			 
 			// print the json config
 			Log.d(TAG,"Lib initialized and started");
-		    this.notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_INITIALIZED, "Inizialization Ok", null));
+		    this.notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_INITIALIZED, "Inizialization Ok", this.configParams));
 		    
 			return true;
 		} catch (Exception e) {
 			Log.e(TAG,"Error Initializing the lib:" + e);
 			System.out.println("ERROR IN INITIALIZATION:" + e);
-			this.notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_INITIALIZATION_FAILED, "Inizialization Failed:"+ e.getMessage(), null));
+			this.notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_INITIALIZATION_FAILED, "Inizialization Failed:"+ e.getMessage(), this.configParams));
 			return false;
 		}
     }
@@ -155,9 +159,9 @@ private final static String TAG = "VoipLib";
 		this.acc = new MyAccount(acfg);
 		try {
 			acc.create(acfg);
+			// TODO: create IAccount interface to be passed as final parameter
 			this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_REGISTERING, "Account Registration request sent", null));
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			Log.e(TAG,"Error Registering the account:" + e);
 			this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_REGISTRATION_FAILED, "Account Registration request failed:"+e.getMessage(), null));
@@ -427,11 +431,11 @@ private final static String TAG = "VoipLib";
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			Log.e(TAG, "Lib Destroy failed:" + e.getMessage());
-			this.notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZE_FAILED, "Voip Lib destroyed", null));
+			this.notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZATION_FAILED, "Voip Lib destroyed", null));
 			return false;
 		}
 		 
-		this.notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZE_DONE, "Voip Lib destroyed", null));
+		this.notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZED, "Voip Lib destroyed", null));
 		return true;
 		
 	}
@@ -739,14 +743,14 @@ private final static String TAG = "VoipLib";
 					serverState = ServerState.CONNECTED;
 					// Account registered
 					if (prm.getExpiration()>0  && acc.getInfo().getRegIsActive()){
-						notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_REGISTERED, "Registration Success:::" + prm.getReason(), null));
+						notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_REGISTERED, "Registration Success:::" + prm.getReason(), regStatus));
 					     
 						
 					}
 					
 					// Account unregistered
 					else  if (prm.getExpiration()==0  && !acc.getInfo().getRegIsActive()) {
-						notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_UNREGISTERED, "Unregistration Success:::" + prm.getReason(), null));
+						notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_UNREGISTERED, "Unregistration Success:::" + prm.getReason(), regStatus));
 					}
 					
 				}
@@ -757,12 +761,12 @@ private final static String TAG = "VoipLib";
 					if (!acc.getInfo().getRegIsActive()) 
 					{
 						notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_REGISTRATION_FAILED, "Registration Failed: Code:" +
-		                        prm.getCode().swigValue() + " " + prm.getReason(), null)); 
+		                        prm.getCode().swigValue() + " " + prm.getReason(), regStatus)); 
 					}
 					// Account NOT unregistered
 					else {
 						notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_UNREGISTRATION_FAILED, "Unregistration Failed: Code:" +
-		                        prm.getCode().swigValue() + " " + prm.getReason(), null)); 
+		                        prm.getCode().swigValue() + " " + prm.getReason(),regStatus)); 
 					}
 				}
 				

@@ -10,6 +10,7 @@ import most.voip.api.interfaces.IBuddy;
 import android.content.Context;
 import android.os.Handler;
 
+
 public interface VoipLib {
 	
 	/**
@@ -84,6 +85,10 @@ public interface VoipLib {
      */
     public CallState getCallState();
     
+    /**
+     *  Get the current state of the remote Sip Server
+     * @return the current state of the remote Sip Server
+     */
     public ServerState getServerState();
     
     /**

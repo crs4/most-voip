@@ -79,7 +79,7 @@ public class MainActivity extends Activity {
 				VoipEvent.ACCOUNT_UNREGISTERING,
 				VoipEvent.ACCOUNT_UNREGISTERED,
 				VoipEvent.LIB_DEINITIALIZING,
-				VoipEvent.LIB_DEINITIALIZE_DONE};
+				VoipEvent.LIB_DEINITIALIZED};
 		
 		public MakeCallHandler(MainActivity app, VoipLib myVoip) {
 			super(app, myVoip);

@@ -34,7 +34,7 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
 					VoipEvent.ACCOUNT_UNREGISTERING,
 					VoipEvent.ACCOUNT_UNREGISTERED,
 					VoipEvent.LIB_DEINITIALIZING,
-					VoipEvent.LIB_DEINITIALIZE_DONE};
+					VoipEvent.LIB_DEINITIALIZED};
 		}
  
 		
@@ -69,7 +69,7 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
 					VoipEvent.ACCOUNT_UNREGISTERING,
 					VoipEvent.ACCOUNT_UNREGISTERED,
 					VoipEvent.LIB_DEINITIALIZING,
-					VoipEvent.LIB_DEINITIALIZE_DONE};
+					VoipEvent.LIB_DEINITIALIZED};
 		}
  
 		
@@ -108,7 +108,7 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
 					VoipEvent.ACCOUNT_UNREGISTERING,
 					VoipEvent.ACCOUNT_UNREGISTERED,
 					VoipEvent.LIB_DEINITIALIZING,
-					VoipEvent.LIB_DEINITIALIZE_DONE};
+					VoipEvent.LIB_DEINITIALIZED};
 		}
 
 		 private void notifyIncomingCall()
@@ -117,7 +117,7 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
 			    Handler testHandler = new Handler(VoipLibTestSuite.this);
 				Log.d(TAG, "Called notifyState for state:" + myStateBundle.getEvent().name());
 				
-		    	Message m = Message.obtain(testHandler,myStateBundle.getMsgType().ordinal(), myStateBundle);
+		    	Message m = Message.obtain(testHandler,myStateBundle.getEventType().ordinal(), myStateBundle);
 				m.sendToTarget();
 		    }
 		 

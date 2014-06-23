@@ -35,7 +35,7 @@ public class MockVoipLib implements VoipLib{
 		default:
 			break;}
 				
-    	Message m = Message.obtain(this.notificationHandler,myStateBundle.getMsgType().ordinal(), myStateBundle);
+    	Message m = Message.obtain(this.notificationHandler,myStateBundle.getEventType().ordinal(), myStateBundle);
 		m.sendToTarget();
     }
 
@@ -55,7 +55,7 @@ public class MockVoipLib implements VoipLib{
 		Log.d(TAG, "Called destroyLib");
 		this.notifyState(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZING, "Voip Lib destroying...", null));
 		this.simulatePause(1);
-		this.notifyState(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZE_DONE, "Voip Lib destroyed", null));
+		this.notifyState(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZED, "Voip Lib destroyed", null));
 		return true;
 	}
     

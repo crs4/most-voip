@@ -104,13 +104,13 @@ public class MainActivity extends Activity {
 			} 
 
 			VoipEventBundle myEventBundle = getEventBundle(voipMessage);
-			Log.d(TAG, "HANDLE MESSAGE TYPE:" + myEventBundle.getMsgType() + " EVENT:" + myEventBundle.getEvent());
+			Log.d(TAG, "HANDLE MESSAGE TYPE:" + myEventBundle.getEventType() + " EVENT:" + myEventBundle.getEvent());
 			
 			updateCallStateInfo();
 			updateServerStateInfo();
 			
 			
-			if (myEventBundle.getMsgType()==VoipEventType.BUDDY_EVENT)
+			if (myEventBundle.getEventType()==VoipEventType.BUDDY_EVENT)
 			{
 				Log.d(TAG, "In handle Message for BUDDY STATE");
 				IBuddy myBuddy = (IBuddy) myEventBundle.getData();
@@ -138,7 +138,7 @@ public class MainActivity extends Activity {
 				                                                       // myVoip.unregisterAccount();
 				                                                   }
 			// Deinitialize the Voip Lib and release all allocated resources
-			else if (myEventBundle.getEvent()==VoipEvent.LIB_DEINITIALIZE_DONE || myEventBundle.getEvent()==VoipEvent.LIB_DEINITIALIZE_FAILED) 
+			else if (myEventBundle.getEvent()==VoipEvent.LIB_DEINITIALIZED || myEventBundle.getEvent()==VoipEvent.LIB_DEINITIALIZATION_FAILED) 
 			{
 				Log.d(TAG,"Setting to null MyVoipLib");
 				this.app.myVoip = null;
