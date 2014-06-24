@@ -7,8 +7,8 @@ import time, sys
 if __name__ == '__main__':
     
    
-    def notify_events(voip_state, params):
-        print "Received state:%s -> Params: %s" % (voip_state, params)
+    def notify_events(voip_event_type, voip_state, params):
+        print "Received event type:%s Event:%s -> Params: %s" % (voip_event_type, voip_state, params)
         print "Current Call State:%s" % myVoip.get_call_state()
         if (voip_state==VoipEvent.ACCOUNT_REGISTERED):
             print "Adding a buddy for extension: %s" % extension

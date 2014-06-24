@@ -1,5 +1,5 @@
 from most.voip.api import VoipLib
-from most.voip.states import VoipState
+from most.voip.states import VoipEvent
  
 
 import time
@@ -15,47 +15,48 @@ For locally testing this application, assuming that you are using asterisk as Si
 
 if __name__ == '__main__':
     
-    def notify_events(voip_state, params):
-        print "Received state:%s -> Params: %s" % (voip_state, params)
-        if (voip_state==VoipState.Registered):
+    def notify_events(voip_event_type,voip_event, params):
+        print "Received Event Type:%s  Event:%s -> Params: %s" % (voip_event_type, voip_event, params)
+        
+        if (voip_event==VoipEvent.ACCOUNT_REGISTERED):
             print "Ready to accept call!"
         
-        if (voip_state==VoipState.Incoming):
+        elif (voip_event==VoipEvent.CALL_INCOMING):
             print "INCOMING CALL From %s" % params["from"]
             time.sleep(2)
             print "Answering!"
             myVoip.answer_call()
             
-        elif(voip_state==VoipState.Calling):
+        elif(voip_event==VoipEvent.CALL_ACTIVE):
             dur = 2
             print "Waiting %s seconds before holding..."  % dur
             time.sleep(dur)
             myVoip.hold_call()
               
-        elif(voip_state==VoipState.Holding):
+        elif(voip_event==VoipEvent.CALL_HOLDING):
             dur = 2
             print "Waiting %s seconds before unholding..."  % dur
             time.sleep(dur)
             myVoip.unhold_call()
         
-        elif(voip_state==VoipState.Unholding):
+        elif(voip_event==VoipEvent.CALL_UNHOLDING):
             dur = 2
             print "Waiting %s seconds before hanging up..."  % dur
             time.sleep(dur)
             myVoip.hangup_call()
              
             
-        elif (voip_state in [VoipState.RemoteDisconnectionHangup, VoipState.RemoteHangup, VoipState.Hangup]):
+        elif (voip_event in [VoipEvent.CALL_REMOTE_DISCONNECTION_HANGUP, VoipEvent.CALL_REMOTE_HANGUP, VoipEvent.CALL_HANGUP]):
             print "End of call. Destroying lib..."
             myVoip.destroy_lib()
             
             
-        elif (voip_state==VoipState.DeinitializeDone):
+        elif (voip_event==VoipEvent.LIB_DEINITIALIZED):
             print "Call End. Exiting from the app."
             sys.exit(0)
             
         else:
-            print "Received unhandled state:%s" % voip_state
+            print "Received unhandled event:%s" % voip_event
         
         
     voip_params0 = {u'username': u'ste', 
