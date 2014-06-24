@@ -4,7 +4,7 @@ Created on 28/apr/2014
 @author: smonni
 '''
 import logging
-from most.voip.states import VoipEvent
+from most.voip.constants import VoipEvent
 import time
 
 class MockVoipState:

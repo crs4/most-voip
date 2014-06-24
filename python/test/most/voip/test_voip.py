@@ -1,7 +1,7 @@
 import unittest
 
 from most.voip.api import VoipLib
-from most.voip.states import VoipEvent
+from most.voip.constants import VoipEvent
 from most.voip.api_backend import VoipBackend
 from mock_voip import MockVoipBackend
 

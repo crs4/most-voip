@@ -11,7 +11,7 @@ import most.voip.api.enums.CallState;
 import most.voip.api.enums.VoipEventType;
 import most.voip.api.enums.VoipEvent;
 import most.voip.api.interfaces.IBuddy;
-import most.voip.api.interfaces.ICallInfo;
+import most.voip.api.interfaces.ICall;
 import most.voip.example1.R;
 import android.app.Activity;
 import android.app.Service;
@@ -130,7 +130,7 @@ public class MainActivity extends Activity {
 			
 			// Unregister the account
 			else if (myEventBundle.getEvent()==VoipEvent.CALL_HANGUP)    {    setupButtons(false);
-																		ICallInfo callInfo = (ICallInfo) myEventBundle.getData();
+																		ICall callInfo = (ICall) myEventBundle.getData();
 																		Log.d(TAG, "Hangup from uri:" + callInfo.getRemoteUri());
 																		IBuddy myBuddy = myVoip.getBuddy(callInfo.getRemoteUri());
 																		Log.d(TAG, "Current Buddy Status Text:" + myBuddy.getStatusText());

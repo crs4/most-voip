@@ -2,7 +2,6 @@ package most.voip.api;
 
 import java.util.HashMap;
 
-import most.voip.api.enums.BuddyState;
 import most.voip.api.enums.CallState;
 import most.voip.api.enums.ServerState;
 import most.voip.api.interfaces.IBuddy;
