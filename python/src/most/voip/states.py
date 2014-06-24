@@ -28,6 +28,7 @@ class VoipEvent(object):
     BUDDY_SUBSCRIPTION_FAILED  = '%s__BUDDY_SUBSCRIPTION_FAILED' % Name
     BUDDY_SUBSCRIBED        = '%s__BUDDY_SUBSCRIBED' % Name    # REMOTE BUDDY REGISTERED
     BUDDY_CONNECTED         = '%s__BUDDY_CONNECTED' % Name     # REMOTE BUDDY CONNECTED
+    BUDDY_HOLDING            = '%s__BUDDY_HOLDING' % Name     # REMOTE BUDDY CONNECTED
     BUDDY_DISCONNECTED      = '%s__REMOTE_BUDDY_DISCONNECTED' % Name
     
     CALL_DIALING                  = '%s__CALL_DIALING' % Name          # OUTCOMING CALL
@@ -51,7 +52,7 @@ class CallState:
     ACTIVE = '%s__ACTIVE' % Name
     DIALING = '%s__DIALING' % Name
     HOLDING = '%s__HOLDING' % Name
-    REMOTE_HOLDING = '%s__REMOTE_HOLDING' % Name
+    #REMOTE_HOLDING = '%s__REMOTE_HOLDING' % Name
     
     
 class BuddyState:
