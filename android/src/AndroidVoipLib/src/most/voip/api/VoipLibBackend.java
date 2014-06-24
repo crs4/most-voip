@@ -22,7 +22,7 @@ import most.voip.api.enums.ServerState;
 import most.voip.api.enums.VoipEvent;
 import most.voip.api.enums.VoipEventType;
 import most.voip.api.interfaces.IBuddy;
-import most.voip.api.interfaces.ICallInfo;
+import most.voip.api.interfaces.ICall;
 
 import org.pjsip.pjsua2.*;
  
@@ -462,9 +462,9 @@ private final static String TAG = "VoipLib";
 		}
 	}
 	
-	private ICallInfo getICallInfo(final CallInfo ci) {
+	private ICall getICallInfo(final CallInfo ci) {
 		
-		return new ICallInfo(){
+		return new ICall(){
 
 			@Override
 			public String getRemoteUri() {
@@ -487,6 +487,12 @@ private final static String TAG = "VoipLib";
 					e.printStackTrace();
 					return null;
 				}
+			}
+
+			@Override
+			public CallState getState() {
+				 
+				return currentCallState;
 			}
 			
 		

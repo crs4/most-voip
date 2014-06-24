@@ -7,7 +7,7 @@ Created on 05/mag/2014
 import pjsua as pj
 import logging
 import os , time
-from most.voip.states import VoipEvent, CallState, BuddyState, ServerState, VoipEventType
+from most.voip.constants import VoipEvent, CallState, BuddyState, ServerState, VoipEventType
 
 
 
