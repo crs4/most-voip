@@ -5,11 +5,14 @@ Created on 24/giu/2014
 '''
 
 
-class ICallInfo:
+class ICall:
     def get_local_uri(self):
         raise NotImplementedError
     
     def get_remote_uri(self):
+        raise NotImplementedError
+    
+    def get_state(self):
         raise NotImplementedError
     
     
@@ -25,3 +28,23 @@ class IBuddy:
    
     def refresh_status(self):
         raise NotImplementedError 
+    
+    
+class IServer:
+    def get_state(self):
+        raise NotImplementedError
+    
+    def get_ip(self):
+        raise NotImplementedError
+
+
+class IAccount:
+    def get_uri(self):
+        raise NotImplementedError
+    
+    def get_state(self):
+        raise NotImplementedError
+    
+
+ 
+    

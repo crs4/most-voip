@@ -4,7 +4,7 @@ Created on 28/apr/2014
 @author: smonni
 '''
 from api_backend import VoipBackend
-#from states import ServerState, BuddyState
+
 
 class VoipLib:
     def __init__(self, backend=VoipBackend()):
@@ -66,11 +66,12 @@ class VoipLib:
         return self.backend.unhold_call()
     
     
-    def get_call_state(self):
+    def get_call(self):
         """
-        @return: the state of the current call (if any)
+        @return: a ICall object containing informations about the current call (if any)
+        @rtype: ICall
         """
-        return self.backend.get_call_state()
+        return self.backend.get_call()
     
     def hangup_call(self):
         """
@@ -92,22 +93,37 @@ class VoipLib:
         """
         self.backend.remove_buddy(extension)
         
-    def get_buddy_state(self, extension):
+    def get_buddy(self, extension):
         """
-        Get the current state of the buddy with the given extension
+        Get the buddy with the given extension
         @param extension: the extension of the buddy
-        @return: the current state of the buddy
-        @rtype: BuddyState
+        @return: the buddy with the specified extension
+        @rtype: IBuddy
         """
-        return self.backend.get_buddy_state(extension)
+        return self.backend.get_buddy(extension)
+    
+    def get_buddies(self):
+        """
+        Get the list of buddies of the current registered account
+        @return:  the list of the buddies of the currently registered account
+        """
+        return self.backend.get_buddies()
    
-    def get_server_state(self):
+    def get_server(self):
         """
-        Get the current state of the sip server
-        @return: the current remote sip server state
-        @rtype: ServerState
+        Get informations about the remote sip server
+        @return: an IServer object containing informations about the remote sip server
+        @rtype: IServer
         """
-        return self.backend.get_server_state()
+        return self.backend.get_server()
+    
+    def get_account(self):
+        """
+        Get informations about the local account
+        @return: an ICall object containing informations about the local sip account
+        @rtype: ICall
+        """
+        return self.backend.get_account()
     
     def destroy_lib(self):
         """

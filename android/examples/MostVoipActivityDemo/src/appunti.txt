@@ -1,0 +1,51 @@
+// Auth creds
+ 
+D/VoipLib (27001):          "authCreds":            [ 
+D/VoipLib (27001):             { 
+D/VoipLib (27001):                "scheme":               "digest",
+D/VoipLib (27001):                "realm":                "*",
+D/VoipLib (27001):                "username":             "ste",
+D/VoipLib (27001):                "dataType":             0,
+D/VoipLib (27001):                "data":                 "ste",
+D/VoipLib (27001):                "akaK":                 "",
+D/VoipLib (27001):                "akaOp":                "",
+D/VoipLib (27001):                "akaAmf":               ""
+D/VoipLib (27001):             }
+D/VoipLib (27001):          ]
+D/VoipLib (27001):       },
+ 
+ 
+String params = "{\"AccountConfig\": { \"priority\" : 0,"
+				+ "\"idUri\": \"sip:ste@" + SERVER_IP + "\","
+				+ "\"AccountRegConfig\":{\"registrarUri\": \"sip:" + SERVER_IP + "\"},"
+				+ "\"AccountSipConfig\": { \"authCreds\" : [{\"scheme\":\"digest\", \"realm\":\"*\", \"username\":\"ste\", \"dataType\":0,  \"data\": \"ste\"} ] }"
+						+ "},"
+				+ "\"SipTransport\" : { \"TransportConfig\" : { \"port\": 5060}}"
+				+ "}";
+				
+				
+//"156.148.33.223";
+
+
+// Exceptions
+
+
+java.lang.NullPointerException
+W/System.err(  380): 	at android.telephony.CellInfo.<init>(CellInfo.java:81)
+W/System.err(  380): 	at com.android.server.TelephonyRegistry.listen(TelephonyRegistry.java:318)
+W/System.err(  380): 	at com.android.internal.telephony.ITelephonyRegistry$Stub.onTransact(ITelephonyRegistry.java:56)
+W/System.err(  380): 	at android.os.Binder.execTransact(Binder.java:367)
+W/System.err(  380): 	at com.android.server.SystemServer.init1(Native Method)
+--
+V/InputMethodManager(  656): onWindowFocus: null softInputMode=288 first=true flags=#1910100
+V/InputMethodManager(  656): Starting input: view=com.android.internal.policy.impl.PhoneWindow$DecorView@42283db0
+V/InputMethodManager(  656): Starting input: tba=android.view.inputmethod.EditorInfo@41fcd108 ic=null
+V/InputMethodManager(  656): START INPUT: com.android.internal.policy.impl.PhoneWindow$DecorView@42283db0 ic=null tba=android.view.inputmethod.EditorInfo@41fcd108 controlFlags=#104
+V/InputMethodManagerService(  380): windowGainedFocus: android.os.BinderProxy@42601530 controlFlags=#104 softInputMode=#120 windowFlags=#1910100
+W/InputMethodManagerService(  380): Got RemoteException sending setActive(false) notification to pid 6500 uid 10124
+V/InputMethodManager(  656): Starting input: Bind result=InputBindResult{com.android.internal.view.IInputMethodSession$Stub$Proxy@41fb5930 com.android.inputmethod.latin/.LatinIME #142}
+V/AudioFlinger(  123): threadLoop_sleepTime write muted data to hw
+D/dalvikvm(  380): GC_CONCURRENT freed 1728K, 31% free 21792K/31415K, paused 36ms+14ms, total 276ms
+D/dalvikvm(  380): WAIT_FOR_CONCURRENT_GC blocked 243ms
+I/SurfaceTextureClient(  505): [0x5375d4e8] frames:1, duration:2.885000, fps:0.346534
+

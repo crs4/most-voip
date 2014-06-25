@@ -1,5 +1,5 @@
 from most.voip.api import VoipLib
-from most.voip.states import VoipEvent, CallState
+from most.voip.constants import VoipEvent, CallState
  
 
 import time, sys
@@ -9,7 +9,7 @@ if __name__ == '__main__':
    
     def notify_events(voip_event_type, voip_state, params):
         print "Received event type:%s Event:%s -> Params: %s" % (voip_event_type, voip_state, params)
-        print "Current Call State:%s" % myVoip.get_call_state()
+        print "Current Call State:%s" % myVoip.get_call().get_state()
         if (voip_state==VoipEvent.ACCOUNT_REGISTERED):
             print "Adding a buddy for extension: %s" % extension
             myVoip.add_buddy(extension)
@@ -55,25 +55,25 @@ if __name__ == '__main__':
     print "Registering the account on the Sip Server..."
     myVoip.register_account()
     
-    print "Server State:%s" % myVoip.get_server_state()
-    print "Call State:%s" % myVoip.get_call_state()
+    print "Server State:%s" % myVoip.get_server().get_state()
+    print "Call State:%s" % myVoip.get_call().get_state()
     while True:
 
-        if myVoip.get_call_state()==CallState.ACTIVE:
+        if myVoip.get_call().get_state()==CallState.ACTIVE:
             print "Server State:%s" % myVoip.get_server_state()
-            print "Call State:%s" % myVoip.get_call_state()
+            print "Call State:%s" % myVoip.get_call().get_state()
             print "Buddy State:%s" % myVoip.get_buddy_state(extension)
             cmd = raw_input("Enter 'h' to put on hold the call,  'e' to hangup:")
-            if (cmd=='h' and myVoip.get_call_state()==CallState.ACTIVE):
+            if (cmd=='h' and myVoip.get_call().get_state()==CallState.ACTIVE):
                 myVoip.hold_call()
             elif (cmd=='e'):
                 myVoip.hangup_call()
                 
-        elif myVoip.get_call_state()==CallState.HOLDING:
+        elif myVoip.get_call().get_state()==CallState.HOLDING:
             print "Server State:%s" % myVoip.get_server_state()
-            print "Call State:%s" % myVoip.get_call_state()
+            print "Call State:%s" % myVoip.get_call().get_state()
             cmd = raw_input("Enter 'u' to put on unhold the call,'e' to hangup:")
-            if (cmd=='u' and myVoip.get_call_state()==CallState.HOLDING):
+            if (cmd=='u' and myVoip.get_call().get_state()==CallState.HOLDING):
                 
                 myVoip.unhold_call()
            
@@ -81,9 +81,9 @@ if __name__ == '__main__':
                 
                  myVoip.hangup_call()
                  print "Server State:%s" % myVoip.get_server_state()
-                 print "Call State:%s" % myVoip.get_call_state()
+                 print "Call State:%s" % myVoip.get_call().get_state()
                  
-        elif myVoip.get_call_state()==CallState.IDLE:
+        elif myVoip.get_call().get_state()==CallState.IDLE:
             cmd = raw_input("Enter 'q' to quit the app")
             if cmd=='q':
                 myVoip.destroy_lib()
