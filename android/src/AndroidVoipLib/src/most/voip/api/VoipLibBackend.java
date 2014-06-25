@@ -15,14 +15,17 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import most.voip.api.enums.AccountState;
 import most.voip.api.enums.BuddyState;
 import most.voip.api.enums.CallState;
 import most.voip.api.enums.RegistrationState;
 import most.voip.api.enums.ServerState;
 import most.voip.api.enums.VoipEvent;
 import most.voip.api.enums.VoipEventType;
+import most.voip.api.interfaces.IAccount;
 import most.voip.api.interfaces.IBuddy;
 import most.voip.api.interfaces.ICall;
+import most.voip.api.interfaces.IServer;
 
 import org.pjsip.pjsua2.*;
  
@@ -67,7 +70,7 @@ private final static String TAG = "VoipLib";
     {   
     	Log.d(TAG, "notify state:" + myStateBundle.getEvent());
     	this.updateCallStateByVoipEvent(myStateBundle.getEvent());
-    	Log.d(TAG, "New Current State:" + this.getCallState());
+    	Log.d(TAG, "New Current State:" + this.getCall().getState());
     	Message m = Message.obtain(this.notificationHandler,myStateBundle.getEventType().ordinal(), myStateBundle);
 		m.sendToTarget();
     }
@@ -574,7 +577,7 @@ private final static String TAG = "VoipLib";
 					else {
 						stopOnHoldSound();
 						//currentCallState = CallState.ACTIVE;
-						if (getCallState()==CallState.HOLDING)
+						if (getCall().getState()==CallState.HOLDING)
 							notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_UNHOLDING, "Call Unholding", getICallInfo(ci)));
 						else
 							notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_ACTIVE, "Call Active", getICallInfo(ci)));
@@ -657,9 +660,10 @@ private final static String TAG = "VoipLib";
 	}
 	
 	// Subclass to extend the Account and get notifications etc.
-	class MyAccount extends Account {
+	class MyAccount extends Account implements IAccount {
 		public HashMap<String,MyBuddy> buddyList = new HashMap<String,MyBuddy>();
 		public AccountConfig cfg;
+		private AccountState accState = AccountState.UNREGISTERED;
 		
 		MyAccount(AccountConfig config) {
 			super();
@@ -743,6 +747,8 @@ private final static String TAG = "VoipLib";
 				if (regStatus==RegistrationState.REQUEST_TIMEOUT.intValue() || regStatus==RegistrationState.SERVICE_UNAVAILABLE.intValue())
 				{
 					serverState = ServerState.DISCONNECTED;
+					accState = AccountState.UNREGISTERED;
+					
 					notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.LIB_CONNECTION_FAILED, "Connection Failed: Code:" +
 	                        prm.getCode().swigValue() + " " + prm.getReason(), null)); 
 				}
@@ -752,13 +758,14 @@ private final static String TAG = "VoipLib";
 					serverState = ServerState.CONNECTED;
 					// Account registered
 					if (prm.getExpiration()>0  && acc.getInfo().getRegIsActive()){
+						accState = AccountState.REGISTERED;
 						notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_REGISTERED, "Registration Success:::" + prm.getReason(), regStatus));
 					     
-						
 					}
 					
 					// Account unregistered
 					else  if (prm.getExpiration()==0  && !acc.getInfo().getRegIsActive()) {
+						accState = AccountState.UNREGISTERED;
 						notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_UNREGISTERED, "Unregistration Success:::" + prm.getReason(), regStatus));
 					}
 					
@@ -811,6 +818,25 @@ private final static String TAG = "VoipLib";
 			System.out.println("Contact		: " + prm.getContactUri());
 			System.out.println("Mimetype	: " + prm.getContentType());
 			System.out.println("Body		: " + prm.getMsgBody());
+		}
+
+
+		@Override
+		public String getUri() {
+			try {
+				return this.getInfo().getUri();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return "N.A";
+			}
+		}
+
+
+		@Override
+		public AccountState getState() {
+			 
+			return this.accState;
 		}
 	}
 	
@@ -1024,8 +1050,26 @@ private final static String TAG = "VoipLib";
 		}
 	}
 	@Override
-	public CallState getCallState() {
-		return this.currentCallState;
+	public ICall getCall() {
+		return new ICall(){
+
+			@Override
+			public String getRemoteUri() {
+				// TODO Not implemented yet
+				return null;
+			}
+
+			@Override
+			public String getLocalUri() {
+				// TODO Not implemented yet
+				return null;
+			}
+
+			@Override
+			public CallState getState() {
+			
+				return currentCallState;
+			}};
 	}
 
 	
@@ -1073,8 +1117,18 @@ private final static String TAG = "VoipLib";
 	}
 
 	@Override
-	public ServerState getServerState() {
-		return this.serverState;
+	public IServer getServer() {
+		return new IServer(){
+
+			@Override
+			public ServerState getState() {
+				return serverState;
+			}
+
+			@Override
+			public String getIp() {
+			   return sipServerIp;
+			}};
 	}
 
 	@Override
@@ -1086,6 +1140,24 @@ private final static String TAG = "VoipLib";
 		}
 		else
 		return new IBuddy[]{};
+	}
+
+	@Override
+	public IAccount getAccount() {
+		return new IAccount() {
+			
+			@Override
+			public String getUri() {
+				if (acc==null) return "N.A";
+				return acc.getUri();
+			}
+			
+			@Override
+			public AccountState getState() {
+				if (acc==null) return AccountState.UNREGISTERED;
+				return acc.getState();
+			}
+		};
 	}
 	
 }

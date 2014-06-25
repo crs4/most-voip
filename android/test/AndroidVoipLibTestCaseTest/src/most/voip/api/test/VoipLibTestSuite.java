@@ -131,18 +131,19 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
 			
 			assertEquals( myEvent.getEvent(), expectedEvents[curStateIndex]);
 			curStateIndex++;
-			     if (myEvent.getEvent()==VoipEvent.LIB_INITIALIZED)   { assertEquals(CallState.IDLE, myVoip.getCallState()); assertTrue(myVoip.registerAccount());	}
+			     if (myEvent.getEvent()==VoipEvent.LIB_INITIALIZED)   { assertEquals(CallState.IDLE, myVoip.getCall().getState()); assertTrue(myVoip.registerAccount());	}
 			else if (myEvent.getEvent()==VoipEvent.ACCOUNT_REGISTERED)    this.notifyIncomingCall();	
 			else if (myEvent.getEvent()==VoipEvent.CALL_INCOMING) {  //assertEquals(CallState.INCOMING, myVoip.getCallState()); // non simulato...
 				                                                     assertTrue(myVoip.answerCall());
 																	}
-			else if (myEvent.getEvent()==VoipEvent.CALL_ACTIVE)   {assertEquals(CallState.ACTIVE, myVoip.getCallState());
+			else if (myEvent.getEvent()==VoipEvent.CALL_ACTIVE)   {assertEquals(CallState.ACTIVE, myVoip.getCall().getState());
 																   assertTrue(myVoip.hangupCall());}
 			     
 			else if (myEvent.getEvent()==VoipEvent.CALL_HANGUP)   {assertEquals(CallState.IDLE, 
-					                                               myVoip.getCallState());assertTrue(myVoip.unregisterAccount());}
+																	myVoip.getCall().getState());
+																	assertTrue(myVoip.unregisterAccount());}
 			     
-			else if (myEvent.getEvent()==VoipEvent.ACCOUNT_UNREGISTERED)  {assertEquals(CallState.IDLE, myVoip.getCallState());
+			else if (myEvent.getEvent()==VoipEvent.ACCOUNT_UNREGISTERED)  {assertEquals(CallState.IDLE, myVoip.getCall().getState());
 																   assertTrue(myVoip.destroyLib());
 																		}
 

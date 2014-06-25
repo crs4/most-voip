@@ -4,7 +4,10 @@ import java.util.HashMap;
 
 import most.voip.api.enums.CallState;
 import most.voip.api.enums.ServerState;
+import most.voip.api.interfaces.IAccount;
 import most.voip.api.interfaces.IBuddy;
+import most.voip.api.interfaces.ICall;
+import most.voip.api.interfaces.IServer;
 
 import android.content.Context;
 import android.os.Handler;
@@ -78,17 +81,24 @@ public interface VoipLib {
      */
     public boolean hangupCall();
      
-    /**
-     * Get the state of the current call (if any)
-     * @return the state of the current call (if any), CallState.NONE if there is no call
-     */
-    public CallState getCallState();
     
     /**
-     *  Get the current state of the remote Sip Server
-     * @return the current state of the remote Sip Server
+     * Get informations about the local sip account
+     * @return  informations about the local sip account , like its current state
      */
-    public ServerState getServerState();
+    public IAccount getAccount();
+    
+    /**
+     * Get the current call info (if any)
+     * @return informations about the current call (if any), like the current Call State
+     */
+    public ICall getCall();
+    
+    /**
+     *  Get informations about the remote Sip Server
+     * @return informations about the current sip server, like the current Server State
+     */
+    public IServer getServer();
     
     /**
      * Add a buddy to this account.

@@ -69,8 +69,13 @@ class ServerState:
     NOT_FOUND = "%s__NOT_FOUND" % Name
     DISCONNECTED = "%s__DISCONNECTED" % Name
     CONNECTED = "%s__CONNECTED" % Name
-    
-    
+   
+
+class AccountState:
+    Name      = 'SIP_ACCOUNT_STATE' 
+    UNREGISTERED = "%s__UNREGISTERED" % Name
+    REGISTERED = "%s__REGISTERED" % Name
+      
 class VoipEventType:
     
     Name      = 'EVENT_TYPE' 

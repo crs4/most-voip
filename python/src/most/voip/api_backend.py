@@ -7,7 +7,8 @@ Created on 05/mag/2014
 import pjsua as pj
 import logging
 import os , time
-from most.voip.constants import VoipEvent, CallState, BuddyState, ServerState, VoipEventType
+from most.voip.interfaces import IServer, ICall, IAccount, IBuddy
+from most.voip.constants import VoipEvent, CallState, BuddyState, ServerState, AccountState, VoipEventType
 
 
 
@@ -33,6 +34,7 @@ auto_answer = False
 auto_answer_delay = 3
 
 acc = None
+account_state = AccountState.UNREGISTERED
 
 current_call = None
 
@@ -167,9 +169,10 @@ class VoipBackend:
     def __init__(self):
         print "CALLED INIT!!!"
         _setup_logger()
-
+        
         global is_server_on #is_buddy_on_line, buddy_status_text
         self.lib = None
+        self.sip_server = VoipBackend.SipServer("N.A", ServerState.DISCONNECTED)
         
         is_server_on = False
         #is_buddy_on_line = False
@@ -184,8 +187,80 @@ class VoipBackend:
         self.input_dev_list_index = -1
         self.output_dev_list_index = -1
 
+      
+      
+    class SipAccount(IAccount):    
+        
+        def __init__(self, uri, state):
+            self.uri = uri
+            self.state = state
+            
+        def get_state(self):
+            return self.state
+        
+        def get_uri(self):
+            return self.uri
+        
+    
+    class SipBuddy(IBuddy):
+        def __init__(self, pjBuddy):
+            self.pjBuddy = pjBuddy
+            
+        def get_state(self):
+            if (not self.pjBuddy):
+                return  BuddyState.UNKNOWN
+            elif (self.pjBuddy.info().online_status==1 and self.pjBuddy.info().online_text != 'On hold'):
+                return BuddyState.ON_LINE
+            elif self.pjBuddy.info().online_status==1 and self.pjBuddy.info().online_text == 'On hold':
+                return BuddyState.ON_HOLD
+            elif self.pjBuddy.info().online_status==2:
+                return BuddyState.OFF_LINE
+            else:
+                return BuddyState.UNKNOWN
+        
+        def get_status_text(self):
+            if (not self.pjBuddy):
+                return "Not Found"
+            else:
+                return self.pjBuddy.info().online_text
+            
+        def get_uri(self):
+            if (not self.pjBuddy):
+                return "N.A"
+            else:
+                return self.pjBuddy.info().uri
+            
 
-
+    
+    class SipCall(ICall):
+        def __init__(self, local_uri, remote_uri, state):
+            self.local_uri = local_uri
+            self.remote_uri = remote_uri
+            self.state = state
+        
+        def get_local_uri(self):
+            return self.local_uri
+        
+        def get_remote_uri(self):
+            return self.remote_uri
+        
+        def get_state(self):
+            return self.state
+        
+            
+            
+            
+    class SipServer(IServer):
+        def __init__(self, ip, state):
+            self.ip = ip
+            self.state = state
+        
+        def get_ip(self):
+            return self.ip
+        
+        def get_state(self):
+            return self.state
+       
 # Callback to receive events from Call
     class MyCallCallback(pj.CallCallback):
 
@@ -401,7 +476,7 @@ class VoipBackend:
             logger.debug( 'on line text:%s' % self.account.info().online_text)
             logger.debug( 'account is registered?:%s' % self.account.info().reg_active)
             
-            global is_server_on
+            global is_server_on, account_state
             # utente registrato con successo (evidentemente il server e' su
             reg_status = self.account.info().reg_status
             reg_reason = self.account.info().reg_reason
@@ -415,19 +490,23 @@ class VoipBackend:
             if reg_status in [self.REQUEST_TIMEOUT, self.SERVICE_UNAVAILABLE]:
                 #self.sip_controller.change_state(SipControllerState.Connection_failed, {'reg_status': reg_status, 'reg_reason': reg_reason})
                 #self.sip_controller.do_fsm(SipControllerState.Connection_failed,{'reg_status': reg_status, 'reg_reason': reg_reason})
+                account_state = AccountState.UNREGISTERED
                 self.notification_cb(VoipEventType.LIB_EVENT, VoipEvent.LIB_CONNECTION_FAILED, {'Success' : False, 'reg_status': reg_status, 'reg_reason': reg_reason})
                 self.already_registered = False
                 
             elif reg_status==self.OK:
                 if (not reg_is_active):
                     self.already_registered = False
+                    account_state = AccountState.UNREGISTERED
                     self.notification_cb(VoipEventType.ACCOUNT_EVENT ,VoipEvent.ACCOUNT_UNREGISTERED, {'Success' : True, 'account_info': self.account.info()})
                 elif not (self.already_registered and reg_is_active):
                     logger.debug("LOCAL USER OK")
                     #self.sip_controller.change_state(SipControllerState.Registered,self.account.info())
                     #self.sip_controller.do_fsm(SipControllerState.Registered,self.account.info())
+                    account_state = AccountState.REGISTERED
                     self.notification_cb(VoipEventType.ACCOUNT_EVENT ,VoipEvent.ACCOUNT_REGISTERED, {'Success' : True, 'account_info': self.account.info()})
                     self.already_registered = True
+                    
             else:
                 if (not reg_is_active):
                     logger.debug( 'LOCAL USER REGISTRATION FAILED:%s, %s' % (reg_status,reg_reason))
@@ -943,42 +1022,35 @@ class VoipBackend:
         for extension in buddies_dict.keys():
             self.delete_buddy(extension)                                             
         
-    def get_buddy_state(self, extension):
+    def get_buddy(self, extension):
         global buddies_dict
         dest_uri = self._get_buddy_uri_key(extension)
         if not buddies_dict.has_key(dest_uri):
-            return BuddyState.NOT_FOUND
+            return VoipBackend.SipBuddy(self,None)
         else:
-            buddy = buddies_dict[dest_uri]
-            if (buddy.info().online_status==1 and self.buddy.info().online_text != 'On hold'):
-                return BuddyState.ON_LINE
-            elif buddy.info().online_status==1 and self.buddy.info().online_text == 'On hold':
-                return BuddyState.ON_HOLD
-            elif self.buddy.info().online_status==2:
-                return BuddyState.OFF_LINE
-            else:
-                return BuddyState.UNKNOWN
-            
-    def get_server_state(self):
+            return VoipBackend.SipBuddy(buddies_dict[dest_uri])
+           
+    def get_buddies(self):
+        global buddies_dict
+        buddies = []
+        
+        for b in buddies_dict.values():
+            buddies.append(VoipBackend.SipBuddy(b))
+        return buddies
+    
+    def get_account(self):
+        global account_state
+        return VoipBackend.SipAccount("", account_state)
+        
+                
+    def get_server(self):
         global  is_server_on
+        
         if is_server_on:
-            return ServerState.CONNECTED
+            return VoipBackend.SipServer(self.sip_server, ServerState.CONNECTED)
         else:
-            return ServerState.DISCONNECTED
+            return VoipBackend.SipServer(self.sip_server, ServerState.CONNECTED)
    
-    """       
-    def is_buddy_on_line(self):
-        global is_buddy_on_line
-        return is_buddy_on_line
-
-    def is_buddy_on_hold(self):
-        global is_buddy_on_hold
-        return is_buddy_on_hold
-
-    def get_buddy_status_text(self):
-        global buddy_status_text
-        return buddy_status_text
-    """
 
     # Function to make call
     def make_call(self,dest_extension):
@@ -1125,8 +1197,11 @@ class VoipBackend:
             return False
 
 
-    def get_call_state(self):
-        return callState
+    def get_call(self):
+        if (not current_call):
+            return VoipBackend.SipCall("","", CallState.IDLE)
+        else:
+            return VoipBackend.SipCall("","", callState)
     
     def serialize_values(self):
         if not self.lib:

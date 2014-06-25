@@ -1,5 +1,8 @@
 package most.voip.api.interfaces;
 
-public interface IAccount {
+import most.voip.api.enums.AccountState;
 
+public interface IAccount {
+public String getUri();
+public AccountState getState();
 }
