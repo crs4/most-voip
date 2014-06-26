@@ -229,6 +229,14 @@ class VoipBackend:
                 return "N.A"
             else:
                 return self.pjBuddy.info().uri
+        
+        def get_extension(self):
+            if (not self.pjBuddy):
+                return "N.A"
+            else:
+                uri = self.get_uri()
+                return uri[uri.find(":")+1:uri.find("@")]
+
             
 
     

@@ -82,5 +82,5 @@ class VoipEventType:
     LIB_EVENT  = "%s__LIB_EVENT" % Name   # voip library general events: (de) init, server disconnection
     ACCOUNT_EVENT = "%s__ACCOUNT_EVENT" % Name  # account (un)registration
     CALL_EVENT = "%s__CALL_EVENT" % Name # incoming, dialing, active, (un)holding, hanging up CALL
-    BUDDY_EVENT = "%s__buddy_EVENT" % Name  # buddy presence notification: (un)subsscribing, (dis)connection,  remote (un)holding
+    BUDDY_EVENT = "%s__BUDDY_EVENT" % Name  # buddy presence notification: (un)subsscribing, (dis)connection,  remote (un)holding
 

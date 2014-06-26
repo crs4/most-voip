@@ -6,13 +6,14 @@ from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import pyqtSignal
 
 from most.voip.api import VoipLib
-from most.voip.constants import VoipEvent, VoipEventType
+from most.voip.constants import VoipEvent, VoipEventType, CallState, ServerState
 
 
 logger = None
 
  
 class MostVoipGUI(QtGui.QMainWindow):
+    # pyqt signal for most voip event notifications
     voip_signal = pyqtSignal(object,object,object)
     
     def __init__(self):
@@ -23,8 +24,8 @@ class MostVoipGUI(QtGui.QMainWindow):
         self.voip_signal.connect(self.notify_events)
         
         self.myVoip = VoipLib()
-        self.buddies = []
         self._build_GUI()
+        self._setupButtonsByVoipState()
         
     def _setup_logger(self):
         global logger
@@ -47,6 +48,7 @@ class MostVoipGUI(QtGui.QMainWindow):
         self.statusBar().showMessage(msg)
         
         self._update_status_labels()
+        self._setupButtonsByVoipState()
         
         if voip_event==VoipEvent.LIB_INITIALIZED:
             self.myVoip.register_account();
@@ -67,8 +69,9 @@ class MostVoipGUI(QtGui.QMainWindow):
     def _update_buddy_list(self):
         buddies = self.myVoip.get_buddies()
         logger.debug("Update Buddy Model...")
+        self.buddiesModel.clear();
         for b in buddies:
-            msg = "%s (%s)" % (b.get_uri().encode(), b.get_status_text().encode())
+            msg = "%s (%s)" % (b.get_extension(), b.get_status_text())
             logger.debug("Appending buddy:%s" % msg)
             item = QtGui.QStandardItem(msg)
             self.buddiesModel.appendRow(item)
@@ -113,6 +116,58 @@ class MostVoipGUI(QtGui.QMainWindow):
         account_state = self.myVoip.get_account().get_state()
         self.labAccountStateInfo.setText(account_state)
         
+    def on_buddy_selected(self,item):
+        buddies = self.myVoip.get_buddies()
+        buddy_ext = buddies[item.row()].get_extension()
+        self.txtExtension.setText(buddy_ext)
+        
+    def on_make_call_button_clicked(self):
+        extension = self.txtExtension.text()
+        logger.debug("Making call to %s" % extension)
+        self.myVoip.make_call(extension)
+    
+    def _setupButtonsByVoipState(self):
+        myServerState = self.myVoip.get_server().get_state()
+        
+        if myServerState==ServerState.DISCONNECTED:
+            self.butMakeCall.setEnabled(False)
+            self.butAnswer.setEnabled(False)
+            self.butHold.setEnabled(False)
+            self.butHangup.setEnabled(False)
+            self.butInit.setEnabled(True)
+        else:
+            myCallState = self.myVoip.get_call().get_state()
+            if myCallState==CallState.IDLE:
+                self.butMakeCall.setEnabled(True)
+                self.butAnswer.setEnabled(False)
+                self.butHangup.setEnabled(False)
+                self.butHold.setEnabled(False)
+            elif myCallState==CallState.INCOMING:
+                self.butMakeCall.setEnabled(False)
+                self.butAnswer.setEnabled(True)
+                self.butHangup.setEnabled(True)
+                self.butHold.setEnabled(False)
+            elif myCallState==CallState.DIALING:
+                self.butMakeCall.setEnabled(False)
+                self.butAnswer.setEnabled(False)
+                self.butHangup.setEnabled(True)
+                self.butHold.setEnabled(False)
+            elif myCallState==CallState.HOLDING:
+                self.butMakeCall.setEnabled(False)
+                self.butAnswer.setEnabled(False)
+                self.butHangup.setEnabled(True)
+                self.butHold.setEnabled(True)
+            elif myCallState==CallState.ACTIVE:
+                self.butMakeCall.setEnabled(False)
+                self.butAnswer.setEnabled(False)
+                self.butHangup.setEnabled(True)
+                self.butHold.setEnabled(True)
+                
+    
+    def on_hold_toggle_button_clicked(self):
+        pass
+    
+        
   
 
 
@@ -139,6 +194,7 @@ class MostVoipGUI(QtGui.QMainWindow):
         vBox.setSpacing(5)
         self.buddiesList = QtGui.QListView()
         self.buddiesList.setWindowTitle('Buddies')
+        self.buddiesList.clicked.connect(self.on_buddy_selected)
         #self.buddiesList.setMinimumSize(600, 400)
         
         # Create an empty model for the list's data
@@ -184,7 +240,10 @@ class MostVoipGUI(QtGui.QMainWindow):
         hBox = QtGui.QHBoxLayout()
         hBox.setSpacing(2)
         self.butMakeCall = QtGui.QPushButton('Make Call', cWidget)
+        self.connect(self.butMakeCall, QtCore.SIGNAL('clicked()'), self.on_make_call_button_clicked);
+        labExtension = QtGui.QLabel('Extension', cWidget)
         self.txtExtension = QtGui.QLineEdit(cWidget)
+        hBox.addWidget(labExtension)
         hBox.addWidget(self.txtExtension)
         hBox.addWidget(self.butMakeCall)
         return hBox
@@ -197,7 +256,7 @@ class MostVoipGUI(QtGui.QMainWindow):
         
         self.butHold = QtGui.QPushButton('Hold', cWidget)
         self.butHold.setCheckable(True);
-        
+     
         self.butHangup = QtGui.QPushButton('Hangup', cWidget)
         hBox.addWidget(self.butInit)
         hBox.addWidget(self.butAnswer)
@@ -205,6 +264,7 @@ class MostVoipGUI(QtGui.QMainWindow):
         hBox.addWidget(self.butHangup)
         
         self.connect(self.butInit, QtCore.SIGNAL('clicked()'), self.init_voip_lib);
+        self.connect(self.butHold, QtCore.SIGNAL('clicked()'), self.on_hold_toggle_button_clicked);
         return hBox
          
  

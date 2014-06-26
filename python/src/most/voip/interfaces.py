@@ -22,6 +22,9 @@ class IBuddy:
        
     def get_uri(self):
         raise NotImplementedError
+    
+    def get_extension(self):
+        raise NotImplementedError
    
     def get_status_text(self):
         raise NotImplementedError
