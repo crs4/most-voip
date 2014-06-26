@@ -483,9 +483,8 @@ class VoipBackend:
             #unregistration_request = self.account.info().reg_expires == 0
             reg_is_active = self.account.info().reg_active and  self.account.info().reg_expires > 0
 
-            is_server_on_new = reg_status!=self.REQUEST_TIMEOUT
-            if is_server_on_new!=is_server_on:
-                is_server_on = is_server_on_new
+
+            is_server_on = not reg_status in [self.REQUEST_TIMEOUT, self.SERVICE_UNAVAILABLE];
 
             if reg_status in [self.REQUEST_TIMEOUT, self.SERVICE_UNAVAILABLE]:
                 #self.sip_controller.change_state(SipControllerState.Connection_failed, {'reg_status': reg_status, 'reg_reason': reg_reason})
@@ -493,6 +492,7 @@ class VoipBackend:
                 account_state = AccountState.UNREGISTERED
                 self.notification_cb(VoipEventType.LIB_EVENT, VoipEvent.LIB_CONNECTION_FAILED, {'Success' : False, 'reg_status': reg_status, 'reg_reason': reg_reason})
                 self.already_registered = False
+               
                 
             elif reg_status==self.OK:
                 if (not reg_is_active):
@@ -1049,7 +1049,7 @@ class VoipBackend:
         if is_server_on:
             return VoipBackend.SipServer(self.sip_server, ServerState.CONNECTED)
         else:
-            return VoipBackend.SipServer(self.sip_server, ServerState.CONNECTED)
+            return VoipBackend.SipServer(self.sip_server, ServerState.DISCONNECTED)
    
 
     # Function to make call
