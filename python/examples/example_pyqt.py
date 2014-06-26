@@ -157,15 +157,20 @@ class MostVoipGUI(QtGui.QMainWindow):
                 self.butAnswer.setEnabled(False)
                 self.butHangup.setEnabled(True)
                 self.butHold.setEnabled(True)
+                self.butHold.setText("Unhold")
             elif myCallState==CallState.ACTIVE:
                 self.butMakeCall.setEnabled(False)
                 self.butAnswer.setEnabled(False)
                 self.butHangup.setEnabled(True)
                 self.butHold.setEnabled(True)
+                self.butHold.setText("Hold")
                 
     
     def on_hold_toggle_button_clicked(self):
-        pass
+        if (self.myVoip.get_call().get_state()==CallState.ACTIVE):
+            self.myVoip.hold_call()
+        elif(self.myVoip.get_call().get_state()==CallState.HOLDING):
+            self.myVoip.unhold_call()
     
         
   
@@ -255,7 +260,7 @@ class MostVoipGUI(QtGui.QMainWindow):
         self.butAnswer = QtGui.QPushButton('Answer', cWidget)
         
         self.butHold = QtGui.QPushButton('Hold', cWidget)
-        self.butHold.setCheckable(True);
+        #self.butHold.setCheckable(True);
      
         self.butHangup = QtGui.QPushButton('Hangup', cWidget)
         hBox.addWidget(self.butInit)
