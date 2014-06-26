@@ -3,6 +3,7 @@
 import sys
 import logging
 from PyQt4 import QtGui, QtCore  
+from PyQt4.QtCore import pyqtSignal
 
 from most.voip.api import VoipLib
 from most.voip.constants import VoipEvent, VoipEventType
@@ -10,14 +11,17 @@ from most.voip.constants import VoipEvent, VoipEventType
 
 logger = None
 
+ 
 class MostVoipGUI(QtGui.QMainWindow):
+    voip_signal = pyqtSignal(object,object,object)
     
-    
-        
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
         self.setWindowTitle('Most Voip Demo Application')
         self._setup_logger()
+        
+        self.voip_signal.connect(self.notify_events)
+        
         self.myVoip = VoipLib()
         self.buddies = []
         self._build_GUI()
@@ -33,7 +37,10 @@ class MostVoipGUI(QtGui.QMainWindow):
             logger.addHandler(handler)
             logger.setLevel(logging.DEBUG)
             #print "NUM LOGGER HANDLERS:%s" % len(logger.handlers)
-        
+    
+    def voip_notify_events(self, voip_event_type,voip_event, params):
+        self.voip_signal.emit(voip_event_type,voip_event, params)
+    
     def notify_events(self, voip_event_type,voip_event, params):
         msg = "%s: %s" % (voip_event_type,voip_event)
         logger.debug("\n\nEVENT:%s\n\n" % msg)
@@ -63,8 +70,8 @@ class MostVoipGUI(QtGui.QMainWindow):
         for b in buddies:
             msg = "%s (%s)" % (b.get_uri().encode(), b.get_status_text().encode())
             logger.debug("Appending buddy:%s" % msg)
-            #item = QtGui.QStandardItem(msg)
-            #self.buddiesModel.appendRow(item)
+            item = QtGui.QStandardItem(msg)
+            self.buddiesModel.appendRow(item)
         
             
  
@@ -73,7 +80,7 @@ class MostVoipGUI(QtGui.QMainWindow):
     def get_init_params(self):
         voip_params0 = {u'username': u'ste', 
                    u'sip_pwd': u'ste', 
-                   u'sip_server': u'156.148.33.226' , #'u'192.168.1.79',  u'156.148.33.223' 
+                   u'sip_server': u'192.168.1.80' , #'u'192.168.1.79',  u'156.148.33.223' 
                    u'sip_user': u'ste', 
                    u'transport' :u'udp',
                    #u'turn_server': u'192.168.1.79', 
@@ -86,7 +93,7 @@ class MostVoipGUI(QtGui.QMainWindow):
     def init_voip_lib(self):
         print "Called init_voip_lib"
         self.voip_params = self.get_init_params()
-        self.myVoip.init_lib(self.voip_params, self.notify_events)
+        self.myVoip.init_lib(self.voip_params, self.voip_notify_events)
 
 
     def _update_status_labels(self):
