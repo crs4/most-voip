@@ -330,10 +330,10 @@ class VoipBackend:
                 
             elif self.call.info().state==pj.CallState.CONFIRMED:
                 logger.debug( "CALL CONFIRMED") #. sending REQUEST to %s" % uri_to_call
-                logger.debug('Change internal state on CALLING')
+                #logger.debug('Change internal state on CALLING')
                 #self.sip_controller.change_state(SipControllerState.Calling, callState)
                 #callState = CallState.ACTIVE
-                self.notification_cb(VoipEventType.CALL_EVENT,VoipEvent.CALL_ACTIVE, {'success': True, 'call_state' :callState})
+                #self.notification_cb(VoipEventType.CALL_EVENT,VoipEvent.CALL_ACTIVE, {'success': True, 'call_state' :callState})
                 
 
 
@@ -362,7 +362,7 @@ class VoipBackend:
                 #self.messenger.send_info("Call online")
                 #self.messenger.update_call_button_label("Hangup")
                 callState = CallState.ACTIVE
-
+                self.notification_cb(VoipEventType.CALL_EVENT,VoipEvent.CALL_ACTIVE, {'success': True, 'call_state' :callState})
 
                 #uri_to_call = self.call.info().remote_uri
                 #print "CALL CONFIRMED. sending REQUEST to::: %s" % uri_to_call
@@ -1206,6 +1206,7 @@ class VoipBackend:
 
 
     def get_call(self):
+        global callState
         if (not current_call):
             return VoipBackend.SipCall("","", CallState.IDLE)
         else:
