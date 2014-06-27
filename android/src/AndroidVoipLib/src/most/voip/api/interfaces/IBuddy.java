@@ -6,5 +6,6 @@ public interface IBuddy {
    BuddyState getState();
    String getUri();
    String getStatusText();
+   String getExtension();
    void refreshStatus();
 }

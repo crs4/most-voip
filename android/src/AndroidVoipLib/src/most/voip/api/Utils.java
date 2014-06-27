@@ -157,10 +157,10 @@ public class Utils {
      * can be opened by the Voip Lib by providing it the absolute path of the copied resource
      * @param ctx The application context
      * @param assetPath The path of the resource (e.g on_hold.wav or sounds/on_hold.wav)
-     * @return the absolute path of the copied resource
+     * @return the absolute path of the copied resource, or null if no file was copied.
      */
     public static String getResourcePathByAssetCopy(Context ctx, String assetSubFolder, String fileToCopy)
-    {    Log.d(TAG, "getResourcePathByAssetCopy on " +assetSubFolder);
+    {    Log.d(TAG, "getResourcePathByAssetCopy on folder *" +assetSubFolder + "* for file:" + fileToCopy);
     	 AssetManager assetManager = ctx.getAssets();
          String[] files = null;
          String filename = null;
@@ -174,6 +174,7 @@ public class Utils {
             	 for (String f : files)
     	         {
     	        	 Log.d(TAG,"Found resource:" + f);
+    	        	 if (f==null) continue;
     	        	 if (f.equals(fileToCopy))
     	        			 {
     	        		  
@@ -183,6 +184,8 @@ public class Utils {
     	         }
             	 
             	 Log.d(TAG, "Found:" + filename);
+            	 if (filename==null)
+            		 return null;
             	 
                  InputStream in = null;
                  OutputStream out = null;

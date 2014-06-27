@@ -551,9 +551,7 @@ class VoipBackend:
             call_cb = VoipBackend.MyCallCallback(self.notification_cb,current_call)
             current_call.set_callback(call_cb)
 
-            logger.debug( 'cambio lo stato interno del sip controller in dialing!')
-            #self.sip_controller.change_state(SipControllerState.Dialing, callState)
-            #self.notification_cb(VoipEvent.Dialing, {'Success' : True, 'call_state': callState})
+            logger.debug( 'cambio lo stato interno del sip controller in incoming')
             self.notification_cb(VoipEventType.CALL_EVENT,VoipEvent.CALL_INCOMING, {'Success' : True, 'from': call.info().remote_uri})
             if auto_answer==True:
                 logger.debug( "auto answering after %s seconds" % auto_answer_delay)
@@ -1208,8 +1206,9 @@ class VoipBackend:
     def get_call(self):
         global callState
         if (not current_call):
-            return VoipBackend.SipCall("","", CallState.IDLE)
+            return VoipBackend.SipCall("","", callState)
         else:
+            # TODO insert local and remote uri
             return VoipBackend.SipCall("","", callState)
     
     def serialize_values(self):

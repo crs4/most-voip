@@ -6,8 +6,10 @@ import most.voip.api.Utils;
 import most.voip.api.VoipLib;
 import most.voip.api.VoipLibBackend;
 import most.voip.api.VoipEventBundle;
+import most.voip.api.enums.AccountState;
 import most.voip.api.enums.BuddyState;
 import most.voip.api.enums.CallState;
+import most.voip.api.enums.ServerState;
 import most.voip.api.enums.VoipEventType;
 import most.voip.api.enums.VoipEvent;
 import most.voip.api.interfaces.IBuddy;
@@ -24,6 +26,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -52,8 +56,15 @@ public class MainActivity extends Activity {
 	private ArrayAdapter<String> arrayAdapter = null;
 	private ArrayAdapter<IBuddy> buddyArrayAdapter = null;
 	private String serverIp = null;
+	
+	private Button  butMakeCall = null;
+	private Button  butAnswerCall = null;
+	private Button  butHoldCall = null;
+	private Button  butHangupCall = null;
+	private Button  butInit = null;
+    
    
-	private AnswerCallHandler voipHandler = null; 
+	private CallHandler voipHandler = null; 
 	
 	private static class AbstractAppHandler extends Handler{
 		protected MainActivity app = null;
@@ -79,14 +90,12 @@ public class MainActivity extends Activity {
 	}
 	
 	
-	private class AnswerCallHandler extends AbstractAppHandler {
+	private class CallHandler extends AbstractAppHandler {
 	    
 		boolean reinitRequest = false;
 		
-		public AnswerCallHandler(MainActivity app, VoipLib myVoip) {
+		public CallHandler(MainActivity app, VoipLib myVoip) {
 			super(app, myVoip);
-			//EditText txtView =(EditText) findViewById(R.id.txtExtension);
-			//this.extension = txtView.getText().toString();
 		}
 		
 		
@@ -109,6 +118,7 @@ public class MainActivity extends Activity {
 			updateCallStateInfo();
 			updateServerStateInfo();
 			updateAccountStateInfo();
+			updateButtonsByVoipState();
 			
 			
 			if (myEventBundle.getEventType()==VoipEventType.BUDDY_EVENT)
@@ -130,7 +140,7 @@ public class MainActivity extends Activity {
 			//else if  (myState.getState()==VoipState.CALL_ACTIVE)    {}
 			
 			// Unregister the account
-			else if (myEventBundle.getEvent()==VoipEvent.CALL_HANGUP)    {    setupButtons(false);
+			else if (myEventBundle.getEvent()==VoipEvent.CALL_HANGUP)    {   
 																		ICall callInfo = (ICall) myEventBundle.getData();
 																		Log.d(TAG, "Hangup from uri:" + callInfo.getRemoteUri());
 																		IBuddy myBuddy = myVoip.getBuddy(callInfo.getRemoteUri());
@@ -165,7 +175,6 @@ public class MainActivity extends Activity {
 	
     private void handleIncomingCall()
     {
-    	setupButtons(true);
     }
 	
     @Override
@@ -240,6 +249,13 @@ public class MainActivity extends Activity {
     	this.runExample();
     }
     
+    public void makeCall(View view)
+    {
+    	EditText txtExtension =(EditText) this.findViewById(R.id.txtExtension);
+    	String extension = txtExtension.getText().toString();
+    	this.myVoip.makeCall(extension);
+    }
+    
     public void answerCall(View view) 
     {
     	this.myVoip.answerCall();
@@ -249,6 +265,61 @@ public class MainActivity extends Activity {
     {
     	this.myVoip.hangupCall();
     }
+    
+    
+    public void updateButtonsByVoipState(){
+    	Log.d(TAG, "updateButtonsByVoipState...");
+    	
+        //ServerState myServerState = this.myVoip.getServer().getState();
+        AccountState myAccountState = this.myVoip.getAccount().getState();
+        
+        if (myAccountState==AccountState.UNREGISTERED){
+            this.butMakeCall.setEnabled(false);
+            this.butAnswerCall.setEnabled(false);
+            this.butHoldCall.setEnabled(false);
+            this.butHangupCall.setEnabled(false);
+            this.butInit.setEnabled(true);
+            }
+        else
+        {
+            CallState myCallState = this.myVoip.getCall().getState();
+            
+            if (myCallState==CallState.IDLE)
+            {
+                this.butMakeCall.setEnabled(true);
+                this.butAnswerCall.setEnabled(false);
+                this.butHangupCall.setEnabled(false);
+                this.butHoldCall.setEnabled(false);
+            }
+            else if (myCallState==CallState.INCOMING)
+            {
+                this.butMakeCall.setEnabled(false);
+                this.butAnswerCall.setEnabled(true);
+                this.butHangupCall.setEnabled(true);
+                this.butHoldCall.setEnabled(false);
+            }
+            else if (myCallState==CallState.DIALING){
+                this.butMakeCall.setEnabled(false);
+                this.butAnswerCall.setEnabled(false);
+                this.butHangupCall.setEnabled(true);
+                this.butHoldCall.setEnabled(false);
+                }
+            else if (myCallState==CallState.HOLDING){
+                this.butMakeCall.setEnabled(false);
+                this.butAnswerCall.setEnabled(false);
+                this.butHangupCall.setEnabled(true);
+                this.butHoldCall.setEnabled(true);
+                this.butHoldCall.setText("Unhold");}
+            
+            else if (myCallState==CallState.ACTIVE){
+                this.butMakeCall.setEnabled(false);
+                this.butAnswerCall.setEnabled(false);
+                this.butHangupCall.setEnabled(true);
+                this.butHoldCall.setEnabled(true);
+                this.butHoldCall.setText("Hold");
+                }
+        }
+    }    
     
     public void toggleHoldCall(View view) 
     {
@@ -275,14 +346,26 @@ public class MainActivity extends Activity {
         this.infoArray = new ArrayList<String>();
         this.arrayAdapter =
                 new ArrayAdapter<String>(this, R.layout.row, R.id.textViewList, this.infoArray);
-        listView.setAdapter(arrayAdapter);
+        listView.setAdapter(this.arrayAdapter);
+        
+        
+        buddiesView.setAdapter(arrayAdapter);
+        buddiesView.setOnItemClickListener(new OnItemClickListener(){
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				EditText txtExtension = (EditText) findViewById(R.id.txtExtension);
+				txtExtension.setText(buddiesArray.get(position).getExtension());
+				
+			}});
         
         this.buddiesArray = new ArrayList<IBuddy>();
         
         this.buddyArrayAdapter = new BuddyArrayAdapter(this, R.layout.buddy_row, this.buddiesArray);
         buddiesView.setAdapter(this.buddyArrayAdapter);
 
-        this.setupButtons(false);
+        this.setupButtons();
         //this.addInfoLine("Most Voip Lib Test Example 1");
     }
     
@@ -294,16 +377,18 @@ public class MainActivity extends Activity {
 		}
     }
     
-    void setupButtons(boolean active)
+    void setupButtons()
 	{
-		Button butAccept = (Button) findViewById(R.id.butAccept);
-		butAccept.setEnabled(active);
-		
-		Button butToogleHold = (Button) findViewById(R.id.butToggleHold);
-		butToogleHold.setEnabled(active);
-		
-		Button butHangup = (Button) findViewById(R.id.butHangup);
-		butHangup.setEnabled(active);
+    	this.butInit = (Button) findViewById(R.id.butGo);
+    	this.butInit.setEnabled(true);
+		this.butAnswerCall = (Button) findViewById(R.id.butAccept);
+		this.butAnswerCall.setEnabled(false);
+		this.butMakeCall =  (Button) findViewById(R.id.butMakeCall);
+		this.butMakeCall.setEnabled(false);
+		this.butHoldCall = (Button) findViewById(R.id.butToggleHold);
+		this.butHoldCall.setEnabled(false);
+		this.butHangupCall = (Button) findViewById(R.id.butHangup);
+		this.butHangupCall.setEnabled(false);
 	}
     
     
@@ -314,8 +399,15 @@ public class MainActivity extends Activity {
 		params.put("userName","steand");
 		params.put("userPwd","steand");
 		String onHoldSoundPath = Utils.getResourcePathByAssetCopy(this.getApplicationContext(), "", "test_hold.wav");
-		Log.d(TAG,"OnHoldSoundPath:" + onHoldSoundPath);
+		String onIncomingCallRingTonePath = Utils.getResourcePathByAssetCopy(this.getApplicationContext(), "", "ring_in_call.wav");
+		String onOutcomingCallRingTonePath = Utils.getResourcePathByAssetCopy(this.getApplicationContext(), "", "ring_out_call.wav");
+		
+		
 		params.put("onHoldSound", onHoldSoundPath);
+		params.put("onIncomingCallSound",onIncomingCallRingTonePath ); // onIncomingCallRingTonePath
+		params.put("onOutcomingCallSound",onOutcomingCallRingTonePath); // onOutcomingCallRingTonePath
+		
+		Log.d(TAG,"OnHoldSoundPath:" + onHoldSoundPath);
 		//params.put("sipPort","5060"); // optional: default 5060
 		return params;
     	
@@ -334,10 +426,10 @@ public class MainActivity extends Activity {
 		{
 			Log.d(TAG,"Voip null... Initialization.....");
 			myVoip = new  VoipLibBackend();
-			this.voipHandler = new AnswerCallHandler(this, myVoip);
+			this.voipHandler = new CallHandler(this, myVoip);
 			
 			// Initialize the library providing custom initialization params and an handler where
-			// to receive event notifications. Following Voip methods are called form the handleMassage() callback method
+			// to receive event notifications. Following Voip methods are called from the handleMassage() callback method
 			//boolean result = myVoip.initLib(params, new RegistrationHandler(this, myVoip));
 			myVoip.initLib(this.getApplicationContext(), params, this.voipHandler);
 		}
