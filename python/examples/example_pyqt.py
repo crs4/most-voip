@@ -6,7 +6,8 @@ from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import pyqtSignal
 
 from most.voip.api import VoipLib
-from most.voip.constants import VoipEvent, VoipEventType, CallState, ServerState
+from most.voip.constants import VoipEvent, VoipEventType, CallState, ServerState,\
+    AccountState
 
 
 logger = None
@@ -83,7 +84,7 @@ class MostVoipGUI(QtGui.QMainWindow):
     def get_init_params(self):
         voip_params0 = {u'username': u'ste', 
                    u'sip_pwd': u'ste', 
-                   u'sip_server': u'192.168.1.80' , #'u'192.168.1.79',  u'156.148.33.223' 
+                   u'sip_server': u'156.148.33.226' , #'u'192.168.1.79',  u'156.148.33.223' 
                    u'sip_user': u'ste', 
                    u'transport' :u'udp',
                    #u'turn_server': u'192.168.1.79', 
@@ -127,9 +128,9 @@ class MostVoipGUI(QtGui.QMainWindow):
         self.myVoip.make_call(extension)
     
     def _setupButtonsByVoipState(self):
-        myServerState = self.myVoip.get_server().get_state()
-        
-        if myServerState==ServerState.DISCONNECTED:
+       #myServerState = self.myVoip.get_server().get_state()
+        myAccountState = self.myVoip.get_account().get_state()
+        if myAccountState==AccountState.UNREGISTERED:
             self.butMakeCall.setEnabled(False)
             self.butAnswer.setEnabled(False)
             self.butHold.setEnabled(False)
@@ -137,27 +138,32 @@ class MostVoipGUI(QtGui.QMainWindow):
             self.butInit.setEnabled(True)
         else:
             myCallState = self.myVoip.get_call().get_state()
+            
             if myCallState==CallState.IDLE:
                 self.butMakeCall.setEnabled(True)
                 self.butAnswer.setEnabled(False)
                 self.butHangup.setEnabled(False)
                 self.butHold.setEnabled(False)
+                
             elif myCallState==CallState.INCOMING:
                 self.butMakeCall.setEnabled(False)
                 self.butAnswer.setEnabled(True)
                 self.butHangup.setEnabled(True)
                 self.butHold.setEnabled(False)
+                
             elif myCallState==CallState.DIALING:
                 self.butMakeCall.setEnabled(False)
                 self.butAnswer.setEnabled(False)
                 self.butHangup.setEnabled(True)
                 self.butHold.setEnabled(False)
+                
             elif myCallState==CallState.HOLDING:
                 self.butMakeCall.setEnabled(False)
                 self.butAnswer.setEnabled(False)
                 self.butHangup.setEnabled(True)
                 self.butHold.setEnabled(True)
                 self.butHold.setText("Unhold")
+                
             elif myCallState==CallState.ACTIVE:
                 self.butMakeCall.setEnabled(False)
                 self.butAnswer.setEnabled(False)
@@ -171,6 +177,14 @@ class MostVoipGUI(QtGui.QMainWindow):
             self.myVoip.hold_call()
         elif(self.myVoip.get_call().get_state()==CallState.HOLDING):
             self.myVoip.unhold_call()
+            
+    
+    def on_answer_button_clicked(self):
+        self.myVoip.answer_call()
+        
+    def on_hangup_button_clicked(self):
+        self.myVoip.hangup_call()
+        
     
         
   
@@ -189,7 +203,7 @@ class MostVoipGUI(QtGui.QMainWindow):
         vBox.addLayout(self._buildBuddiesPanel(cWidget))
         vBox.addLayout(self._buildMakeCallPanel(cWidget))
         vBox.addLayout(self._buildButtonsPanel(cWidget))
-        
+        self.setMinimumWidth(600)
         cWidget.setLayout(vBox)
         self.setCentralWidget(cWidget)
         self.statusBar().showMessage('MostVoip Event Log') # crea una veloce barra di stato
@@ -268,8 +282,11 @@ class MostVoipGUI(QtGui.QMainWindow):
         hBox.addWidget(self.butHold)
         hBox.addWidget(self.butHangup)
         
-        self.connect(self.butInit, QtCore.SIGNAL('clicked()'), self.init_voip_lib);
-        self.connect(self.butHold, QtCore.SIGNAL('clicked()'), self.on_hold_toggle_button_clicked);
+        self.connect(self.butInit, QtCore.SIGNAL('clicked()'), self.init_voip_lib)
+        self.connect(self.butHold, QtCore.SIGNAL('clicked()'), self.on_hold_toggle_button_clicked)
+        self.connect(self.butAnswer, QtCore.SIGNAL('clicked()'), self.on_answer_button_clicked)
+        self.connect(self.butHangup, QtCore.SIGNAL('clicked()'), self.on_hangup_button_clicked)
+        
         return hBox
          
  
