@@ -268,6 +268,9 @@ class VoipBackend:
         
         def get_state(self):
             return self.state
+        
+        
+        
        
 # Callback to receive events from Call
     class MyCallCallback(pj.CallCallback):
@@ -1142,8 +1145,6 @@ class VoipBackend:
                 current_call.hangup()
                 current_call = None
                 return True
-
-
             else:
                 logger.debug("There is no call to hangup")
                 #self.messenger.send_info("No Call to hangup!")
