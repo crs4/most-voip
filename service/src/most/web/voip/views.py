@@ -46,7 +46,7 @@ def get_account(request, account_uid):
             'name': 'account_name_2',
             'sip_server' : {
                 'address': '156.148.33.226',
-                'port': 060,
+                'port': 5060,
                 'transport' : 'udp',
                 'user' : 'ste2',
                 'pwd' : 'ste2'

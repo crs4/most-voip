@@ -11,6 +11,7 @@ import most.voip.api.enums.BuddyState;
 import most.voip.api.enums.CallState;
 import most.voip.api.enums.VoipEventType;
 import most.voip.api.enums.VoipEvent;
+import most.voip.api.interfaces.IAccount;
 import most.voip.api.interfaces.IBuddy;
 import most.voip.api.interfaces.ICall;
 import most.voip.example1.R;
@@ -142,7 +143,7 @@ public class MainActivity extends Activity {
 			else if (myEventBundle.getEvent()==VoipEvent.CALL_HANGUP)    {   
 																		ICall callInfo = (ICall) myEventBundle.getData();
 																		Log.d(TAG, "Hangup from uri:" + callInfo.getRemoteUri());
-																		IBuddy myBuddy = myVoip.getBuddy(callInfo.getRemoteUri());
+																		IBuddy myBuddy = myVoip.getAccount().getBuddy(callInfo.getRemoteUri());
 																		Log.d(TAG, "Current Buddy Status Text:" + myBuddy.getStatusText());
 																		updateBuddyStateInfo(myBuddy);
 				                                                       // myVoip.unregisterAccount();
@@ -168,8 +169,8 @@ public class MainActivity extends Activity {
 		 String buddyExtension = "ste";
 		 String buddyExtension2 = "ste2";
 		 Log.d(TAG, "adding buddies...");
-		 myVoip.addBuddy(getBuddyUri(buddyExtension));
-         myVoip.addBuddy(getBuddyUri(buddyExtension2));
+		 myVoip.getAccount().addBuddy(getBuddyUri(buddyExtension));
+         myVoip.getAccount().addBuddy(getBuddyUri(buddyExtension2));
 	}
 	
     private void handleIncomingCall()
@@ -226,7 +227,7 @@ public class MainActivity extends Activity {
     private boolean isAtleastOneBuddyOnPhone()
 	{
 		
-			IBuddy [] buddies = this.myVoip.getBuddies();
+			IBuddy [] buddies = this.myVoip.getAccount().getBuddies();
 			for (IBuddy buddy : buddies)
 			{
 				if (buddy.getState()==BuddyState.ON_LINE)
@@ -270,7 +271,8 @@ public class MainActivity extends Activity {
     	Log.d(TAG, "updateButtonsByVoipState...");
     	
         //ServerState myServerState = this.myVoip.getServer().getState();
-        AccountState myAccountState = this.myVoip.getAccount().getState();
+    	IAccount myAccount = this.myVoip.getAccount();
+        AccountState myAccountState =  (myAccount==null ?  AccountState.UNREGISTERED : this.myVoip.getAccount().getState());
         
         if (myAccountState==AccountState.UNREGISTERED){
             this.butMakeCall.setEnabled(false);
@@ -483,7 +485,12 @@ public class MainActivity extends Activity {
     private void updateAccountStateInfo()
     {
     	TextView labAccountState = (TextView) findViewById(R.id.labAccountState);
-    	labAccountState.setText(myVoip.getAccount().getState().toString());
+    	IAccount myAccount = myVoip.getAccount();
+    	if (myAccount==null)
+    		labAccountState.setText("N.A");
+    	else
+    		labAccountState.setText(myAccount.getState().toString());
+    		
     }
     
     

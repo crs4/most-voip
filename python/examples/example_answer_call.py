@@ -24,11 +24,12 @@ if __name__ == '__main__':
         elif (voip_event==VoipEvent.CALL_INCOMING):
             print "INCOMING CALL From %s" % params["from"]
             time.sleep(2)
-            print "Answering!"
+            print "Answering..."
             myVoip.answer_call()
             
         elif(voip_event==VoipEvent.CALL_ACTIVE):
             dur = 2
+            
             print "Waiting %s seconds before holding..."  % dur
             time.sleep(dur)
             myVoip.hold_call()

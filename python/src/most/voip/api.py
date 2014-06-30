@@ -79,36 +79,7 @@ class VoipLib:
         """
         return self.backend.hangup_call()
     
-    def add_buddy(self, extension):
-        """
-        Add the specified buddy to this account (so its current state can be notified)
-        @param extension: the extension related to the buddy to add
-        """
-        self.backend.add_buddy(extension)
-        
-    def remove_buddy(self, extension):
-        """
-        Remove the specified buddy from this account
-        @param extension: the extension related to the buddy to remove
-        """
-        self.backend.remove_buddy(extension)
-        
-    def get_buddy(self, extension):
-        """
-        Get the buddy with the given extension
-        @param extension: the extension of the buddy
-        @return: the buddy with the specified extension
-        @rtype: IBuddy
-        """
-        return self.backend.get_buddy(extension)
     
-    def get_buddies(self):
-        """
-        Get the list of buddies of the current registered account
-        @return:  the list of the buddies of the currently registered account
-        """
-        return self.backend.get_buddies()
-   
     def get_server(self):
         """
         Get informations about the remote sip server
