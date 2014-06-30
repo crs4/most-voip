@@ -9,7 +9,6 @@ import most.voip.api.VoipEventBundle;
 import most.voip.api.enums.AccountState;
 import most.voip.api.enums.BuddyState;
 import most.voip.api.enums.CallState;
-import most.voip.api.enums.ServerState;
 import most.voip.api.enums.VoipEventType;
 import most.voip.api.enums.VoipEvent;
 import most.voip.api.interfaces.IBuddy;

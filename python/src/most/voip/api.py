@@ -120,8 +120,8 @@ class VoipLib:
     def get_account(self):
         """
         Get informations about the local account
-        @return: an ICall object containing informations about the local sip account
-        @rtype: ICall
+        @return: an IAccount object containing informations about the local sip account
+        @rtype: IAccount
         """
         return self.backend.get_account()
     

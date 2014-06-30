@@ -1,9 +1,6 @@
 package most.voip.api;
 
 import java.util.HashMap;
-
-import most.voip.api.enums.CallState;
-import most.voip.api.enums.ServerState;
 import most.voip.api.interfaces.IAccount;
 import most.voip.api.interfaces.IBuddy;
 import most.voip.api.interfaces.ICall;

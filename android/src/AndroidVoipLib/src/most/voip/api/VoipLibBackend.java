@@ -8,9 +8,7 @@ import java.util.HashMap;
 import android.app.Application;
 import android.content.Context;
 import android.media.MediaPlayer;
-import android.media.ToneGenerator;
  
-
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -46,7 +44,7 @@ private AudioMediaPlayer playerOutcomingCall = null;
 
 public static Endpoint ep = null; //new Endpoint();
 public ArrayList<MyAccount> accList = new ArrayList<MyAccount>();
-private ArrayList<MyAccountConfig> accCfgs = new ArrayList<MyAccountConfig>();
+//private ArrayList<MyAccountConfig> accCfgs = new ArrayList<MyAccountConfig>();
 private EpConfig epConfig = new EpConfig();
 private TransportConfig sipTpConfig = new TransportConfig();
 private MyAccount acc = null;
@@ -58,14 +56,15 @@ private ServerState serverState = ServerState.DISCONNECTED;
 private Handler notificationHandler = null;
 
 MediaPlayer mediaPlayer = null;
-private Context context;
+ 
 private HashMap<String,String> configParams = new HashMap<String,String>();
 
-private boolean onHoldSoundIsPlaying = false;
-private boolean onIncomingCallRingToneIsPlaying = false;
-private boolean onOutcomingCallRingToneIsPlaying = false;
+//private boolean onHoldSoundIsPlaying = false;
+//private boolean onIncomingCallRingToneIsPlaying = false;
+//private boolean onOutcomingCallRingToneIsPlaying = false;
 
 private boolean localHangup = false;
+private Context context;
 
 private final static String TAG = "VoipLib"; 
     public VoipLibBackend()
@@ -171,11 +170,11 @@ private final static String TAG = "VoipLib";
 		try {
 			acc.create(acfg);
 			// TODO: create IAccount interface to be passed as final parameter
-			this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_REGISTERING, "Account Registration request sent", null));
+			this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_REGISTERING, "Account Registration request sent", this.acc));
 		} catch (Exception e) {
 			e.printStackTrace();
 			Log.e(TAG,"Error Registering the account:" + e);
-			this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_REGISTRATION_FAILED, "Account Registration request failed:"+e.getMessage(), null));
+			this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_REGISTRATION_FAILED, "Account Registration request failed:"+e.getMessage(), this.acc));
 			return false;
 		}
 		
@@ -186,13 +185,13 @@ private final static String TAG = "VoipLib";
 	public boolean unregisterAccount() {
 		try {
 			acc.setRegistration(false);
-			this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_UNREGISTERING, "Account Unregistration request sent", null));
+			this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_UNREGISTERING, "Account Unregistration request sent",this.acc));
 			return true;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			Log.e(TAG, "Failed Unregistering the account:" + e.getMessage());
-			this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_UNREGISTRATION_FAILED, "Account Unregistration request failed:"+e.getMessage(), null));
+			this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_UNREGISTRATION_FAILED, "Account Unregistration request failed:"+e.getMessage(), this.acc));
 		}
 		return false;
 	}
@@ -404,7 +403,7 @@ private final static String TAG = "VoipLib";
 	@Override
 	public boolean destroyLib() {
 		
-		this.notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZING, "Voip Lib destroying", null));
+		this.notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZING, "Voip Lib destroying", this.configParams));
 		// Explicitly destroy and delete endpoint
 		try {
 			
@@ -448,11 +447,11 @@ private final static String TAG = "VoipLib";
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			Log.e(TAG, "Lib Destroy failed:" + e.getMessage());
-			this.notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZATION_FAILED, "Voip Lib destroyed", null));
+			this.notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZATION_FAILED, "Voip Lib destroyed", this.configParams));
 			return false;
 		}
 		 
-		this.notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZED, "Voip Lib destroyed", null));
+		this.notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZED, "Voip Lib destroyed", this.configParams));
 		return true;
 		
 	}
@@ -460,9 +459,9 @@ private final static String TAG = "VoipLib";
 	
  // ########## ACCESSORY METHODS AND CLASSES ###############################
 	
-
+/*
 	private void buildAccConfigs() {
-		/* Sync accCfgs from accList */
+		// Sync accCfgs from accList 
 		accCfgs.clear();
 		for (int i = 0; i < accList.size(); i++) {
 			MyAccount acc = accList.get(i);
@@ -478,6 +477,7 @@ private final static String TAG = "VoipLib";
 			accCfgs.add(my_acc_cfg);
 		}
 	}
+*/	
 	
 	private ICall getICallInfo(final CallInfo ci) {
 		
@@ -646,7 +646,7 @@ private final static String TAG = "VoipLib";
 		{
 			AudioMedia am;
 			try {
-				am = this.ep.audDevManager().getPlaybackDevMedia();
+				am = VoipLibBackend.ep.audDevManager().getPlaybackDevMedia();
 				playerOnHold.setPos(0);
 				playerOnHold.startTransmit(am);
 			} catch (Exception e) {
@@ -660,7 +660,7 @@ private final static String TAG = "VoipLib";
 	{
 		 AudioMedia sink;
 		try {
-			sink = this.ep.audDevManager().getPlaybackDevMedia();
+			sink = VoipLibBackend.ep.audDevManager().getPlaybackDevMedia();
 			playerOnHold.stopTransmit(sink);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -675,7 +675,7 @@ private final static String TAG = "VoipLib";
 				{
 					AudioMedia am;
 					try {
-						am = this.ep.audDevManager().getPlaybackDevMedia();
+						am = VoipLibBackend.ep.audDevManager().getPlaybackDevMedia();
 						playerOutcomingCall.setPos(0);
 						playerOutcomingCall.startTransmit(am);
 					} catch (Exception e) {
@@ -690,7 +690,7 @@ private final static String TAG = "VoipLib";
 		//if (this.playSoundFile("onOutcomingCallSound")) onOutcomingCallRingToneIsPlaying = true;
 		 AudioMedia sink;
 			try {
-				sink = this.ep.audDevManager().getPlaybackDevMedia();
+				sink = VoipLibBackend.ep.audDevManager().getPlaybackDevMedia();
 				playerOutcomingCall.stopTransmit(sink);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -704,7 +704,7 @@ private final static String TAG = "VoipLib";
 		{
 			AudioMedia am;
 			try {
-				am = this.ep.audDevManager().getPlaybackDevMedia();
+				am = VoipLibBackend.ep.audDevManager().getPlaybackDevMedia();
 				playerIncomingCall.setPos(0);
 				playerIncomingCall.startTransmit(am);
 			} catch (Exception e) {
@@ -719,7 +719,7 @@ private final static String TAG = "VoipLib";
 		//if (this.playSoundFile("onOutcomingCallSound")) onOutcomingCallRingToneIsPlaying = true;
 		 AudioMedia sink;
 			try {
-				sink = this.ep.audDevManager().getPlaybackDevMedia();
+				sink = VoipLibBackend.ep.audDevManager().getPlaybackDevMedia();
 				playerIncomingCall.stopTransmit(sink);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -736,7 +736,7 @@ private final static String TAG = "VoipLib";
 		//params.put("onOutcomingCallSound",onIncomingCallRingTonePath); // onOutcomingCallRingTonePath
 	 
 		try {
-			AudioMedia am = this.ep.audDevManager().getPlaybackDevMedia();
+			AudioMedia am = VoipLibBackend.ep.audDevManager().getPlaybackDevMedia();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -1100,26 +1100,27 @@ private final static String TAG = "VoipLib";
 			Log.e(TAG,"Error loading configuration:" + e.getMessage());
 		}
 	}
-	
+
+	/*
 	 private void saveConfig(String filename) {
 			JsonDocument json = new JsonDocument();
 			
 			try {
-				/* Write endpoint config */
+				// Write endpoint config  
 				json.writeObject(epConfig);
 				
-				/* Write transport config */
+				// Write transport config 
 				ContainerNode tp_node = json.writeNewContainer("SipTransport");
 				sipTpConfig.writeObject(tp_node);
 				
-				/* Write account configs */
+				// Write account configs 
 				buildAccConfigs();
 				ContainerNode accs_node = json.writeNewArray("accounts");
 				for (int i = 0; i < accCfgs.size(); i++) {
 					accCfgs.get(i).writeObject(accs_node);
 				}
 				
-				/* Save file */
+				// Save file 
 				//json.saveFile(filename);
 				
 				// Print the content!
@@ -1131,12 +1132,12 @@ private final static String TAG = "VoipLib";
 				Log.e(TAG, "Exception reading the json:" + e.toString());
 			}
 
-			/* Force delete json now, as I found that Java somehow destroys it
-			 * after lib has been destroyed and from non-registered thread.
-			 */
+			//Force delete json now, as I found that Java somehow destroys it
+			// after lib has been destroyed and from non-registered thread.
+			 
 			json.delete();
 		}
-
+*/
 	
 	class MyAccountConfig {
 		public AccountConfig accCfg = new AccountConfig();
