@@ -180,6 +180,7 @@ class VoipBackend:
         #self.sip_server = TecapConfig().getConfig().get('VoipBackend','sip_server')
         #self.turn_server = TecapConfig().getConfig().get('VoipBackend','turn_server')
         self.lib = None
+        self.notification_cb = None
 
   
 
@@ -190,17 +191,85 @@ class VoipBackend:
       
       
     class SipAccount(IAccount):    
+        global account_state, acc
         
-        def __init__(self, uri, state):
-            self.uri = uri
-            self.state = state
-            
+        def __init__(self, notification_cb, sip_server):
+            self.notification_cb = notification_cb
+            self.sip_server = sip_server
+        
+    
         def get_state(self):
-            return self.state
+            return account_state 
         
         def get_uri(self):
-            return self.uri
+            if acc==None:
+                return None
+            else:
+                return acc.info().uri
+            
+            
+        def _get_buddy_uri_key(self, extension):
+            return "sip:%s@%s;transport=tcp" % (str(extension), self.sip_server)
+    
+        def add_buddy(self, dest_extension):
+            global buddies_dict
+            logger.debug( '\nADDING REMOTE USER...\n')
+            try:
+                global acc
+                dest_uri = self._get_buddy_uri_key(dest_extension)
+                
+                logger.debug( 'adding buddy:%s' % dest_uri)
+                buddy = acc.add_buddy(dest_uri,cb=VoipBackend.MyBuddyCallback(self.notification_cb))
+                buddy.subscribe()
+                logger.debug( 'REMOTE USER ADDED')
+                # add the buddy to the buddy dict
+                buddies_dict[dest_extension]= buddy
+                
+                #self.sip_controller.do_fsm(SipControllerState.Remote_user_subscribed,dest_extension)
+                self.notification_cb(VoipEventType.BUDDY_EVENT,VoipEvent.BUDDY_SUBSCRIBED, {'success': True, 'dest_extension' : dest_extension})
+                #self.sip_controller.change_state(SipControllerState.Remote_user_subscribed, dest_extension)
+            except pj.Error, e:
+                logger.exception( "ADDING REMOTE USER FAILED: Exception: " + str(e))
+                #self.sip_controller.do_fsm(SipControllerState.Remote_user_subscribing_failed,dest_extension)
+                self.notification_cb(VoipEventType.BUDDY_EVENT,VoipEvent.BUDDY_SUBSCRIPTION_FAILED, {'success': False, 'dest_extension': dest_extension, 'error' :str(e)})
+                #self.sip_controller.change_state(SipControllerState.Remote_user_subscribing_failed, dest_extension)
+    
+    
+        def delete_buddy(self, extension):
+            global buddies_dict
+            if self.get_buddy_state(extension)== BuddyState.NOT_FOUND:
+                return False
+            else:
+                buddy = buddies_dict[self._get_buddy_uri_key(extension)]
+                buddy.unsubscribe()
+                buddy.delete()
+                del buddy
+                buddy = None
+                del buddies_dict[self._get_buddy_uri_key(extension)]
+                return True
+            
+        def _delete_buddies(self):    
+            for extension in buddies_dict.keys():
+                self.delete_buddy(extension)                                             
+            
+        def get_buddy(self, extension):
+            global buddies_dict
+            dest_uri = self._get_buddy_uri_key(extension)
+            if not buddies_dict.has_key(dest_uri):
+                return VoipBackend.SipBuddy(self,None)
+            else:
+                return VoipBackend.SipBuddy(buddies_dict[dest_uri])
+               
+        def get_buddies(self):
+            global buddies_dict
+            buddies = []
+            
+            for b in buddies_dict.values():
+                buddies.append(VoipBackend.SipBuddy(b))
+            return buddies
+            
         
+             
     
     class SipBuddy(IBuddy):
         def __init__(self, pjBuddy):
@@ -335,8 +404,8 @@ class VoipBackend:
                 logger.debug( "CALL CONFIRMED") #. sending REQUEST to %s" % uri_to_call
                 #logger.debug('Change internal state on CALLING')
                 #self.sip_controller.change_state(SipControllerState.Calling, callState)
-                #callState = CallState.ACTIVE
-                #self.notification_cb(VoipEventType.CALL_EVENT,VoipEvent.CALL_ACTIVE, {'success': True, 'call_state' :callState})
+                callState = CallState.ACTIVE
+                self.notification_cb(VoipEventType.CALL_EVENT,VoipEvent.CALL_ACTIVE, {'success': True, 'call_state' :callState})
                 
 
 
@@ -364,8 +433,9 @@ class VoipBackend:
                 logger.debug( "Media is now active")
                 #self.messenger.send_info("Call online")
                 #self.messenger.update_call_button_label("Hangup")
-                callState = CallState.ACTIVE
-                self.notification_cb(VoipEventType.CALL_EVENT,VoipEvent.CALL_ACTIVE, {'success': True, 'call_state' :callState})
+                if callState ==CallState.HOLDING:
+                    callState = CallState.ACTIVE
+                    self.notification_cb(VoipEventType.CALL_EVENT,VoipEvent.CALL_ACTIVE, {'success': True, 'call_state' :callState})
 
                 #uri_to_call = self.call.info().remote_uri
                 #print "CALL CONFIRMED. sending REQUEST to::: %s" % uri_to_call
@@ -765,7 +835,7 @@ class VoipBackend:
         
         logger.debug('Deallocating buddies...')
         try:
-            self._delete_buddies()
+            self.get_account()._delete_buddies()
                                
             logger.debug('Deallocating account...')  
             if acc!=None:
@@ -987,69 +1057,10 @@ class VoipBackend:
                 #codec.priority=0
 
 
-    def _get_buddy_uri_key(self, extension):
-        return "sip:%s@%s;transport=tcp" % (str(extension), self.sip_server)
     
-    def add_buddy(self, dest_extension):
-        global buddies_dict
-        logger.debug( '\nADDING REMOTE USER...\n')
-        try:
-            global acc
-            dest_uri = self._get_buddy_uri_key(dest_extension)
-            
-            logger.debug( 'adding buddy:%s' % dest_uri)
-            buddy = acc.add_buddy(dest_uri,cb=VoipBackend.MyBuddyCallback(self.notification_cb))
-            buddy.subscribe()
-            logger.debug( 'REMOTE USER ADDED')
-            # add the buddy to the buddy dict
-            buddies_dict[dest_extension]= buddy
-            
-            #self.sip_controller.do_fsm(SipControllerState.Remote_user_subscribed,dest_extension)
-            self.notification_cb(VoipEventType.BUDDY_EVENT,VoipEvent.BUDDY_SUBSCRIBED, {'success': True, 'dest_extension' : dest_extension})
-            #self.sip_controller.change_state(SipControllerState.Remote_user_subscribed, dest_extension)
-        except pj.Error, e:
-            logger.exception( "ADDING REMOTE USER FAILED: Exception: " + str(e))
-            #self.sip_controller.do_fsm(SipControllerState.Remote_user_subscribing_failed,dest_extension)
-            self.notification_cb(VoipEventType.BUDDY_EVENT,VoipEvent.BUDDY_SUBSCRIPTION_FAILED, {'success': False, 'dest_extension': dest_extension, 'error' :str(e)})
-            #self.sip_controller.change_state(SipControllerState.Remote_user_subscribing_failed, dest_extension)
-
-
-    def delete_buddy(self, extension):
-        global buddies_dict
-        if self.get_buddy_state(extension)== BuddyState.NOT_FOUND:
-            return False
-        else:
-            buddy = buddies_dict[self._get_buddy_uri_key(extension)]
-            buddy.unsubscribe()
-            buddy.delete()
-            del buddy
-            buddy = None
-            del buddies_dict[self._get_buddy_uri_key(extension)]
-            return True
-        
-    def _delete_buddies(self):    
-        for extension in buddies_dict.keys():
-            self.delete_buddy(extension)                                             
-        
-    def get_buddy(self, extension):
-        global buddies_dict
-        dest_uri = self._get_buddy_uri_key(extension)
-        if not buddies_dict.has_key(dest_uri):
-            return VoipBackend.SipBuddy(self,None)
-        else:
-            return VoipBackend.SipBuddy(buddies_dict[dest_uri])
-           
-    def get_buddies(self):
-        global buddies_dict
-        buddies = []
-        
-        for b in buddies_dict.values():
-            buddies.append(VoipBackend.SipBuddy(b))
-        return buddies
     
     def get_account(self):
-        global account_state
-        return VoipBackend.SipAccount("", account_state)
+        return VoipBackend.SipAccount(self.notification_cb, self.sip_server)
         
                 
     def get_server(self):

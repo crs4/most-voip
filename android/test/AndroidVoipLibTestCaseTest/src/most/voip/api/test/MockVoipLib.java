@@ -3,13 +3,12 @@ package most.voip.api.test;
 import java.util.HashMap;
 
 import most.voip.api.VoipLib;
-import most.voip.api.enums.BuddyState;
+
 import most.voip.api.enums.CallState;
 import most.voip.api.enums.ServerState;
 import most.voip.api.enums.VoipEvent;
 import most.voip.api.enums.VoipEventType;
 import most.voip.api.interfaces.IAccount;
-import most.voip.api.interfaces.IBuddy;
 import most.voip.api.interfaces.ICall;
 import most.voip.api.interfaces.IServer;
 import most.voip.api.VoipEventBundle;
@@ -173,30 +172,7 @@ public class MockVoipLib implements VoipLib{
 			}};
 	}
 
-	@Override
-	public boolean addBuddy(String extension) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean removeBuddy(String extension) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public IBuddy getBuddy(String extension) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IBuddy[] getBuddies() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
+	
 	@Override
 	public IAccount getAccount() {
 		// TODO Auto-generated method stub

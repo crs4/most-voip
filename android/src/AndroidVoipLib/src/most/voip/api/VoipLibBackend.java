@@ -779,11 +779,47 @@ private final static String TAG = "VoipLib";
 			cfg = config;
 		}
 		
+		@Override
+		public IBuddy[] getBuddies() {
+			return this.buddyList.values().toArray(new IBuddy[0]);
+		}
 		
 		public boolean hasBuddy(String uri)
 		{
 			return buddyList.containsKey(uri);
 		}
+		
+		@Override
+		public boolean addBuddy(String  buddyUri) {
+			
+				if (this.hasBuddy(buddyUri))
+				{
+					Log.d(TAG,"Buddy with extension:" + buddyUri + " already added" );
+					return false;
+				}
+				BuddyConfig buddyConfig = new BuddyConfig();
+				//dest_uri = "sip:%s@%s;transport=tcp" % (str(dest_extension), self.sip_server)
+				
+				buddyConfig.setUri(buddyUri);
+				buddyConfig.setSubscribe(true);
+				notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.BUDDY_SUBSCRIBING, "Subscribing buddy with uri:" + buddyUri, buddyUri)); 
+				return (this.addBuddy(buddyConfig)!=null);
+	
+		}
+
+		@Override
+		public boolean removeBuddy(String  buddyUri) {
+				return (this.delBuddy(buddyUri)!=null);
+		}
+
+		@Override
+		public IBuddy getBuddy(String buddyUri) {
+			
+				IBuddy b =  this.buddyList.get(buddyUri);
+				b.refreshStatus();
+				return b;
+		}
+
 		
 		/***
 		 * add a buddy to this account , if not already added
@@ -1193,48 +1229,7 @@ private final static String TAG = "VoipLib";
 
 	
 	
-	@Override
-	public boolean addBuddy(String  buddyUri) {
-		if (this.acc!=null)
-		{
-			
-			if (this.acc.hasBuddy(buddyUri))
-			{
-				Log.d(TAG,"Buddy with extension:" + buddyUri + " already added" );
-				return false;
-			}
-			BuddyConfig buddyConfig = new BuddyConfig();
-			//dest_uri = "sip:%s@%s;transport=tcp" % (str(dest_extension), self.sip_server)
-			
-			buddyConfig.setUri(buddyUri);
-			buddyConfig.setSubscribe(true);
-			notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.BUDDY_SUBSCRIBING, "Subscribing buddy with uri:" + buddyUri, buddyUri)); 
-			return (this.acc.addBuddy(buddyConfig)!=null);
-			
-		}
-		return false;
-	}
-
-	@Override
-	public boolean removeBuddy(String  buddyUri) {
-		if (this.acc!=null)
-		{
-			return (this.acc.delBuddy(buddyUri)!=null);
-		}
-		return false;
-	}
-
-	@Override
-	public IBuddy getBuddy(String buddyUri) {
-		if (this.acc!=null)
-		{
-			IBuddy b =  this.acc.buddyList.get(buddyUri);
-			b.refreshStatus();
-			return b;
-		}
-		return null;
-	}
-
+	
 	@Override
 	public IServer getServer() {
 		return new IServer(){
@@ -1250,33 +1245,11 @@ private final static String TAG = "VoipLib";
 			}};
 	}
 
-	@Override
-	public IBuddy[] getBuddies() {
-		
-		if (this.acc!=null)
-		{
-			return this.acc.buddyList.values().toArray(new IBuddy[0]);
-		}
-		else
-		return new IBuddy[]{};
-	}
+	
 
 	@Override
 	public IAccount getAccount() {
-		return new IAccount() {
-			
-			@Override
-			public String getUri() {
-				if (acc==null) return "N.A";
-				return acc.getUri();
-			}
-			
-			@Override
-			public AccountState getState() {
-				if (acc==null) return AccountState.UNREGISTERED;
-				return acc.getState();
-			}
-		};
+		return this.acc;
 	}
 	
 }

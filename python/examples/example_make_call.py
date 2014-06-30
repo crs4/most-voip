@@ -1,5 +1,5 @@
 from most.voip.api import VoipLib
-from most.voip.states import VoipEvent
+from most.voip.constants import VoipEvent
  
 
 import time, sys

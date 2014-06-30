@@ -65,10 +65,10 @@ class MostVoipGUI(QtGui.QMainWindow):
         buddy_extensions = ["steand", "ste2"]
         logger.debug("Adding buddies...")
         for ext in buddy_extensions:
-            self.myVoip.add_buddy(ext)
+            self.myVoip.get_account().add_buddy(ext)
         
     def _update_buddy_list(self):
-        buddies = self.myVoip.get_buddies()
+        buddies = self.myVoip.get_account().get_buddies()
         logger.debug("Update Buddy Model...")
         self.buddiesModel.clear();
         for b in buddies:
@@ -118,7 +118,7 @@ class MostVoipGUI(QtGui.QMainWindow):
         self.labAccountStateInfo.setText(account_state)
         
     def on_buddy_selected(self,item):
-        buddies = self.myVoip.get_buddies()
+        buddies = self.myVoip.get_account().get_buddies()
         buddy_ext = buddies[item.row()].get_extension()
         self.txtExtension.setText(buddy_ext)
         
