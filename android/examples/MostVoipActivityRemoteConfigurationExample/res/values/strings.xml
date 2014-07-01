@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">MostVoipActivityRemoteConfiguration</string>
+    <string name="ip_server">156.148.33.226</string>
+    <string name="action_settings">Settings</string>
+
+</resources>
