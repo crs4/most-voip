@@ -87,4 +87,27 @@
                 android:layout_width="wrap_content" 
                 android:layout_gravity="left|center_vertical" 
                 android:layout_height="wrap_content" />
+    
+    <LinearLayout 
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal" 
+    android:layout_gravity="right" 
+    android:focusableInTouchMode="true"
+    >
+    
+    <Button android:id="@+id/butCancel" android:text="Cancel" 
+                android:layout_width="wrap_content" 
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:onClick="ignoreConfig" />
+    
+    <Button android:id="@+id/butOk" android:text="Ok" 
+                android:layout_width="wrap_content" 
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:onClick="acceptConfig" />
+     
+     
+    </LinearLayout>  
 </LinearLayout>
