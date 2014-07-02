@@ -15,6 +15,8 @@ import com.android.volley.VolleyError;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -37,6 +39,9 @@ public class MainActivity extends ActionBarActivity {
 	private static String TAG = "VoipConfigDemo";
 	private ConfigServer configServer = null;
 	private JSONArray accounts = null;
+	private String accountDetailsData = "";
+	private String buddiesDetailsData = "";
+	
 	private static ArrayList<String> accountsArray = null;
 	private static ArrayAdapter<String> accountsArrayAdapter = null;
 	private static int selectedAccountIndex = -1;
@@ -121,7 +126,8 @@ public class MainActivity extends ActionBarActivity {
 				public void onResponse(JSONObject accountDetails) {
 					TextView txtAccount = (TextView) findViewById(R.id.txtAccount);
 					try {
-						txtAccount.setText(accountDetails.getJSONObject("data").toString());
+						accountDetailsData =accountDetails.getJSONObject("data").getJSONObject("account").toString();
+						txtAccount.setText(accountDetailsData);
 						loadAccountBuddies();
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block
@@ -167,7 +173,8 @@ public class MainActivity extends ActionBarActivity {
 				public void onResponse(JSONObject accountBuddies) {
 					TextView txtBuddies= (TextView) findViewById(R.id.txtBuddies);
 					try {
-						 txtBuddies.setText(accountBuddies.getJSONObject("data").toString());
+						 buddiesDetailsData = accountBuddies.getJSONObject("data").getJSONArray("buddies").toString();
+						 txtBuddies.setText(buddiesDetailsData);
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -185,6 +192,30 @@ public class MainActivity extends ActionBarActivity {
 	} 
 	
 
+	public void acceptConfig(View view)
+	{
+		Intent resultIntent = new Intent();
+		Bundle b = new Bundle();
+		b.putString("account_data", accountDetailsData);
+		b.putString("buddies_data", buddiesDetailsData);
+		
+		resultIntent.putExtras(b);
+		// TODO Add extras or a data URI to this intent as appropriate.
+		Log.d(TAG,"Configuration accepted");
+		setResult(Activity.RESULT_OK, resultIntent);
+		
+		finish();
+	}
+	
+	public void ignoreConfig(View view)
+	{
+		Intent resultIntent = new Intent();
+		Log.d(TAG,"Configuration refused");
+		setResult(Activity.RESULT_CANCELED, resultIntent);
+		finish();
+	}
+	
+	
 	private void updateAccountsArray()
 	{
 		accountsArray.clear();
@@ -257,6 +288,16 @@ public class MainActivity extends ActionBarActivity {
 					
 				}});
 	        
+		    Bundle extras = getActivity().getIntent().getExtras();
+		    if (extras != null) {
+		        String serverIp = extras.getString("serverIp");
+		        if (serverIp!=null)
+		        {
+		        	EditText txtWedServerIp = (EditText) getActivity().findViewById(R.id.txt_webserver_ip);
+		        	txtWedServerIp.setText(serverIp);
+		        }
+		    }
+		    
 		}
 		
 		
