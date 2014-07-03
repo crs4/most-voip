@@ -211,13 +211,19 @@ public class MainActivity extends Activity {
 	
 	private void subscribeBuddies()
 	{
-		 Log.d(TAG, "adding buddies...");
+		 Log.d(TAG, "adding buddies.......");
 		 if (this.buddiesData!=null)
 		 {
 			 for (int i=0; i < this.buddiesData.length();i++)
 			 {
 				 try {
-					 String buddyUri = getBuddyUri(((JSONObject)this.buddiesData.get(i)).getString("extension"));
+					 JSONObject jsBuddy = (JSONObject)this.buddiesData.get(i);
+					 //the buddy related to the current registered account is not to be included
+					 Log.d(TAG, "Found buddy extension:" + jsBuddy.getString("extension"));
+					 Log.d(TAG, "Sel Account extension:" + this.accountData.getString("extension"));
+					 if (jsBuddy.getString("extension").equals(this.accountData.getString("extension")))
+						 continue;
+					 String buddyUri = getBuddyUri(jsBuddy.getString("extension"));
 					myVoip.getAccount().addBuddy(buddyUri);
 				} catch (JSONException e) {
 					Log.e(TAG,"Error adding remote buddy from json data:"  + e.getMessage());
@@ -482,8 +488,9 @@ public class MainActivity extends Activity {
 	{
 		Bundle b = data.getExtras();
         try {
-			this.accountData = new JSONObject( b.getString("account_data"));
+			this.accountData = new JSONObject(b.getString("account_data"));
 			this.buddiesData = new JSONArray( b.getString("buddies_data"));
+			this.updateAccountDetailsInfo();
 			
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -540,6 +547,31 @@ public class MainActivity extends Activity {
     	if (arrayAdapter!=null)
     		arrayAdapter.notifyDataSetChanged();
     }
+    
+    
+    private void updateAccountDetailsInfo()
+    {
+    	TextView labAccountDetails = (TextView) findViewById(R.id.labAccountDetails);
+    
+    	
+    	if (this.accountData==null)
+    		labAccountDetails.setText("N.A");
+    	else{
+    		String info;
+			try {
+				info = this.accountData.getString("extension");
+				labAccountDetails.setText(info);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    		
+    	}
+    		
+    		
+    }
+    
+    
     
     private void updateCallStateInfo()
     { String callState = "Not available";

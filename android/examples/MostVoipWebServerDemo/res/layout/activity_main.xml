@@ -80,6 +80,28 @@
       
     </LinearLayout>
     
+     <LinearLayout 
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal" 
+    android:focusableInTouchMode="true"
+    >
+    <TextView android:id="@+id/labAccountTitle" 
+                android:text="@string/account_title" 
+                android:layout_width="wrap_content" 
+                android:layout_gravity="left" 
+                android:layout_height="fill_parent" />
+    
+    <TextView android:id="@+id/labAccountDetails"
+        android:layout_width="0sp"
+        android:layout_height="fill_parent"
+        android:layout_weight="1"
+        android:text="@string/account_details" 
+        android:maxLines="1"
+        android:gravity="left"/>
+      
+    </LinearLayout>
+    
        <LinearLayout 
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
