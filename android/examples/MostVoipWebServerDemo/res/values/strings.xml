@@ -10,4 +10,7 @@
     <string name="server_state">N.A</string>
     <string name="account_state_title">Account State:</string>
     <string name="account_state">N.A</string>
+    <string name="account_title">Account:</string>
+    <string name="account_details">N.A</string>
+    
 </resources>
