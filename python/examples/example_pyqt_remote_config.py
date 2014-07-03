@@ -9,10 +9,92 @@ from most.voip.api import VoipLib
 from most.voip.constants import VoipEvent, VoipEventType, CallState, ServerState,\
     AccountState
 
+import urllib2
+import json
 
 logger = None
 
- 
+class AccountPickerDialog(QtGui.QDialog):
+    
+    
+    def __init__(self,web_address, parent = None):
+        super(AccountPickerDialog, self).__init__(parent)
+        self.setWindowTitle("Account Selection")
+        
+        self.js_account_details = None
+        self.selected_account = None
+        
+        self.web_address = web_address
+        self.layout = QtGui.QVBoxLayout(self)
+
+        self.layout.addLayout(self._buildAccountsPanel(self))
+        # OK and Cancel buttons
+        self.butOk = QtGui.QPushButton('Ok', self)
+        self.butCancel = QtGui.QPushButton('Cancel', self)
+        hBox1 = QtGui.QHBoxLayout()
+        hBox1.setSpacing(5)
+        hBox1.addWidget(self.butOk)
+        hBox1.addWidget(self.butCancel)
+        
+        self.layout.addLayout(hBox1)
+        self.connect(self.butOk, QtCore.SIGNAL('clicked()'), self.on_ok_clicked);
+        self.connect(self.butCancel, QtCore.SIGNAL('clicked()'), self.on_cancel_clicked);
+        self.updateAccountsList()
+
+    def on_ok_clicked(self):
+        
+        selAccounts = self.accountsList.selectedIndexes()
+        print "SEl acc:%s" % selAccounts
+        if len(selAccounts)>0:
+            self.selected_account = self.js_accounts["data"]["accounts"][selAccounts[0].row()]
+            print "SELECTED ACCOUN:%s" % self.selected_account
+            self.get_account_details(self.selected_account["uid"])
+        self.accept()
+     
+    def get_account_details(self, account_id):
+        url = self.web_address + "/voip/accounts/%s/" % account_id
+        print "URL:**%s**"  %str(url)
+        myAccount_details =  urllib2.urlopen(str(url)).read()
+        print "ACCOUNT DETAILS:" + myAccount_details
+        self.js_account_details = json.loads(myAccount_details)["data"]["account"]
+        return self.js_account_details
+           
+    def on_cancel_clicked(self):
+        self.reject()
+   
+    def updateAccountsList(self):
+        url = self.web_address + "/voip/accounts/"
+        print "URL:**%s**"  %str(url)
+        myAccounts=  urllib2.urlopen(str(url)).read()
+        print "ACCOUNTS:" + myAccounts
+        self.js_accounts = json.loads(myAccounts)
+        for a in self.js_accounts["data"]["accounts"]:
+            item = QtGui.QStandardItem(a["name"])
+            self.accountsModel.appendRow(item)
+        
+    # static method to create the dialog and return (date, time, accepted)
+    @staticmethod
+    def getSelectedAccount(web_address,parent = None):
+        dialog = AccountPickerDialog(web_address,parent)
+        result = dialog.exec_()
+       
+        return (dialog.selected_account, dialog.js_account_details, result == QtGui.QDialog.Accepted)
+    
+    def _buildAccountsPanel(self, cWidget):
+        vBox = QtGui.QVBoxLayout()
+        vBox.setSpacing(5)
+        self.accountsList = QtGui.QListView()
+        self.accountsList.setWindowTitle('Buddies')
+        #self.buddiesList.setMinimumSize(600, 400)
+        
+        # Create an empty model for the list's data
+        self.accountsModel = QtGui.QStandardItemModel(self.accountsList)
+        self.accountsList.setModel(self.accountsModel)
+        self.accountsList.show()
+        vBox.addWidget(self.accountsList) 
+        return vBox
+    
+    
 class MostVoipGUI(QtGui.QMainWindow):
     # pyqt signal for most voip event notifications
     voip_signal = pyqtSignal(object,object,object)
@@ -82,19 +164,31 @@ class MostVoipGUI(QtGui.QMainWindow):
     
         
     def get_init_params(self):
-        voip_params0 = {u'username': u'ste', 
-                   u'sip_server_pwd': u'ste', 
-                   u'sip_server_address': u'156.148.33.226' , #'u'192.168.1.79',  u'156.148.33.223' 
-                   u'sip_server_user': u'ste', 
-                   u'sip_server_transport' :u'udp',
-                   #u'turn_server_address': u'192.168.1.79', 
-                   #u'turn_server_user': u'', 
-                   #u'turn_server_pwd': u'',
+         
+        self.selectedAccount, self.selectedAccountDetails ,  ok = AccountPickerDialog.getSelectedAccount(self.txtwebServerAddress.text(), self)
+        print "SELECTED ACCOUNT:%s -> Data: %s Details:%s" % (ok, self.selectedAccount, str(self.selectedAccountDetails))
+        
+        if (not ok):
+            raise Exception("No Valid Account Configuration Loaded")
+        
+        voip_params0 = {u'username':   self.selectedAccount["name"], 
+                   u'sip_server_pwd': self.selectedAccountDetails["sip_server"]["pwd"],
+                   u'sip_server_address':self.selectedAccountDetails["sip_server"]["address"] , #'u'192.168.1.79',  u'156.148.33.223' 
+                   u'sip_server_user': self.selectedAccountDetails["sip_server"]["user"], 
+                   u'sip_server_transport' :self.selectedAccountDetails["sip_server"]["transport"],
+                   #u'turn_server_address': self.selectedAccountDetails["turn_server"]["address"], 
+                   #u'turn_server_user': self.selectedAccountDetails["turn_server"]["user"],
+                   #u'turn_server_pwd': self.selectedAccountDetails["turn_server"]["pwd"],
                    u'log_level' : 1,
                    u'debug' : True }   
+        print "VOIP CONF DICT:%s" % voip_params0
         return voip_params0
     
+    def get_account_buddies(self, selectedAccountId):
+        pass
+    
     def init_voip_lib(self):
+        
         print "Called init_voip_lib"
         self.voip_params = self.get_init_params()
         self.myVoip.init_lib(self.voip_params, self.voip_notify_events)
@@ -177,8 +271,8 @@ class MostVoipGUI(QtGui.QMainWindow):
             self.myVoip.hold_call()
         elif(self.myVoip.get_call().get_state()==CallState.HOLDING):
             self.myVoip.unhold_call()
-            
-    
+   
+   
     def on_answer_button_clicked(self):
         self.myVoip.answer_call()
         
@@ -202,6 +296,7 @@ class MostVoipGUI(QtGui.QMainWindow):
         vBox.addLayout(self._buildStatesPanel(cWidget))
         vBox.addLayout(self._buildBuddiesPanel(cWidget))
         vBox.addLayout(self._buildMakeCallPanel(cWidget))
+        vBox.addLayout(self._buildLoadConfigPanel(cWidget))
         vBox.addLayout(self._buildButtonsPanel(cWidget))
         self.setMinimumWidth(600)
         cWidget.setLayout(vBox)
@@ -221,7 +316,7 @@ class MostVoipGUI(QtGui.QMainWindow):
         self.buddiesList.setModel(self.buddiesModel)
         self.buddiesList.show()
         vBox.addWidget(QtGui.QLabel('Buddies', cWidget))
-        vBox.addWidget(self.buddiesList);
+        vBox.addWidget(self.buddiesList) 
         return vBox
     
     def _buildStatesPanel(self,cWidget):
@@ -260,11 +355,21 @@ class MostVoipGUI(QtGui.QMainWindow):
         hBox.setSpacing(2)
         self.butMakeCall = QtGui.QPushButton('Make Call', cWidget)
         self.connect(self.butMakeCall, QtCore.SIGNAL('clicked()'), self.on_make_call_button_clicked);
-        labExtension = QtGui.QLabel('Extension', cWidget)
+        labExtension = QtGui.QLabel('Extension: ', cWidget)
         self.txtExtension = QtGui.QLineEdit(cWidget)
         hBox.addWidget(labExtension)
         hBox.addWidget(self.txtExtension)
         hBox.addWidget(self.butMakeCall)
+        return hBox
+    
+    def _buildLoadConfigPanel(self,cWidget):
+        hBox = QtGui.QHBoxLayout()
+        hBox.setSpacing(2)
+        labWebServerAddress = QtGui.QLabel('Web Server Address: ', cWidget)
+        self.txtwebServerAddress = QtGui.QLineEdit(cWidget)
+        self.txtwebServerAddress.setText("http://localhost:8000")
+        hBox.addWidget(labWebServerAddress)
+        hBox.addWidget(self.txtwebServerAddress)
         return hBox
         
     def _buildButtonsPanel(self,cWidget):

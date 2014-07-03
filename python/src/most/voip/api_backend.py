@@ -9,6 +9,7 @@ import logging
 import os , time
 from most.voip.interfaces import IServer, ICall, IAccount, IBuddy
 from most.voip.constants import VoipEvent, CallState, BuddyState, ServerState, AccountState, VoipEventType
+from cairo._cairo import EXTEND_NONE
 
 
 
@@ -213,7 +214,7 @@ class VoipBackend:
     
         def add_buddy(self, dest_extension):
             global buddies_dict
-            logger.debug( '\nADDING REMOTE USER...\n')
+            logger.debug( '\nADDING REMOTE USER with extension:%s\n' % dest_extension)
             try:
                 global acc
                 dest_uri = self._get_buddy_uri_key(dest_extension)
@@ -223,7 +224,7 @@ class VoipBackend:
                 buddy.subscribe()
                 logger.debug( 'REMOTE USER ADDED')
                 # add the buddy to the buddy dict
-                buddies_dict[dest_extension]= buddy
+                buddies_dict[dest_uri]= buddy
                 
                 #self.sip_controller.do_fsm(SipControllerState.Remote_user_subscribed,dest_extension)
                 self.notification_cb(VoipEventType.BUDDY_EVENT,VoipEvent.BUDDY_SUBSCRIBED, {'success': True, 'dest_extension' : dest_extension})
@@ -236,8 +237,9 @@ class VoipBackend:
     
     
         def delete_buddy(self, extension):
+            logger.debug( "\nDeleting buddy with extension: %s" % extension)
             global buddies_dict
-            if self.get_buddy_state(extension)== BuddyState.NOT_FOUND:
+            if self.get_buddy(extension).get_state()== BuddyState.NOT_FOUND:
                 return False
             else:
                 buddy = buddies_dict[self._get_buddy_uri_key(extension)]
@@ -249,14 +251,15 @@ class VoipBackend:
                 return True
             
         def _delete_buddies(self):    
-            for extension in buddies_dict.keys():
-                self.delete_buddy(extension)                                             
+            logger.debug("BUDDIES TO DELETE:%s" % buddies_dict.keys())
+            for b in self.get_buddies():
+                self.delete_buddy(b.get_extension())                                             
             
         def get_buddy(self, extension):
             global buddies_dict
             dest_uri = self._get_buddy_uri_key(extension)
             if not buddies_dict.has_key(dest_uri):
-                return VoipBackend.SipBuddy(self,None)
+                return VoipBackend.SipBuddy(None)
             else:
                 return VoipBackend.SipBuddy(buddies_dict[dest_uri])
                
@@ -900,14 +903,14 @@ class VoipBackend:
   
         
         
-        self.sip_server = str(self.params['sip_server'])
+        self.sip_server = str(self.params['sip_server_address'])
         if (self.params.has_key("turn_server")):
-            self.turn_server = str(self.params['turn_server'])
+            self.turn_server = str(self.params['turn_server_address'])
         else:
             self.turn_server= None
             
         logger.debug( 'reading server: %s:%s' % (self.sip_server, self.turn_server))
-        self.my_account = (self.params['sip_user'], self.params['sip_pwd'])
+        self.my_account = (self.params['sip_server_user'], self.params['sip_server_pwd'])
         logger.debug("ACCOUNT FROM WEB APP:%s,%s" % self.my_account)
 
         try:
@@ -922,10 +925,10 @@ class VoipBackend:
                 my_media_cfg.turn_server = "%s:3478" % str(self.turn_server)
                 #my_media_cfg.turn_server = "156.148.18.186:3478"
                 logger.debug("Setting turn server[%s]:%s" % (type(my_media_cfg.turn_server), (my_media_cfg.turn_server)))
-                my_media_cfg.turn_cred = pj.AuthCred("tecap.crs4.it", '%s' % str(self.params['turn_user']), '%s' % str(self.params['turn_pwd'])) #TODO check remote.most.it
+                my_media_cfg.turn_cred = pj.AuthCred("tecap.crs4.it", '%s' % str(self.params['turn_server_user']), '%s' % str(self.params['turn_server_pwd'])) #TODO check remote.most.it
                 logger.debug("#%s#" % my_media_cfg.turn_cred)
                 my_media_cfg.turn_conn_type = pj.TURNConnType.TCP
-                logger.debug("Setting turn user:%s:%s" % (self.params['turn_user'], self.params['turn_pwd']))
+                logger.debug("Setting turn user:%s:%s" % (self.params['turn_server_user'], self.params['turn_server_pwd']))
 
             #my_media_cfg.snd_play_latency = 0
             #my_media_cfg.snd_rec_latency = 0
@@ -951,7 +954,7 @@ class VoipBackend:
             # TRANSPORT CONFIGURATION
             #print "creating UDP transport..."
             global transport
-            if (self.params.has_key("transport") and self.params["transport"]=="udp"):
+            if (self.params.has_key("sip_server_transport") and self.params["sip_server_transport"]=="udp"):
                 transport = self.lib.create_transport(pj.TransportType.UDP)
             else:
                 transport = self.lib.create_transport(pj.TransportType.TCP)
@@ -999,7 +1002,7 @@ class VoipBackend:
             if not acc:
 
                 logger.debug("Registering account **%s** (PWD:%s) on sip server:**%s**" % (self.my_account[0],self.my_account[1], self.sip_server))
-                if (self.params.has_key("transport") and self.params["transport"]=="udp"):
+                if (self.params.has_key("sip_server_transport") and self.params["sip_server_transport"]=="udp"):
                     transport_info = "" 
                 else:
                     transport_info =  ";transport=tcp"

@@ -12,7 +12,7 @@ if __name__ == '__main__':
         print "Current Call State:%s" % myVoip.get_call().get_state()
         if (voip_state==VoipEvent.ACCOUNT_REGISTERED):
             print "Adding a buddy for extension: %s" % extension
-            myVoip.add_buddy(extension)
+            myVoip.get_account().add_buddy(extension)
             print "Making a call dialing the extension: %s" % extension
             myVoip.make_call(extension)
             
@@ -27,13 +27,13 @@ if __name__ == '__main__':
     extension = "steand"   
     
     voip_params0 = {u'username': u'ste', 
-                   u'sip_pwd': u'ste', 
-                   u'sip_server': u'156.148.33.226' , #'u'192.168.1.79',  u'156.148.33.223' 
-                   u'sip_user': u'ste', 
-                   u'transport' :u'udp',
-                   # u'turn_server': u'192.168.1.79', 
-                   #u'turn_user': u'', 
-                   #u'turn_pwd': u'',
+                   u'sip_server_pwd': u'ste', 
+                   u'sip_server_address': u'156.148.33.226' , #'u'192.168.1.79',  u'156.148.33.223' 
+                   u'sip_server_user': u'ste', 
+                   u'sip_server_transport' :u'udp',
+                   #u'turn_server_address': u'192.168.1.79', 
+                   #u'turn_server_user': u'', 
+                   #u'turn_server_pwd': u'',
                    u'log_level' : 1,
                    u'debug' : True }
     
@@ -44,10 +44,9 @@ if __name__ == '__main__':
                           u'sip_user': u'specialista', 
                           u'turn_user': u'specialista', 
                           u'turn_pwd': u'sha1$40fcf$4718177db1b6966f64d2d436f212',
-                          u'log_level' : 1,
+                          u'log_level' : 5,
                           u'debug' : True 
                           }
-    
     
     myVoip = VoipLib()
     print "Initializing the Voip Lib..."
