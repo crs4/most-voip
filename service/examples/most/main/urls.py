@@ -9,6 +9,6 @@ urlpatterns = patterns('',
     url(r'^accounts/login/$', 'django.contrib.auth.views.login'),
     url(r'^voip/', include('most.web.voip.urls', namespace = 'voip')),
 
-    url(r'^test$',  "authentication.views.test_auth"),
+    url(r'^test$',  "most.web.authentication.views.test_auth"),
 
 )
