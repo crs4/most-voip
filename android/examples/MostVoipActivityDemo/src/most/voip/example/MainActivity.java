@@ -39,7 +39,13 @@ import android.widget.TextView;
  * <ul>
  * <li>initialize the Voip Lib </li>
  * <li>register an account to a remote Sip Server (by specifying its IP address) </li>
- * <li>make a call to a remote user (by specifying an extension</li>
+ * <li>subscribe new buddies for this account </li>
+ * <li>make a call to a buddy </li>
+ * <li>answer a call incoming from a remote user</li>
+ * <li>hold/unhold the call </li>
+ * <li>monitor the current status of the account </li>
+ * <li>monitor the current status of the subscribed buddies </li>
+ * <li>monitor the current status of the call </li>
  * <li>unregister the previously registered account from the Sip Server </li>
  * <li>deinitialize the Voip Lib </li>
  * </ul>
@@ -48,7 +54,7 @@ import android.widget.TextView;
  */
 public class MainActivity extends Activity {
 	private static final String TAG = "VoipTestActivity";
-	//private final Handler handler = new Handler(this);
+	
 	
 	private ArrayList<String> infoArray = null;
 	private ArrayList<IBuddy> buddiesArray = null;

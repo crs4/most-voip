@@ -42,9 +42,16 @@ import android.widget.TextView;
 /**
  * This example application shows how to:
  * <ul>
+ * <li>Load the configuration parameters from a web server needed to register an account to a remote sip server</li>
  * <li>initialize the Voip Lib </li>
- * <li>register an account to a remote Sip Server (by specifying its IP address) </li>
- * <li>make a call to a remote user (by specifying an extension</li>
+ * <li>register the account to the remote Sip Server  </li>
+ * <li>subscribe new buddies for this account </li>
+ * <li>make a call to a buddy </li>
+ * <li>answer a call incoming from a remote user</li>
+ * <li>hold/unhold the call </li>
+ * <li>monitor the current status of the account </li>
+ * <li>monitor the current status of the subscribed buddies </li>
+ * <li>monitor the current status of the call </li>
  * <li>unregister the previously registered account from the Sip Server </li>
  * <li>deinitialize the Voip Lib </li>
  * </ul>
