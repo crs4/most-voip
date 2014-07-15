@@ -285,7 +285,8 @@ public class MainActivity extends ActionBarActivity {
 					txtAccount.setText("");
 					TextView txtBuddies= (TextView) getActivity().findViewById(R.id.txtBuddies);
 					txtBuddies.setText("");
-					
+					// load the selected account
+				 	 ((MainActivity) getActivity()).loadAccount(null);
 				}});
 	        
 		    Bundle extras = getActivity().getIntent().getExtras();

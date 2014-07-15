@@ -11,7 +11,6 @@ import android.os.Handler;
 
 
 public interface VoipLib {
-	
 	/**
 	 * Initialize the Voip Lib
 	 * @param context application context of the activity that uses this library
