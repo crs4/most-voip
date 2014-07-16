@@ -25,6 +25,12 @@ var/
 .installed.cfg
 *.egg
 
+# Pycharm
+.idea/
+
+#sqlite3
+*.sqlite3
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
