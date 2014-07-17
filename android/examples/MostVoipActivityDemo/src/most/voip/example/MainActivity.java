@@ -88,8 +88,8 @@ public class MainActivity extends Activity {
  		{
  			//int msg_type = voipMessage.what;
 			VoipEventBundle myState = (VoipEventBundle) voipMessage.obj;
-			String infoMsg = "State:" + myState.getEvent() + ":" + myState.getInfo();
-			Log.d(TAG, "Called handleMessage with state info:" + infoMsg);
+			String infoMsg = "Event:" + myState.getEvent() + ": Type:"  + myState.getEventType() + " : " + myState.getInfo();
+			Log.d(TAG, "Called handleMessage with event info:" + infoMsg);
 			this.app.addInfoLine(infoMsg);
 			return myState;
  		}
@@ -119,7 +119,7 @@ public class MainActivity extends Activity {
 			} 
 
 			VoipEventBundle myEventBundle = getEventBundle(voipMessage);
-			Log.d(TAG, "HANDLE MESSAGE TYPE:" + myEventBundle.getEventType() + " EVENT:" + myEventBundle.getEvent());
+			Log.d(TAG, "HANDLE EVENT TYPE:" + myEventBundle.getEventType() + " EVENT:" + myEventBundle.getEvent());
 			
 			updateCallStateInfo();
 			updateServerStateInfo();
@@ -243,9 +243,7 @@ public class MainActivity extends Activity {
 	 return false;
 	}
     
-    /**
-     * Invoked when the 'Go' button is clicked
-     */
+   
     public void doVoipTest(View view) {
     	EditText txtView =(EditText) this.findViewById(R.id.txtServerIp);
     	this.serverIp = txtView.getText().toString();

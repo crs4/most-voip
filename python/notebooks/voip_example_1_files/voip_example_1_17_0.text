@@ -1,0 +1,1 @@
+Received Event Type:EVENT_TYPE__ACCOUNT_EVENT -> Event: VOIP_EVENT__ACCOUNT_REGISTERING Params: {'account_info': u'ste', 'Success': True}

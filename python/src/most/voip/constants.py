@@ -1,9 +1,13 @@
-'''
+"""
 Created on 06/mag/2014
 
-@author: smonni
-'''
+:author: smonni
+"""
+
 class VoipEvent(object):
+    """
+    This class contains all events triggered by the library
+    """
 
     Name                    = 'VOIP_EVENT'
 
@@ -36,8 +40,6 @@ class VoipEvent(object):
     CALL_INCOMING_REJECTED        = '%s__CALL_INCOMING_REJECTED' % Name        # INCOMING CALL REJECTED 
     CALL_ACTIVE                       = '%s__CALL_ACTIVE' % Name
     CALL_HOLDING                       = '%s__CALL_HOLDING' % Name
-    RemoteHolding                 = '%s__CALL_REMOTE_HOLDING' % Name
-    RemoteLocalHolding            = '%s__CALL_REMOTE_AND_LOCAL_HOLDING' % Name
     CALL_UNHOLDING                     = '%s__CALL_UNHOLDING' % Name
     CALL_HANGUP                        = '%s__CALL_HANGUP' % Name
     CALL_REMOTE_HANGUP                  = '%s__CALL_REMOTE_HANGUP' % Name

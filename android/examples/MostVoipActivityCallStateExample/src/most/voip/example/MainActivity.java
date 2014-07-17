@@ -67,16 +67,19 @@ public class MainActivity extends Activity {
 			this.myVoip = myVoip;
 		}
  		
+ 		
  		protected VoipEventBundle getEventBundle(Message voipMessage)
  		{
  			//int msg_type = voipMessage.what;
-			VoipEventBundle myState = (VoipEventBundle) voipMessage.obj;
-			String infoMsg = "State:" + myState.getEvent() + ":" + myState.getInfo();
-			Log.d(TAG, "Called handleMessage with state info:" + infoMsg);
+			VoipEventBundle myEvent = (VoipEventBundle) voipMessage.obj;
+			String infoMsg = "Event:" + myEvent.getEvent() + ": Type:"  + myEvent.getEventType() + " : " + myEvent.getInfo();
+			Log.d(TAG, "Called handleMessage with event info:" + infoMsg);
 			this.app.addInfoLine(infoMsg);
-			return myState;
+			return myEvent;
  		}
 	}
+	
+	
 	
 	
 	private class AnswerCallHandler extends AbstractAppHandler {

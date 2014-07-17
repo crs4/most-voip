@@ -10,8 +10,8 @@ from api_backend import VoipBackend
 
 class VoipLib:
     
-    def __init__(self, backend=VoipBackend()):
-        self.backend = backend
+    def __init__(self, backend=VoipBackend):
+        self.backend = backend()
         
     def init_lib(self,params, notification_cb):
         """Initialize the voip library
