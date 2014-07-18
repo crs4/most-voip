@@ -2,7 +2,17 @@
 Asterisk Configuration Guide for Most Voip Examples
 ===================================================
 
-All examples describing the Most Voip Library features requires, to work
+.. toctree::
+   :maxdepth: 3
+ 
+   asterisk_configuration
+   blank
+
+  
+   
+   
+   
+All examples describing the Most Voip Library features require, to work
 properly, a Sip Server running on a reachable PC. In this guide we show
 how to configure the `Asterisk Sip Server <http://www.asterisk.org/>`__
 

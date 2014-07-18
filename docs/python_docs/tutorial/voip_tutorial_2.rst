@@ -1,30 +1,26 @@
 
-Example 2: Answering a Call
+Tutorial 2: Answering a Call
 ===========================
 
-This second example of the Most Voip Library shows how to listen for and
+This second tutorial of the Most Voip Library shows how to listen for and
 to answer to incoming calls.
 
 Note that this example, to work, requires a Sip Server (e.g Asterisk)
 installed and running on a reachable PC. For getting instructions about
-the Asterisk configuration, click
-`here <asterisk_configuration.ipynb>`__
+the Asterisk configuration, click  `here <asterisk_configuration.html>`_
 
-First of all, you have to perform the 3 following
-steps:
+The tutorial consists in the following steps, each of them explained in the next sections.
 
-1. Import and instance the Most Voip Library
-2. Implement the **notify\_events(voip\_event\_type, voip\_event,
-   params)** method where to receive all notifications
-3. Initialize the Voip Library and Register the account
-4. Write a loop for waiting for incoming calls
-5. Open a CLI asterisk console and type the command for making a call to
-   the user registered at the previous step
+.. toctree::
+   :maxdepth: 3
+ 
+   voip_tutorial_2
+   blank
 
 Step 1: Import and instance the voip lib
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-These steps have been already explained in the previous example. However
+These steps have been already explained in the previous tutorial. However
 note that, this time, we also import the **VoipEvent** class, that will
 be used in the callback method **notify\_events** for detecting the type
 of the incoming events.
@@ -44,13 +40,15 @@ of the incoming events.
     
     # build a dictionary containing all parameters needed for the Lib initialization
     
-    voip_params = {u'username': u'ste', 
-                       u'sip_server_pwd': u'ste', 
-                       u'sip_server_address': u'156.148.33.226' , #'u'192.168.1.79',  u'156.148.33.223' 
-                       u'sip_server_user': u'ste', 
-                       u'sip_server_transport' :u'udp',
-                       u'log_level' : 1,
-                       u'debug' : False }
+    voip_params = {  u'username': u'ste',  # a name describing the user
+                     u'sip_server_address': u'156.148.33.240',  # the ip of the remote sip server (default port: 5060)
+                     u'sip_server_user': u'ste', # the username of the sip account
+                     u'sip_server_pwd': u'ste',  #  the password of the sip account
+                     u'sip_server_transport' :u'udp', # the transport type (default: tcp) 
+                     u'log_level' : 1,  # the log level (greater values provide more informations)
+                     u'debug' : False  # enable/disable debugging messages
+                     }
+                       
 Step 2: Implement the CallBack method where to receive notifications about incoming calls and other relevant events
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

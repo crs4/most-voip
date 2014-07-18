@@ -6,6 +6,6 @@
 Examples
 ========
 
-Basic usage examples can be found in the  `python tutorial page  <../tutorial/index.html>`_ .
-Advanced examples can be found in the `python/examples/` subdirectory of
+Basic usage examples can be found in the `android tutorial page  <../tutorial/index.html>`_ .
+Advanced examples can be found in the `android/examples/` subdirectory of
 the MOST-Voip sources.

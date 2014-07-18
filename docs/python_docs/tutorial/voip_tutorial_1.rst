@@ -1,21 +1,21 @@
 
 
-Example 1: Making a Call
+Tutorial 1: Making a Call
 ========================
 
-This first example shows how to make a call to an arbitrary destination
+This first tutorial shows how to make a call to an arbitrary destination
 using the Voip Library. To make a call, you have to perform the
-following 3 steps, each of them explained in the next sections.
+following steps, each of them explained in the next sections.
 
-1. Initialize the Voip Library
-2. Register an account on a remote Sip Server
-3. Make a call to a remote destination
-4. Hangup the call
+.. toctree::
+   :maxdepth: 3
+ 
+   voip_tutorial_1
+   blank
 
 Note that this example, to work, requires a Sip Server (e.g Asterisk)
 installed and running on a reachable PC. For getting instructions about
-the Asterisk configuration, click
-`here <asterisk_configuration.ipynb>`__
+the Asterisk configuration, click `here <asterisk_configuration.html>`_
 
 Step 1: Initialize the Library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -130,10 +130,10 @@ registration request from it).
 Also in this case, the library calls the method *notify\_events* to
 notify the outcome of the registration process. In particular, this
 method is called as soon as a registration request is sent (with a
-VOIP\_EVENT\_ACCOUNT\_REGISTERING event) and later, as soon as the
+VoipEvent.\_ACCOUNT\_REGISTERING event) and later, as soon as the
 registration is accepted by the remote Sip server (with a
-VOIP\_EVENT\_ACCOUNT\_REGISTERED state) or refused (with a
-VOIP\_EVENT\_ACCOUNT\_REGISTRATION\_FAILED event)
+VoipEvent.\_ACCOUNT\_REGISTERED state) or refused (with a
+VoipEvent.\_ACCOUNT\_REGISTRATION\_FAILED event)
 
 Step 3: Making a call to a arbitrary extension
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -153,7 +153,7 @@ an arbitrary Sip User) in the following way:
     
 
 Note that the notify\_events method is called when the call is
-established (with the state VOIP\_STATE\_\ *CALL*\ ACTIVE)
+established (with the event VoipEvent.CALL\_ACTIVE)
 
 Step 4: Hangup the active call
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -174,7 +174,7 @@ To hangup the call you have just to call the method *hangup\_call*:
 
 
 Note that, when the user hangs up the call , the callback method is
-called again with the event VOIP\_EVENT\_CALL\_HANGUP)
+called again with the event VoipEvent.CALL\_HANGUP)
 
 .. code:: python
 

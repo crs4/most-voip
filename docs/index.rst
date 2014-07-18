@@ -4,13 +4,60 @@
    contain the root `toctree` directive.
 
 Most Voip Library
-=========================================
+=================
 
-Contents:
+
+The *MOST-Voip* Library is a fast and lightweight library created for handling VOIP sessions.
+
+
+Main features:
+
+  * Sip Account creation and registration on a remote Sip Server (e.g Asterisk)
+  * Sip Call handling (making, holding, unholding, answering incoming calls)
+  * Buddies Subscription and Real Time Presence Notification
+ 
+Supported platforms:
+
+ * Mobile: Android
+ * Desktop: Linux Ubuntu
+
+So far, MOST-Voip for desktop platforms has been tested only on Linux Ubuntu v.14.10 distribution. However, it is written in Python 2.7, 
+so other platforms should be supported as well.
+
+
+
+Installation
+============
+
+Most-Voip Library is based on `PJSIP 2.2.1 <http://www.pjsip.org/>`_ library.
+So, first of all, you have to install PJSip, by performing the following steps:
+
+1. Download the last svn revision from http://svn.pjsip.org/repos/pjproject/trunk/ (revision 4818 works well). (tar.gz and zip archives don't compile!)
+2. ./configure CFLAGS='-fPIC'
+3. make dep
+4. make
+5. sudo make install
+6. cd pjsip-apps/src/python/
+7. sudo python setup.py install
+
+If you intend to use Most-Voip on the Android platform, you also have to build Pjsip for Android, as explained `here <https://trac.pjsip.org/repos/wiki/Getting-Started/Android#Requirements>`_
+
+Get the latest release from GitHub: `https://github.com/crs4/most-voip <https://github.com/crs4/most-voip>`_
+
+Launch the following command:
+
+.. code-block:: bash
+
+  python setup.py install
+
+
+Table Of Contents
+=================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    
+   index
    python_docs/index
    android_docs/index
  
@@ -23,4 +70,14 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+
+Licence
+=======
+
+MOST-Voip is released under the ?????
+::
+
+  Copyright (c) 2012-2014, CRS4
+
 

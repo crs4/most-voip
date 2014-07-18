@@ -2,16 +2,21 @@
 Created on 28/apr/2014
 
 :author: CRS4 -- http://www.crs4.it
-
 """
-
-from api_backend import VoipBackend
-
 
 class VoipLib:
     
-    def __init__(self, backend=VoipBackend):
-        self.backend = backend()
+    def __init__(self, backend=None):
+        """
+        Create a new instance of the VoipLib
+        :param backend: (optional) if specified, it is used as the default VoipLib implementation
+        """
+        if backend==None:
+            from api_backend import VoipBackend
+            self.backend = VoipBackend()
+        else:
+            self.backend = backend()
+            
         
     def init_lib(self,params, notification_cb):
         """Initialize the voip library
