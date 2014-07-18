@@ -1,20 +1,16 @@
 
 API
-=========================
+====
 
-This is a new voip library
+Most Voip Python API documentation.
 
-.. automodule:: most.voip.api
+.. toctree::
 
-.. autoclass:: VoipLib
-   :members:
+    core_api
+    interfaces
+    constants
 
-.. automodule:: most.voip.constants
 
-.. autoclass:: VoipEvent
-   :members:
 
-.. automodule:: most.voip.interfaces
-  
 
  

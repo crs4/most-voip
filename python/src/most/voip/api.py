@@ -1,15 +1,24 @@
 """
-Created on 28/apr/2014
-
-:author: CRS4 -- http://www.crs4.it
+Most-Voip API - VoipLib Class
 """
 
 class VoipLib:
+    """
+    It is the core class of the Library, that allows you to:
+    
+    - initialize the Voip Library
+    - create  an account and register it on a remote Sip Server
+    - make a call
+    - listen for incoming calls and answer  
+    
+    """
     
     def __init__(self, backend=None):
         """
         Create a new instance of the VoipLib
+        
         :param backend: (optional) if specified, it is used as the default VoipLib implementation
+        
         """
         if backend==None:
             from api_backend import VoipBackend
@@ -22,8 +31,8 @@ class VoipLib:
         """Initialize the voip library
         
         :param params: a dictionary containing all initialization parameters 
-        :param notification_cb: a method called for all voip notification (status changes, errors, events and so on)
-        :returns: True if the initialization successfully completes, False otherwise 
+        :param notification_cb: a callback method called by the library for all event notificationa (status changes, errors, events and so on)
+        :returns: True if the initialization request completes without errors, False otherwise 
         
         """
         
@@ -31,22 +40,23 @@ class VoipLib:
     
    
     def register_account(self):
-        """Register the account specified in the params dictionary passed to the :func:`init_lib` method
+        """Register the account specified into the *params* dictionary passed to the :func:`init_lib` method
         
         """
         return self.backend.register_account()
  
     
     def unregister_account(self):
-        """Unregister the account specified in the params dictionary passed to the L{init_lib} method
+        """Unregister the account specified in the *params* dictionary passed to the :func:`init_lib` method
         
         """
         return self.backend.unregister_account()
     
     def make_call(self, extension):
-        """
-        Make a call to the specified extension
-        :param extension:the extension to dial
+        """Make a call to the specified extension
+        
+        :param extension: the extension to dial
+        
         """
         
         return self.backend.make_call(extension)
@@ -74,7 +84,7 @@ class VoipLib:
         """
         Get the current ICall instance
         
-        :returns: ICall -- ICall object containing informations about the current call (if any)
+        :returns: an :class:`most.voip.interfaces.ICall`  object containing informations about the current call
         """
         return self.backend.get_call()
     
@@ -89,7 +99,7 @@ class VoipLib:
         """
         Get informations about the remote sip server
         
-        :returns: IServer --  an IServer object containing informations about the remote sip server
+        :returns:  an :class:`most.voip.interfaces.IServer` object containing informations about the remote sip server
         """
         return self.backend.get_server()
     
@@ -97,7 +107,7 @@ class VoipLib:
         """
         Get informations about the local account
         
-        :returns: IAccount -- an IAccount object containing informations about the local sip account
+        :returns: an :class:`most.voip.interfaces.IAccount` object containing informations about the local sip account
         """
         return self.backend.get_account()
     
