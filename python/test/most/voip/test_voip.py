@@ -192,11 +192,11 @@ class VoipTestCase(unittest.TestCase):
     
 class DummyVoipTestCase(VoipTestCase):
     def __init__(self, test_method):
-        super(DummyVoipTestCase,self).__init__(test_method, MockVoipBackend())
+        super(DummyVoipTestCase,self).__init__(test_method, MockVoipBackend)
         
 class PjsipVoipTestCase(VoipTestCase):
     def __init__(self, test_method):
-        super(PjsipVoipTestCase,self).__init__(test_method, VoipBackend())
+        super(PjsipVoipTestCase,self).__init__(test_method, VoipBackend)
         
 def getDummyVoipSuite():
     return  unittest.makeSuite(DummyVoipTestCase, "test")
