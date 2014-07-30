@@ -1,3 +1,15 @@
+/*
+ * Project MOST - Moving Outcomes to Standard Telemedicine Practice
+ * http://most.crs4.it/
+ *
+ * Copyright 2014, CRS4 srl. (http://www.crs4.it/)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * See license-GPLv2.txt or license-MIT.txt
+ */
+
+
+
+
 package most.voip.example;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -5,8 +17,8 @@ import java.util.HashMap;
 import most.voip.api.Utils;
 import most.voip.api.VoipLib;
 import most.voip.api.VoipLibBackend;
-import most.voip.api.VoipState;
-import most.voip.api.VoipStateBundle;
+import most.voip.api.VoipEventBundle;
+import most.voip.api.enums.VoipEvent;
 import most.voip.example1.R;
 import android.app.Activity;
 import android.content.pm.ApplicationInfo;
@@ -37,13 +49,14 @@ public class MainActivity extends Activity implements Handler.Callback {
 	private ArrayAdapter<String> arrayAdapter = null;
 	
 	
-	private VoipState [] expectedStates = { VoipState.INITIALIZED , 
-			VoipState.REGISTERING, 
-			VoipState.REGISTERED, 
-			VoipState.UNREGISTERING,
-			VoipState.UNREGISTERED,
-			VoipState.DEINITIALIZING,
-			VoipState.DEINITIALIZE_DONE};
+	private VoipEvent [] expectedStates = { 
+			VoipEvent.LIB_INITIALIZED, 
+			VoipEvent.ACCOUNT_REGISTERING, 
+			VoipEvent.ACCOUNT_REGISTERED, 
+			VoipEvent.ACCOUNT_UNREGISTERING,
+			VoipEvent.ACCOUNT_UNREGISTERED,
+			VoipEvent.LIB_DEINITIALIZING,
+			VoipEvent.LIB_DEINITIALIZED};
 
 	private int curStateIndex = 0;
 
@@ -96,9 +109,9 @@ public class MainActivity extends Activity implements Handler.Callback {
 			myVoip = new  VoipLibBackend();
 		}
 		
-		// Initialize the library providing custom initialization params and an handler where
+		// Initialize the library providing this context and custom initialization params and an handler where
 		// to receive event notifications. Following Voip methods are called form the handleMassage() callback method
-		boolean result = myVoip.initLib(params, handler);
+		boolean result = myVoip.initLib(this,params, handler);
 	
     }
     
@@ -123,20 +136,20 @@ public class MainActivity extends Activity implements Handler.Callback {
 	public boolean handleMessage(Message voipMessage) {
 		//int msg_type = voipMessage.what;
 		Log.d(TAG, "Called handleMessage with info...");
-		VoipStateBundle myState = (VoipStateBundle) voipMessage.obj;
-		String infoMsg = "State:" + myState.getState() + ":" + myState.getInfo();
-		Log.d(TAG, "State info:" + infoMsg);
+		VoipEventBundle myEvent = (VoipEventBundle) voipMessage.obj;
+		String infoMsg = "Event:" + myEvent.getEvent() + ":" + myEvent.getInfo();
+		Log.d(TAG, "Event info:" + infoMsg);
 		this.addInfoLine(infoMsg);
 		
-		assert( myState.getState()==expectedStates[curStateIndex]);
+		assert( myEvent.getEvent()==expectedStates[curStateIndex]);
 		curStateIndex++;
 		// Register the account after the Lib Initialization
-		if (myState.getState()==VoipState.INITIALIZED)   myVoip.registerAccount();	
+		if (myEvent.getEvent()==VoipEvent.LIB_INITIALIZED)   myVoip.registerAccount();	
 		 
 		// Unregister the account
-		else if (myState.getState()==VoipState.REGISTERED)    myVoip.unregisterAccount();	
+		else if (myEvent.getEvent()==VoipEvent.ACCOUNT_REGISTERED)    myVoip.unregisterAccount();	
 		// Deinitialize the Voip Lib and release all allocated resources
-		else if (myState.getState()==VoipState.UNREGISTERED)  myVoip.destroyLib();
+		else if (myEvent.getEvent()==VoipEvent.ACCOUNT_UNREGISTERED)  myVoip.destroyLib();
 		     
 		     
 		return false;

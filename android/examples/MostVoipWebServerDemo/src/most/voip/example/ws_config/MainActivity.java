@@ -1,3 +1,13 @@
+/*
+ * Project MOST - Moving Outcomes to Standard Telemedicine Practice
+ * http://most.crs4.it/
+ *
+ * Copyright 2014, CRS4 srl. (http://www.crs4.it/)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * See license-GPLv2.txt or license-MIT.txt
+ */
+
+
 package most.voip.example.ws_config;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,6 +62,7 @@ import android.widget.TextView;
  * <li>monitor the current status of the account </li>
  * <li>monitor the current status of the subscribed buddies </li>
  * <li>monitor the current status of the call </li>
+ * * <li>monitor the current status of remote Sip Server </li>
  * <li>unregister the previously registered account from the Sip Server </li>
  * <li>deinitialize the Voip Lib </li>
  * </ul>

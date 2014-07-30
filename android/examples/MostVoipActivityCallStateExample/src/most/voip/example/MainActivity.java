@@ -1,4 +1,14 @@
+/*
+ * Project MOST - Moving Outcomes to Standard Telemedicine Practice
+ * http://most.crs4.it/
+ *
+ * Copyright 2014, CRS4 srl. (http://www.crs4.it/)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * See license-GPLv2.txt or license-MIT.txt
+ */
+
 package most.voip.example;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -35,7 +45,14 @@ import android.widget.TextView;
  * <ul>
  * <li>initialize the Voip Lib </li>
  * <li>register an account to a remote Sip Server (by specifying its IP address) </li>
- * <li>make a call to a remote user (by specifying an extension</li>
+ * <li>subscribe new buddies for this account </li>
+ * <li>make a call to a buddy </li>
+ * <li>answer a call incoming from a remote user</li>
+ * <li>hold/unhold the call </li>
+ * <li>monitor the current status of the account </li>
+ * <li>monitor the current status of the subscribed buddies </li>
+ * <li>monitor the current status of the call </li>
+ * <li>monitor the current status of remote Sip Server </li>
  * <li>unregister the previously registered account from the Sip Server </li>
  * <li>deinitialize the Voip Lib </li>
  * </ul>
@@ -135,7 +152,7 @@ public class MainActivity extends Activity {
 			else if (myEventBundle.getEvent()==VoipEvent.CALL_HANGUP)    {    setupButtons(false);
 																		ICall callInfo = (ICall) myEventBundle.getData();
 																		Log.d(TAG, "Hangup from uri:" + callInfo.getRemoteUri());
-																		IBuddy myBuddy = myVoip.getBuddy(callInfo.getRemoteUri());
+																		IBuddy myBuddy = myVoip.getAccount().getBuddy(callInfo.getRemoteUri());
 																		Log.d(TAG, "Current Buddy Status Text:" + myBuddy.getStatusText());
 																		updateBuddyStateInfo(myBuddy);
 				                                                       // myVoip.unregisterAccount();
@@ -161,8 +178,8 @@ public class MainActivity extends Activity {
 		 String buddyExtension = "ste";
 		 String buddyExtension2 = "ste2";
 		 Log.d(TAG, "adding buddies...");
-		 myVoip.addBuddy(getBuddyUri(buddyExtension));
-         myVoip.addBuddy(getBuddyUri(buddyExtension2));
+		 myVoip.getAccount().addBuddy(getBuddyUri(buddyExtension));
+         myVoip.getAccount().addBuddy(getBuddyUri(buddyExtension2));
 	}
 	
     private void handleIncomingCall()
@@ -220,7 +237,7 @@ public class MainActivity extends Activity {
     private boolean isAtleastOneBuddyOnPhone()
 	{
 		
-			IBuddy [] buddies = this.myVoip.getBuddies();
+			IBuddy [] buddies = this.myVoip.getAccount().getBuddies();
 			for (IBuddy buddy : buddies)
 			{
 				if (buddy.getState()==BuddyState.ON_LINE)
@@ -254,13 +271,13 @@ public class MainActivity extends Activity {
     
     public void toggleHoldCall(View view) 
     {
-    	if (myVoip==null || myVoip.getCallState()==CallState.IDLE)
+    	if (myVoip==null || myVoip.getCall().getState()==CallState.IDLE)
     		return;
-    	if (myVoip.getCallState()==CallState.ACTIVE)
+    	if (myVoip.getCall().getState()==CallState.ACTIVE)
     	{  Log.d(TAG,"trying to hold the call...");
     		this.myVoip.holdCall();
     	}
-    	else if (myVoip.getCallState()==CallState.HOLDING)
+    	else if (myVoip.getCall().getState()==CallState.HOLDING)
     	{   
     		Log.d(TAG,"trying to unhold the call...");
     		this.myVoip.unholdCall();
@@ -378,7 +395,7 @@ public class MainActivity extends Activity {
     
     	if (this.myVoip!=null)
     	{
-    		callState = this.myVoip.getCallState().name();
+    		callState = this.myVoip.getCall().getState().name();
     	}
     
 		TextView labState = (TextView) findViewById(R.id.labCallState);
@@ -388,7 +405,7 @@ public class MainActivity extends Activity {
     private void updateServerStateInfo()
     {
     	TextView labBuddyState = (TextView) findViewById(R.id.labServerState);
-    	labBuddyState.setText(myVoip.getServerState().toString());
+    	labBuddyState.setText(myVoip.getServer().getState().toString());
     }
     
     private void updateBuddyStateInfo(IBuddy buddy)
@@ -421,7 +438,7 @@ public class MainActivity extends Activity {
     	String callStatus = "N.A";
     	if  (this.myVoip!=null) {
     		Log.d(TAG, "Voip Lib is not NULL: Test with multiple calls!");
-    		callStatus = myVoip.getCallState().name();	
+    		callStatus = myVoip.getCall().getState().name();	
     	}
     	
     	String msg = "CallState:(" + callStatus + "):" + info;
