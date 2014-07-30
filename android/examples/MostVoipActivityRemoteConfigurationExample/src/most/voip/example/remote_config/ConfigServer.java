@@ -23,11 +23,13 @@ public class ConfigServer {
 	String serverIp = null;
 	int serverPort = -1;
 	Context ctx = null;
+	String accessToken = null;
 	private String urlPrefix = "";
 	
-	public ConfigServer(Context ctx, String serverIp, int serverPort)
+	public ConfigServer(Context ctx, String serverIp, int serverPort, String accessToken)
 	{
 		this.ctx = ctx;
+		this.accessToken = accessToken;
 		this.serverIp = serverIp;
 		this.serverPort = serverPort;
 		this.urlPrefix = "http://" + this.serverIp + ":" + String.valueOf(this.serverPort) + "/voip/";
@@ -88,20 +90,20 @@ public class ConfigServer {
 	
 
 	public void  getAccounts(Response.Listener<JSONObject> listener, Response.ErrorListener errorListener) {
-		JsonObjectRequest postReq = new JsonObjectRequest( this.urlPrefix + "accounts/", null, listener, errorListener);
+		JsonObjectRequest postReq = new JsonObjectRequest( this.urlPrefix + "accounts/?access_token=" + this.accessToken, null, listener, errorListener);
 		this.rq.add(postReq);
 		Log.d("most_example", "getAccountsRequest Sent");
 	}
 
 
 	public void getAccount(int accountId , Response.Listener<JSONObject> listener, Response.ErrorListener errorListener) {
-		JsonObjectRequest postReq = new JsonObjectRequest( this.urlPrefix + "accounts/" + String.valueOf(accountId)+"/", null, listener, errorListener);
+		JsonObjectRequest postReq = new JsonObjectRequest( this.urlPrefix + "accounts/" + String.valueOf(accountId)+"/?access_token=" + this.accessToken, null, listener, errorListener);
 		this.rq.add(postReq);
 	}
 
 	
 	public void  getBuddies(int accountId , Response.Listener<JSONObject> listener, Response.ErrorListener errorListener) {
-		JsonObjectRequest postReq = new JsonObjectRequest( this.urlPrefix + "buddies/" + String.valueOf(accountId)+"/", null, listener, errorListener);
+		JsonObjectRequest postReq = new JsonObjectRequest( this.urlPrefix + "buddies/" + String.valueOf(accountId)+"/?access_token=" + this.accessToken, null, listener, errorListener);
 		this.rq.add(postReq);
 	}
 

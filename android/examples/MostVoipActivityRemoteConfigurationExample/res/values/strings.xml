@@ -9,5 +9,9 @@
     <string name="login_user">Username:</string>
     <string name="login_password">Password:</string>
     <string name="login_button">Login</string>
+    <string name="default_user">admin</string>
+    <string name="default_password">admin</string>
+    <string name="server_ip">156.148.132.243</string>
+    <string name="lbl_ip_address">Ip Address</string>
 
 </resources>

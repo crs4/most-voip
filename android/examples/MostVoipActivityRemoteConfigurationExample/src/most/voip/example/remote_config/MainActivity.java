@@ -52,6 +52,7 @@ public class MainActivity extends ActionBarActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		
 
 		if (savedInstanceState == null) {
 			getSupportFragmentManager().beginTransaction()
@@ -67,7 +68,13 @@ public class MainActivity extends ActionBarActivity {
 		TextView txtAccount = (TextView) findViewById(R.id.txt_webserver_ip);
 		serverIp = txtAccount.getText().toString();
 		serverPort = 8000;
-		this.configServer = new ConfigServer(this, serverIp, serverPort);
+		
+		Intent intent = getIntent();
+		String ipAddress = intent.getStringExtra("ip_address");
+		Log.d(TAG, "IpAddress: " + ipAddress);
+		String accessToken = intent.getStringExtra("access_token");
+		
+		this.configServer = new ConfigServer(this, serverIp, serverPort, accessToken);
 		 
 		Listener<JSONObject> listener = new Listener<JSONObject>() {
 
@@ -260,12 +267,27 @@ public class MainActivity extends ActionBarActivity {
 	 */
 	public static class PlaceholderFragment extends Fragment {
 
+		Activity activity;
 		
+	    @Override
+	    public void onAttach(Activity activity)
+	    {
+	        super.onAttach(activity);
+	        this.activity = activity;
+	    }		
 		
 		public PlaceholderFragment() {
 		}
 		
 		private void initializeGUI(){
+			
+			Intent intent = this.activity.getIntent();
+			String ipAddress = intent.getStringExtra("ip_address");
+			Log.d(TAG, "IpAddress: " + ipAddress);
+			String accessToken = intent.getStringExtra("access_token");
+
+			TextView txtAccount = (EditText) getActivity().findViewById(R.id.txt_webserver_ip);
+			txtAccount.setText(ipAddress);
 			
 			 accountsArray= new ArrayList<String>();
 		     accountsArrayAdapter =

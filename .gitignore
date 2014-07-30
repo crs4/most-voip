@@ -30,6 +30,7 @@ var/
 
 #sqlite3
 *.sqlite3
+*.sqlite3.old
 
 # Installer logs
 pip-log.txt
