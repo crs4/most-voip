@@ -108,7 +108,7 @@ initLib
    * serverIp: the ip address of the Sip Server (e.g Asterisk)
    * userName: the account name of the peer to register to the sip server
    * userPwd: the account password of the peer to register to the sip server
-   * sipPort: the port of the sip server (default:"5060")
+   * sipServerPort: the port of the sip server (default:"5060")
    :param notificationHandler:
 
 makeCall
