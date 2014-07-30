@@ -895,7 +895,7 @@ class VoipBackend:
                 my_media_cfg.enable_ice = True
                 my_media_cfg.enable_turn = True
                 my_media_cfg.turn_server = "%s:3478" % str(self.turn_server)
-                #my_media_cfg.turn_server = "156.148.18.186:3478"
+                
                 logger.debug("Setting turn server[%s]:%s" % (type(my_media_cfg.turn_server), (my_media_cfg.turn_server)))
                 my_media_cfg.turn_cred = pj.AuthCred("tecap.crs4.it", '%s' % str(self.params['turn_server_user']), '%s' % str(self.params['turn_server_pwd'])) #TODO check remote.most.it
                 logger.debug("#%s#" % my_media_cfg.turn_cred)
@@ -914,11 +914,7 @@ class VoipBackend:
             LOG_LEVEL =  self.params["log_level"]
 
             ua_cfg = pj.UAConfig()
-            #ua_cfg.stun_host = "216.93.246.14"
-            #ua_cfg.stun_host = "156.148.18.187"
-            #ua_cfg.stun_host = "stun.xten.com"
-            #ua_cfg.stun_host = "stun.voipbuster.com"
-            #ua_cfg.stun_host = "216.93.246.14"
+           
             
             self.lib.init(log_cfg = pj.LogConfig(level=LOG_LEVEL, callback=log_cb),  media_cfg=my_media_cfg, ua_cfg=ua_cfg)
 
@@ -980,7 +976,7 @@ class VoipBackend:
                     transport_info =  ";transport=tcp"
                                   
                 acc_cfg = pj.AccountConfig('%s%s' % (str(self.sip_server), transport_info), str(self.my_account[0]), str(self.my_account[1]))
-                #acc_cfg = pj.AccountConfig('156.148.132.244', 'demo-smonni', 'pwd_smonni')
+    
                 logger.debug("Account Config:%s" % acc_cfg.reg_uri)
                
                 # la riregistrazione avviene ogni 60 secondi che e' il minimo consentito (verifica la presenza del server)

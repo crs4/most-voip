@@ -49,7 +49,7 @@ the Lib initialization
     # build a dictionary containing all parameters needed for the Lib initialization
     
     voip_params = {  u'username': u'ste',  # a name describing the user
-                     u'sip_server_address': u'156.148.33.240',  # the ip of the remote sip server (default port: 5060)
+                     u'sip_server_address': u'192.168.1.100',  # the ip of the remote sip server (default port: 5060)
                      u'sip_server_user': u'ste', # the username of the sip account
                      u'sip_server_pwd': u'ste',  #  the password of the sip account
                      u'sip_server_transport' :u'udp', # the transport type (default: tcp) 
@@ -87,8 +87,8 @@ dictionary and the callback method defined above:
 
 .. parsed-literal::
 
-    Received Event Type:EVENT_TYPE__LIB_EVENT -> Event: VOIP_EVENT__LIB_INITIALIZING Params: {'params': {u'username': u'ste', u'sip_server_transport': u'udp', u'log_level': 1, u'sip_server_user': u'ste', u'sip_server_pwd': u'ste', u'debug': False, u'sip_server_address': u'156.148.33.240'}, 'success': True}
-    Received Event Type:EVENT_TYPE__LIB_EVENT -> Event: VOIP_EVENT__LIB_INITIALIZED Params: {'sip_server': '156.148.33.240', 'success': True}
+    Received Event Type:EVENT_TYPE__LIB_EVENT -> Event: VOIP_EVENT__LIB_INITIALIZING Params: {'params': {u'username': u'ste', u'sip_server_transport': u'udp', u'log_level': 1, u'sip_server_user': u'ste', u'sip_server_pwd': u'ste', u'debug': False, u'sip_server_address': u'192.168.1.100'}, 'success': True}
+    Received Event Type:EVENT_TYPE__LIB_EVENT -> Event: VOIP_EVENT__LIB_INITIALIZED Params: {'sip_server': '192.168.1.100', 'success': True}
 
 
 
@@ -100,7 +100,7 @@ dictionary and the callback method defined above:
 
 
 The example above assumes that you have a Sip Server (e.g, Asterisk)
-running on a pc reachable at the address 156.148.33.240.
+running on a pc reachable at the address 192.168.1.100.
 
 Note that, so far, no connection to the Sip Server has been established
 yet. The *init\_lib* method returns a *True* value if the initialization

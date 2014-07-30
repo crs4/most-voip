@@ -55,7 +55,7 @@ if __name__ == '__main__':
     
     voip_params0 = {u'username': u'ste', 
                    u'sip_server_pwd': u'ste', 
-                   u'sip_server_address': u'156.148.33.226' , #'u'192.168.1.79',  u'156.148.33.223' 
+                   u'sip_server_address': u'192.168.1.100' , 
                    u'sip_server_user': u'ste', 
                    u'sip_server_transport' :u'udp',
                    #u'turn_server_address': u'192.168.1.79', 
@@ -64,20 +64,10 @@ if __name__ == '__main__':
                    u'log_level' : 1,
                    u'debug' : True }
     
-    voip_params =    {u'username': u'specialista', 
-                          u'turn_server': u'156.148.133.240', 
-                          u'sip_pwd': u'sha1$40fcf$4718177db1b6966f64d2d436f212', 
-                          u'sip_server': u'156.148.133.240', 
-                          u'sip_user': u'specialista', 
-                          u'turn_user': u'specialista', 
-                          u'turn_pwd': u'sha1$40fcf$4718177db1b6966f64d2d436f212',
-                          u'log_level' : 5,
-                          u'debug' : True 
-                          }
-    
+     
     myVoip = VoipLib()
     print "Initializing the Voip Lib..."
-    myVoip.init_lib(voip_params0, notify_events)
+    myVoip.init_lib(voip_params, notify_events)
     
     print "Registering the account on the Sip Server..."
     myVoip.register_account()

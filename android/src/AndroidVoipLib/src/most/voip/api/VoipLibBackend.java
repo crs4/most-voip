@@ -166,13 +166,7 @@ private final static String TAG = "VoipLib";
    
 	@Override
 	public boolean registerAccount() {
-		/*
-		AccountConfig acfg = new AccountConfig();
-		acfg.setIdUri("sip:ste@156.148.33.223");
-		acfg.getRegConfig().setRegistrarUri("sip:156.148.33.223");
-		AuthCredInfo cred = new AuthCredInfo("digest", "*", "ste", 0, "ste");
-		acfg.getSipConfig().getAuthCreds().add( cred );
-		*/
+		
 		// Create the account
 		
 		this.acc = new MyAccount(acfg);
@@ -1115,7 +1109,7 @@ private final static String TAG = "VoipLib";
 
 	        acfg = new AccountConfig();
 	        
-	        this.sipServerIp = configParams.get("sipServerIp"); //   "192.168.1.83"; //156.148.33.223";
+	        this.sipServerIp = configParams.get("sipServerIp"); 
 	        String registrar_uri = "sip:" +this.sipServerIp;
 	        String user_name = configParams.get("userName");
 	        String user_pwd = configParams.get("userPwd");
@@ -1134,9 +1128,9 @@ private final static String TAG = "VoipLib";
 			acfg.getRegConfig().setTimeoutSec(60); // minimal auto-registration used to check server connection!
 			acfg.setPresConfig(apc);
 			// Transport Config
-			if (configParams.containsKey("sipPort"))
+			if (configParams.containsKey("sipServerPort"))
 			
-				sipTpConfig.setPort(Integer.valueOf(configParams.get("sipPort")));
+				sipTpConfig.setPort(Integer.valueOf(configParams.get("sipServerPort")));
 			else
 				sipTpConfig.setPort(5060);
 		 

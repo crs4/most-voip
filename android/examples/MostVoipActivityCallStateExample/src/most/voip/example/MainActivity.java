@@ -329,13 +329,13 @@ public class MainActivity extends Activity {
     private HashMap<String,String> buildParams()
     {
     	HashMap<String,String> params = new HashMap<String,String>();
-		params.put("sipServerIp",serverIp);  //"156.148.33.223";"192.168.1.83"
+		params.put("sipServerIp",serverIp); 
 		params.put("userName","steand");
 		params.put("userPwd","steand");
 		String onHoldSoundPath = Utils.getResourcePathByAssetCopy(this.getApplicationContext(), "", "test_hold.wav");
 		Log.d(TAG,"OnHoldSoundPath:" + onHoldSoundPath);
 		params.put("onHoldSound", onHoldSoundPath);
-		//params.put("sipPort","5060"); // optional: default 5060
+		//params.put("sipServerPort","5060"); // optional: default 5060
 		return params;
     	
     }

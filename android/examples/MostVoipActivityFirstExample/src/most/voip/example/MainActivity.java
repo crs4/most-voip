@@ -95,12 +95,12 @@ public class MainActivity extends Activity implements Handler.Callback {
     	this.addInfoLine("Local IP Address:" + Utils.getIPAddress(true));
 		
     	// Voip Lib Initialization Params
-
+        // put your own params here, according to your remote Sip Server Configuration
 		HashMap<String,String> params = new HashMap<>();
-		params.put("sipServerIp","156.148.33.223");  //"156.148.33.223";"192.168.1.83"
-		params.put("userName","ste");
-		params.put("userPwd","ste");
-		//params.put("sipPort","5060"); // optional: default 5060
+		params.put("sipServerIp","192.168.1.100");   
+		params.put("userName","user1");
+		params.put("userPwd","user1_pwd");
+		//params.put("sipServerPort","5060"); // optional: default 5060
 		
 		Log.d(TAG, "Initializing the lib...");
 		if (myVoip==null)

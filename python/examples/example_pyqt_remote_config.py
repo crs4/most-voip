@@ -197,7 +197,7 @@ class MostVoipGUI(QtGui.QMainWindow):
         
         voip_params0 = {u'username':   self.selectedAccount["name"], 
                    u'sip_server_pwd': self.selectedAccountDetails["sip_server"]["pwd"],
-                   u'sip_server_address':self.selectedAccountDetails["sip_server"]["address"] , #'u'192.168.1.79',  u'156.148.33.223' 
+                   u'sip_server_address':self.selectedAccountDetails["sip_server"]["address"] , #'u'192.168.1.79',  
                    u'sip_server_user': self.selectedAccountDetails["sip_server"]["user"], 
                    u'sip_server_transport' :self.selectedAccountDetails["sip_server"]["transport"],
                    #u'turn_server_address': self.selectedAccountDetails["turn_server"]["address"], 

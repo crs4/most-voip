@@ -216,10 +216,10 @@ public class MainActivity extends Activity {
     	// Voip Lib Initialization Params
 
 		HashMap<String,String> params = new HashMap<String,String>();
-		params.put("sipServerIp",serverIp);  //"156.148.33.223";"192.168.1.83"
+		params.put("sipServerIp",serverIp);  
 		params.put("userName","steand");
 		params.put("userPwd","steand");
-		//params.put("sipPort","5060"); // optional: default 5060
+		//params.put("sipServerPort","5060"); // optional: default 5060
 		
 		Log.d(TAG, "Initializing the lib...");
 		if (myVoip==null)

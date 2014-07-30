@@ -35,12 +35,11 @@ import android.widget.ListView;
  * This example application shows how to:
  * <ul>
  * <li>initialize the Voip Lib </li>
- * <li>register an account to a remote Sip Server (by specifying its IP address) </li>
+ * <li>register an account to a remote Sip Server (by specifying the address of the server and the username and password of the Sip Account) </li>
  * <li>make a call to a remote user (by specifying an extension</li>
  * <li>unregister the previously registered account from the Sip Server </li>
  * <li>deinitialize the Voip Lib </li>
  * </ul>
- * @author crs4
  *
  */
 public class MainActivity extends Activity {
@@ -172,10 +171,10 @@ public class MainActivity extends Activity {
     	// Voip Lib Initialization Params
 
 		HashMap<String,String> params = new HashMap<String,String>();
-		params.put("sipServerIp",serverIp);  //"156.148.33.223";"192.168.1.83"
+		params.put("sipServerIp",serverIp);  
 		params.put("userName","steand");
 		params.put("userPwd","steand");
-		//params.put("sipPort","5060"); // optional: default 5060
+		//params.put("sipServerPort","5060"); // optional: default 5060
 		
 		Log.d(TAG, "Initializing the lib...");
 		if (myVoip==null)

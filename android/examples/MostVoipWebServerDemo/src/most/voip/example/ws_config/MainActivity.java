@@ -478,7 +478,7 @@ public class MainActivity extends Activity {
     	HashMap<String,String> params = new HashMap<String,String>();
     	 try {
         this.sipServerIp = accountData.getJSONObject("sip_server").getString("address");
-		params.put("sipServerIp",this.sipServerIp);  //"156.148.33.223";"192.168.1.83"
+		params.put("sipServerIp",this.sipServerIp);  
 		params.put("sipServerPort", String.valueOf(accountData.getJSONObject("sip_server").getInt("port")));  
 		params.put("userName",accountData.getJSONObject("sip_server").getString("user")); 
 		params.put("userPwd",accountData.getJSONObject("sip_server").getString("pwd")); 
@@ -498,7 +498,7 @@ public class MainActivity extends Activity {
     		}
     	 
 		
-		//params.put("sipPort","5060"); // optional: default 5060
+		//params.put("sipServerPort","5060"); // optional: default 5060
 		return params;
     	
     }

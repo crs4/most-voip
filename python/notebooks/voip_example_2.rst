@@ -54,7 +54,7 @@ of the incoming events.
     
     voip_params = {u'username': u'ste', 
                        u'sip_server_pwd': u'ste', 
-                       u'sip_server_address': u'156.148.33.226' , #'u'192.168.1.79',  u'156.148.33.223' 
+                       u'sip_server_address': u'1192.168.1.100' , #'u'192.168.1.79',  u'156.148.33.223' 
                        u'sip_server_user': u'ste', 
                        u'sip_server_transport' :u'udp',
                        u'log_level' : 1,
@@ -137,9 +137,9 @@ account.
 
 .. parsed-literal::
 
-    Received Event Type:EVENT_TYPE__LIB_EVENT  Event:VOIP_EVENT__LIB_INITIALIZING -> Params: {'params': {u'username': u'ste', u'sip_server_transport': u'udp', u'log_level': 1, u'sip_server_user': u'ste', u'sip_server_pwd': u'ste', u'debug': False, u'sip_server_address': u'156.148.33.226'}, 'success': True}
+    Received Event Type:EVENT_TYPE__LIB_EVENT  Event:VOIP_EVENT__LIB_INITIALIZING -> Params: {'params': {u'username': u'ste', u'sip_server_transport': u'udp', u'log_level': 1, u'sip_server_user': u'ste', u'sip_server_pwd': u'ste', u'debug': False, u'sip_server_address': u'1192.168.1.100'}, 'success': True}
     Received unhandled event type:EVENT_TYPE__LIB_EVENT --> VOIP_EVENT__LIB_INITIALIZING
-    Received Event Type:EVENT_TYPE__LIB_EVENT  Event:VOIP_EVENT__LIB_INITIALIZED -> Params: {'sip_server': '156.148.33.226', 'success': True}
+    Received Event Type:EVENT_TYPE__LIB_EVENT  Event:VOIP_EVENT__LIB_INITIALIZED -> Params: {'sip_server': '1192.168.1.100', 'success': True}
     Received unhandled event type:EVENT_TYPE__LIB_EVENT --> VOIP_EVENT__LIB_INITIALIZED
     Received Event Type:EVENT_TYPE__ACCOUNT_EVENT  Event:VOIP_EVENT__ACCOUNT_REGISTERING -> Params: {'account_info': u'ste', 'Success': True}
     Received unhandled event type:EVENT_TYPE__ACCOUNT_EVENT --> VOIP_EVENT__ACCOUNT_REGISTERING

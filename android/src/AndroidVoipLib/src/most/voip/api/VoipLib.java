@@ -28,7 +28,7 @@ public interface VoipLib {
 	 * <li>serverIp: the ip address of the Sip Server (e.g Asterisk)</li>
 	 * <li>userName: the account name of the peer to register to the sip server </li>
 	 * <li>userPwd: the account password of the peer to register to the sip server </li>
-	 * <li>sipPort: the port of the sip server (default:"5060") </li>
+	 * <li>sipServerPort: the port of the sip server (default:"5060") </li>
 	 * </ul>
 	 * 
 	 * @param notificationHandler
