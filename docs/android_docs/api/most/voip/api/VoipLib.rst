@@ -20,6 +20,15 @@ VoipLib
 
 .. java:type:: public interface VoipLib
 
+   It is the core class of the Library, that allows you to:
+
+   ..
+
+   * initialize the Voip Library
+   * create an account and register it on a remote Sip Server
+   * make a call
+   * listen for incoming calls and answer
+
 Methods
 -------
 answerCall
@@ -101,15 +110,16 @@ initLib
    Initialize the Voip Lib
 
    :param context: application context of the activity that uses this library
-   :param configParams: All needed configuration string params. All the supported parameters are the following:
+   :param configParams: All needed configuration string parameters. All the supported parameters are the following:
 
    ..
 
-   * serverIp: the ip address of the Sip Server (e.g Asterisk)
+   * sipServerIp: the ip address of the Sip Server (e.g Asterisk)
    * userName: the account name of the peer to register to the sip server
    * userPwd: the account password of the peer to register to the sip server
    * sipServerPort: the port of the sip server (default:"5060")
-   :param notificationHandler:
+   :param notificationHandler: the handller that will receive all sip notifications
+   :return: true if the initialization request completes without errors, false otherwise
 
 makeCall
 ^^^^^^^^

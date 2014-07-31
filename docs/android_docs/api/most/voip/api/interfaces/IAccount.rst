@@ -8,6 +8,8 @@ IAccount
 
 .. java:type:: public interface IAccount
 
+   Represents a local sip account
+
 Methods
 -------
 addBuddy
@@ -48,11 +50,19 @@ getState
 .. java:method:: public AccountState getState()
    :outertype: IAccount
 
+   Get the current state of this account
+
+   :return: the current state of this account
+
 getUri
 ^^^^^^
 
 .. java:method:: public String getUri()
    :outertype: IAccount
+
+   Get the uri of this sip account
+
+   :return: the sip uri of this account
 
 removeBuddy
 ^^^^^^^^^^^

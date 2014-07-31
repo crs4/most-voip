@@ -11,8 +11,23 @@ package most.voip.api.interfaces;
 
 import most.voip.api.enums.AccountState;
 
+/**
+ * Represents a local sip account
+ *
+ */
 public interface IAccount {
+	
+/**
+ * Get the uri of this sip account
+ * @return the sip uri of this account
+ */
 public String getUri();
+
+
+/**
+ * Get the current state of this account
+ * @return the current state of this account
+ */
 public AccountState getState();
 
 /**

@@ -6,6 +6,8 @@ VoipEvent
 
 .. java:type:: public enum VoipEvent
 
+   Contains all events triggered by the library
+
 Enum Constants
 --------------
 ACCOUNT_REGISTERED

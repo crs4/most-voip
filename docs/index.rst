@@ -85,9 +85,9 @@ Licence
      Dual licensed under the MIT or GPL Version 2 licenses.
      See license-GPLv2.txt or license-MIT.txt
 
+GPL2: https://www.gnu.org/licenses/gpl-2.0.txt
 
-	 GPL2: https://www.gnu.org/licenses/gpl-2.0.txt
-	 MIT: http://opensource.org/licenses/MIT
+MIT: http://opensource.org/licenses/MIT
 
 
 Detailed Dual Licensing Info

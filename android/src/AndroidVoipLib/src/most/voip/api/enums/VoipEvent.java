@@ -9,7 +9,10 @@
 
 package most.voip.api.enums;
 
-
+/**
+ * Contains all events triggered by the library
+ * 
+ */
 public enum VoipEvent {
 	
   LIB_INITIALIZING,   

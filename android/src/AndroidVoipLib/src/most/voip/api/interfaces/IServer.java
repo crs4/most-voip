@@ -11,7 +11,22 @@ package most.voip.api.interfaces;
 
 import most.voip.api.enums.ServerState;
 
+/**
+ * Contains informations about the remote Sip Server (e.g Asterisk)
+ * 
+ *
+ */
 public interface IServer {
+	
+  /**
+   * get the current status of the sip server (see :class:`most.voip.constants.ServerState`)
+   * @return the current status of the sip server
+   */
   ServerState getState();
+  
+  /**
+   * get the ip address of the remote sip server
+   * @return the ip address of the remote sip server
+   */
   String getIp();
 }
