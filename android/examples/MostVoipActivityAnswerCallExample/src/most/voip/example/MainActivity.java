@@ -1,3 +1,13 @@
+/*
+ * Project MOST - Moving Outcomes to Standard Telemedicine Practice
+ * http://most.crs4.it/
+ *
+ * Copyright 2014, CRS4 srl. (http://www.crs4.it/)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * See license-GPLv2.txt or license-MIT.txt
+ */
+
+
 package most.voip.example;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,7 +38,7 @@ import android.widget.ListView;
  * <ul>
  * <li>initialize the Voip Lib </li>
  * <li>register an account to a remote Sip Server (by specifying its IP address) </li>
- * <li>make a call to a remote user (by specifying an extension</li>
+ * <li>answer a call incoming from a remote user </li>
  * <li>unregister the previously registered account from the Sip Server </li>
  * <li>deinitialize the Voip Lib </li>
  * </ul>
@@ -152,13 +162,13 @@ public class MainActivity extends Activity {
     
     public void toggleHoldCall(View view) 
     {
-    	if (myVoip==null || myVoip.getCallState()==CallState.IDLE)
+    	if (myVoip==null || myVoip.getCall().getState()==CallState.IDLE)
     		return;
-    	if (myVoip.getCallState()==CallState.ACTIVE)
+    	if (myVoip.getCall().getState()==CallState.ACTIVE)
     	{  Log.d(TAG,"trying to hold the call...");
     		this.myVoip.holdCall();
     	}
-    	else if (myVoip.getCallState()==CallState.HOLDING)
+    	else if (myVoip.getCall().getState()==CallState.HOLDING)
     	{   
     		Log.d(TAG,"trying to unhold the call...");
     		this.myVoip.unholdCall();
@@ -206,10 +216,10 @@ public class MainActivity extends Activity {
     	// Voip Lib Initialization Params
 
 		HashMap<String,String> params = new HashMap<String,String>();
-		params.put("sipServerIp",serverIp);  //"156.148.33.223";"192.168.1.83"
+		params.put("sipServerIp",serverIp);  
 		params.put("userName","steand");
 		params.put("userPwd","steand");
-		//params.put("sipPort","5060"); // optional: default 5060
+		//params.put("sipServerPort","5060"); // optional: default 5060
 		
 		Log.d(TAG, "Initializing the lib...");
 		if (myVoip==null)
@@ -247,7 +257,7 @@ public class MainActivity extends Activity {
     	String callStatus = "N.A";
     	if  (this.myVoip!=null) {
     		Log.d(TAG, "Voip Lib is not null");
-    		callStatus = myVoip.getCallState().name();	
+    		callStatus = myVoip.getCall().getState().name();	
     	}
     	
     	String msg = "CallState:(" + callStatus + "):" + info;

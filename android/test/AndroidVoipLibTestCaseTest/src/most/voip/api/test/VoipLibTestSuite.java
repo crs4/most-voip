@@ -6,11 +6,34 @@ import most.voip.api.enums.VoipEvent;
 import most.voip.api.enums.VoipEventType;
 import most.voip.api.VoipEventBundle;
 import most.voip.api.VoipLib;
+import most.voip.test.TestActivity;
+import android.content.Intent;
 import android.os.*;
+import android.test.ActivityTestCase;
+import android.test.ActivityUnitTestCase;
 import android.util.Log;
 
+import most.voip.test.TestActivity;
 
-public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
+
+public class VoipLibTestSuite extends ActivityUnitTestCase implements Handler.Callback  {
+	
+	
+	public VoipLibTestSuite() {
+		super(TestActivity.class);
+	}
+   
+	protected void setUp() throws Exception {
+		super.setUp();
+		// Starts the MainActivity of the target application
+		startActivity(new Intent(getInstrumentation().getTargetContext(), TestActivity.class), null, null);	
+		myVoip = new MockVoipLib();
+	}
+
+	protected void tearDown() throws Exception {
+		super.tearDown();
+	}
+	
 	 
 	abstract class HandlerTest {
 		protected int curStateIndex = 0;
@@ -131,18 +154,19 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
 			
 			assertEquals( myEvent.getEvent(), expectedEvents[curStateIndex]);
 			curStateIndex++;
-			     if (myEvent.getEvent()==VoipEvent.LIB_INITIALIZED)   { assertEquals(CallState.IDLE, myVoip.getCallState()); assertTrue(myVoip.registerAccount());	}
+			     if (myEvent.getEvent()==VoipEvent.LIB_INITIALIZED)   { assertEquals(CallState.IDLE, myVoip.getCall().getState()); assertTrue(myVoip.registerAccount());	}
 			else if (myEvent.getEvent()==VoipEvent.ACCOUNT_REGISTERED)    this.notifyIncomingCall();	
 			else if (myEvent.getEvent()==VoipEvent.CALL_INCOMING) {  //assertEquals(CallState.INCOMING, myVoip.getCallState()); // non simulato...
 				                                                     assertTrue(myVoip.answerCall());
 																	}
-			else if (myEvent.getEvent()==VoipEvent.CALL_ACTIVE)   {assertEquals(CallState.ACTIVE, myVoip.getCallState());
+			else if (myEvent.getEvent()==VoipEvent.CALL_ACTIVE)   {assertEquals(CallState.ACTIVE, myVoip.getCall().getState());
 																   assertTrue(myVoip.hangupCall());}
 			     
 			else if (myEvent.getEvent()==VoipEvent.CALL_HANGUP)   {assertEquals(CallState.IDLE, 
-					                                               myVoip.getCallState());assertTrue(myVoip.unregisterAccount());}
+																	myVoip.getCall().getState());
+																	assertTrue(myVoip.unregisterAccount());}
 			     
-			else if (myEvent.getEvent()==VoipEvent.ACCOUNT_UNREGISTERED)  {assertEquals(CallState.IDLE, myVoip.getCallState());
+			else if (myEvent.getEvent()==VoipEvent.ACCOUNT_UNREGISTERED)  {assertEquals(CallState.IDLE, myVoip.getCall().getState());
 																   assertTrue(myVoip.destroyLib());
 																		}
 
@@ -158,17 +182,7 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
  
 	
 	
-	public VoipLibTestSuite(String name) {
-		super(name);
-	}
-   
-	protected void setUp() throws Exception {
-		myVoip = new MockVoipLib();
-	}
-
-	protected void tearDown() throws Exception {
-		super.tearDown();
-	}
+	
 	
 	/**
 	 *  This test calls the initLib() method of the Voip Library. The testing callback method receives the updated Voip State. The test checks if
@@ -232,6 +246,4 @@ public class VoipLibTestSuite extends TestCase implements Handler.Callback  {
 		return this.handlerTest.handleMessage(msg);
 	 
 	}
-
-	
 }

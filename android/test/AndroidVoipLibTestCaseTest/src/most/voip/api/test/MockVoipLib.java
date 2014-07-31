@@ -3,12 +3,14 @@ package most.voip.api.test;
 import java.util.HashMap;
 
 import most.voip.api.VoipLib;
-import most.voip.api.enums.BuddyState;
+
 import most.voip.api.enums.CallState;
 import most.voip.api.enums.ServerState;
 import most.voip.api.enums.VoipEvent;
 import most.voip.api.enums.VoipEventType;
-import most.voip.api.interfaces.IBuddy;
+import most.voip.api.interfaces.IAccount;
+import most.voip.api.interfaces.ICall;
+import most.voip.api.interfaces.IServer;
 import most.voip.api.VoipEventBundle;
 import android.content.Context;
 import android.os.Handler;
@@ -132,36 +134,47 @@ public class MockVoipLib implements VoipLib{
 	}
 
 	@Override
-	public CallState getCallState() {
-		return this.currentCallState;
+	public ICall getCall() {
+		return new ICall(){
+
+			@Override
+			public String getRemoteUri() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public String getLocalUri() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public CallState getState() {
+				 
+				return currentCallState;
+			}};
 	}
 
 	@Override
-	public ServerState getServerState() {
-		// TODO Auto-generated method stub
-		return null;
+	public IServer getServer() {
+	    return new IServer(){
+
+			@Override
+			public ServerState getState() {
+				return ServerState.CONNECTED;
+			}
+
+			@Override
+			public String getIp() {
+				// TODO Auto-generated method stub
+				return null;
+			}};
 	}
 
+	
 	@Override
-	public boolean addBuddy(String extension) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean removeBuddy(String extension) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public IBuddy getBuddy(String extension) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IBuddy[] getBuddies() {
+	public IAccount getAccount() {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -1,0 +1,11 @@
+Received state:VOIP_STATE__REGISTERED -> Params: {'account_info': <pjsua.AccountInfo instance at 0x299f5a8>, 'Success': True}
+User registered: Ready to accept calls!
+Received state:VOIP_STATE__CALL_INCOMING -> Params: {'from': '"Anonymous" <sip:Anonymous@anonymous.invalid>', 'Success': True}
+INCOMING CALL From "Anonymous" <sip:Anonymous@anonymous.invalid>
+Answering!
+Received state:VOIP_STATE__CALL_ACTIVE -> Params: {'call_state': 3, 'success': True}
+Waiting 4 seconds before hanging up...
+Received state:VOIP_STATE__CALL_HANGUP -> Params: {'call_state': 0, 'success': True}
+End of call. Destroying lib...
+Received state:VOIP_STATE__DEINITIALIZING -> Params: {'account_info': u'ste', 'Success': True}
+[Tue Jun  3 16:49:41 2014] 16:49:41.087   pjsua_call.c !........Failed to create end session message: INVITE session already terminated (PJSIP_ESESSIONTERMINATED) [status=171140]

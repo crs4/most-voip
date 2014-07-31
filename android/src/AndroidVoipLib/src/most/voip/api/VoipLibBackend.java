@@ -1,3 +1,12 @@
+/*
+ * Project MOST - Moving Outcomes to Standard Telemedicine Practice
+ * http://most.crs4.it/
+ *
+ * Copyright 2014, CRS4 srl. (http://www.crs4.it/)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * See license-GPLv2.txt or license-MIT.txt
+ */
+
 package most.voip.api;
 
 
@@ -8,21 +17,22 @@ import java.util.HashMap;
 import android.app.Application;
 import android.content.Context;
 import android.media.MediaPlayer;
-import android.media.ToneGenerator;
  
-
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import most.voip.api.enums.AccountState;
 import most.voip.api.enums.BuddyState;
 import most.voip.api.enums.CallState;
 import most.voip.api.enums.RegistrationState;
 import most.voip.api.enums.ServerState;
 import most.voip.api.enums.VoipEvent;
 import most.voip.api.enums.VoipEventType;
+import most.voip.api.interfaces.IAccount;
 import most.voip.api.interfaces.IBuddy;
-import most.voip.api.interfaces.ICallInfo;
+import most.voip.api.interfaces.ICall;
+import most.voip.api.interfaces.IServer;
 
 import org.pjsip.pjsua2.*;
  
@@ -30,7 +40,9 @@ import org.pjsip.pjsua2.*;
 public class VoipLibBackend extends Application implements VoipLib   {
 	
 private CallState currentCallState = CallState.IDLE;
-private AudioMediaPlayer player = null;
+private AudioMediaPlayer playerOnHold = null;
+private AudioMediaPlayer playerIncomingCall = null;
+private AudioMediaPlayer playerOutcomingCall = null;
 
 	static {
 		System.out.println("LOADING LIB...");
@@ -41,7 +53,7 @@ private AudioMediaPlayer player = null;
 
 public static Endpoint ep = null; //new Endpoint();
 public ArrayList<MyAccount> accList = new ArrayList<MyAccount>();
-private ArrayList<MyAccountConfig> accCfgs = new ArrayList<MyAccountConfig>();
+//private ArrayList<MyAccountConfig> accCfgs = new ArrayList<MyAccountConfig>();
 private EpConfig epConfig = new EpConfig();
 private TransportConfig sipTpConfig = new TransportConfig();
 private MyAccount acc = null;
@@ -53,9 +65,15 @@ private ServerState serverState = ServerState.DISCONNECTED;
 private Handler notificationHandler = null;
 
 MediaPlayer mediaPlayer = null;
-private Context context;
+ 
 private HashMap<String,String> configParams = new HashMap<String,String>();
-private boolean onHoldSoundIsPlaying = false;
+
+//private boolean onHoldSoundIsPlaying = false;
+//private boolean onIncomingCallRingToneIsPlaying = false;
+//private boolean onOutcomingCallRingToneIsPlaying = false;
+
+private boolean localHangup = false;
+private Context context;
 
 private final static String TAG = "VoipLib"; 
     public VoipLibBackend()
@@ -67,7 +85,7 @@ private final static String TAG = "VoipLib";
     {   
     	Log.d(TAG, "notify state:" + myStateBundle.getEvent());
     	this.updateCallStateByVoipEvent(myStateBundle.getEvent());
-    	Log.d(TAG, "New Current State:" + this.getCallState());
+    	Log.d(TAG, "New Current State:" + this.getCall().getState());
     	Message m = Message.obtain(this.notificationHandler,myStateBundle.getEventType().ordinal(), myStateBundle);
 		m.sendToTarget();
     }
@@ -82,6 +100,7 @@ private final static String TAG = "VoipLib";
 		case CALL_UNHOLDING: this.currentCallState = CallState.ACTIVE; break;
 		case CALL_HANGUP: this.currentCallState = CallState.IDLE; break;
 		case CALL_REMOTE_HANGUP: this.currentCallState = CallState.IDLE; break;
+		case CALL_REMOTE_DISCONNECTION_HANGUP: this.currentCallState = CallState.IDLE; break;
 		default:
 			break;
     	}
@@ -128,7 +147,7 @@ private final static String TAG = "VoipLib";
 			ep.libStart();
 			
 			// instance the player
-			this.player = new AudioMediaPlayer();
+			this.setupAudioPlayers();
 			 
 			// print the json config
 			Log.d(TAG,"Lib initialized and started");
@@ -147,24 +166,18 @@ private final static String TAG = "VoipLib";
    
 	@Override
 	public boolean registerAccount() {
-		/*
-		AccountConfig acfg = new AccountConfig();
-		acfg.setIdUri("sip:ste@156.148.33.223");
-		acfg.getRegConfig().setRegistrarUri("sip:156.148.33.223");
-		AuthCredInfo cred = new AuthCredInfo("digest", "*", "ste", 0, "ste");
-		acfg.getSipConfig().getAuthCreds().add( cred );
-		*/
+		
 		// Create the account
 		
 		this.acc = new MyAccount(acfg);
 		try {
 			acc.create(acfg);
 			// TODO: create IAccount interface to be passed as final parameter
-			this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_REGISTERING, "Account Registration request sent", null));
+			this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_REGISTERING, "Account Registration request sent", this.acc));
 		} catch (Exception e) {
 			e.printStackTrace();
 			Log.e(TAG,"Error Registering the account:" + e);
-			this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_REGISTRATION_FAILED, "Account Registration request failed:"+e.getMessage(), null));
+			this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_REGISTRATION_FAILED, "Account Registration request failed:"+e.getMessage(), this.acc));
 			return false;
 		}
 		
@@ -175,13 +188,13 @@ private final static String TAG = "VoipLib";
 	public boolean unregisterAccount() {
 		try {
 			acc.setRegistration(false);
-			this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_UNREGISTERING, "Account Unregistration request sent", null));
+			this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_UNREGISTERING, "Account Unregistration request sent",this.acc));
 			return true;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			Log.e(TAG, "Failed Unregistering the account:" + e.getMessage());
-			this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_UNREGISTRATION_FAILED, "Account Unregistration request failed:"+e.getMessage(), null));
+			this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_UNREGISTRATION_FAILED, "Account Unregistration request failed:"+e.getMessage(), this.acc));
 		}
 		return false;
 	}
@@ -194,11 +207,13 @@ private final static String TAG = "VoipLib";
 	public boolean makeCall(String extension) {
 		Log.d(TAG, "Called makeCall for extension " + extension);
 		
-		/* Only one call at anytime */
+		/* 
+		 * Only one call at anytime 
 		if (currentCall != null) {
 			Log.w(TAG, "There is already a call active, make call rejected");
 			return false;
 		}
+		*/
 		
 		MyCall call = new MyCall(this.acc, -1);
 		CallOpParam prm = new CallOpParam();
@@ -224,7 +239,7 @@ private final static String TAG = "VoipLib";
 	 * @param call
 	 * @return true if the new call was not rejected, false otherwise
 	 */
-	private boolean handleIncomingCall(MyCall call)
+	private boolean handleIncomingCall(MyCall call, boolean allowMultipleCalls)
 	{
 		
 		Log.d(TAG,"Handling incoming call from the Voip Lib");
@@ -234,17 +249,18 @@ private final static String TAG = "VoipLib";
 		CallOpParam prm = new CallOpParam();
 		
 		 
-		if (currentCall != null) {
-			Log.d(TAG, "Incoming second call!!! Accept for testing!");
+		if (currentCall != null && !allowMultipleCalls) {
+			Log.d(TAG, "Incoming second call not allowed in configuration");
 			CallInfo ci = null;
 			try {
 				ci = call.getInfo();
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				Log.e(TAG,"Exception in incoming call:" +e);
+				return false;
 			}
-			
-			this.notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_INCOMING, "Incoming call during another call!", getICallInfo(ci)));
+			//this.notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_INCOMING, "Incoming call during another call!", getICallInfo(ci)));
 			
 			/*
 			// Only one call at anytime 
@@ -260,6 +276,7 @@ private final static String TAG = "VoipLib";
 			}
 			return false;
 			*/
+			return false;
 		}
          
 			
@@ -369,6 +386,7 @@ private final static String TAG = "VoipLib";
 		// Stop the 'onhold sound, if any'
 		stopOnHoldSound();
 		if (VoipLibBackend.currentCall != null) {
+			this.localHangup = true;
 			CallOpParam prm = new CallOpParam();
 			prm.setStatusCode(pjsip_status_code.PJSIP_SC_DECLINE);
 			try {
@@ -377,6 +395,7 @@ private final static String TAG = "VoipLib";
 				return true;
 				} catch (Exception e) {
 					Log.e(TAG, "Exception hanging up the call:" + e);
+					this.localHangup = false;
 					return false;
 			}
 			//VoipLibBackend.currentCall = null;
@@ -387,7 +406,7 @@ private final static String TAG = "VoipLib";
 	@Override
 	public boolean destroyLib() {
 		
-		this.notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZING, "Voip Lib destroying", null));
+		this.notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZING, "Voip Lib destroying", this.configParams));
 		// Explicitly destroy and delete endpoint
 		try {
 			
@@ -431,11 +450,11 @@ private final static String TAG = "VoipLib";
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			Log.e(TAG, "Lib Destroy failed:" + e.getMessage());
-			this.notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZATION_FAILED, "Voip Lib destroyed", null));
+			this.notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZATION_FAILED, "Voip Lib destroyed", this.configParams));
 			return false;
 		}
 		 
-		this.notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZED, "Voip Lib destroyed", null));
+		this.notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZED, "Voip Lib destroyed", this.configParams));
 		return true;
 		
 	}
@@ -443,9 +462,9 @@ private final static String TAG = "VoipLib";
 	
  // ########## ACCESSORY METHODS AND CLASSES ###############################
 	
-
+/*
 	private void buildAccConfigs() {
-		/* Sync accCfgs from accList */
+		// Sync accCfgs from accList 
 		accCfgs.clear();
 		for (int i = 0; i < accList.size(); i++) {
 			MyAccount acc = accList.get(i);
@@ -461,10 +480,11 @@ private final static String TAG = "VoipLib";
 			accCfgs.add(my_acc_cfg);
 		}
 	}
+*/	
 	
-	private ICallInfo getICallInfo(final CallInfo ci) {
+	private ICall getICallInfo(final CallInfo ci) {
 		
-		return new ICallInfo(){
+		return new ICall(){
 
 			@Override
 			public String getRemoteUri() {
@@ -488,6 +508,12 @@ private final static String TAG = "VoipLib";
 					return null;
 				}
 			}
+
+			@Override
+			public CallState getState() {
+				 
+				return currentCallState;
+			}
 			
 		
 		};
@@ -507,11 +533,12 @@ private final static String TAG = "VoipLib";
 			CallInfo ci;
 			try {
 				ci = getInfo();
-				stopOnHoldSound();
+				//stopOnHoldSound();
 				
 				Log.d(TAG, "On Call State: CallInfo:" + ci.getStateText());
 				if (ci.getState()==pjsip_inv_state.PJSIP_INV_STATE_CALLING) {
 					//currentCallState = CallState.DIALING;
+				    playOutcomingRingtoneSound();
 					notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_DIALING, "Dialing call to:" + ci.getRemoteUri(), getICallInfo(ci)));
 				}
 				else if (ci.getState()==pjsip_inv_state.PJSIP_INV_STATE_CONFIRMED) {
@@ -519,9 +546,22 @@ private final static String TAG = "VoipLib";
 					notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_ACTIVE, "Call active with:" + ci.getRemoteUri(), getICallInfo(ci)));
 				}
 				else if (ci.getState()==pjsip_inv_state.PJSIP_INV_STATE_DISCONNECTED) {
-					currentCallState = CallState.IDLE;
+					stopIncomingRingtoneSound();
+					stopOutcomingRingtoneSound();
+					stopOnHoldSound();
+					//currentCallState = CallState.IDLE;
 					//VoipLibBackend.currentCall = null;
-					notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_HANGUP, "Call hangup with:" + ci.getRemoteUri(), getICallInfo(ci)));
+					if (localHangup){
+						notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_HANGUP, "Call hangup with:" + ci.getRemoteUri(), getICallInfo(ci)));
+					}
+					else 
+					{
+						if (getServer().getState()==ServerState.DISCONNECTED)
+							notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_REMOTE_DISCONNECTION_HANGUP, "Call remote hangup with:" + ci.getRemoteUri(), getICallInfo(ci)));
+						else
+							notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_REMOTE_HANGUP, "Call remote hangup with:" + ci.getRemoteUri(), getICallInfo(ci)));
+					}
+					
 				}
 				else {
 					Log.d(TAG, "UNHANDLED STATE in onCallState");
@@ -567,8 +607,11 @@ private final static String TAG = "VoipLib";
 					}
 					else {
 						stopOnHoldSound();
+						stopIncomingRingtoneSound();
+						stopOutcomingRingtoneSound();
+						
 						//currentCallState = CallState.ACTIVE;
-						if (getCallState()==CallState.HOLDING)
+						if (getCall().getState()==CallState.HOLDING)
 							notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_UNHOLDING, "Call Unholding", getICallInfo(ci)));
 						else
 							notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_ACTIVE, "Call Active", getICallInfo(ci)));
@@ -598,73 +641,188 @@ private final static String TAG = "VoipLib";
 		}
 	}
 	
+	
 	private void playOnHoldSound()  
 	{
-		Log.d(TAG,"playOnHoldSound....");
-		
-		 if (!this.configParams.containsKey("onHoldSound"))
-		 {
-			 Log.d(TAG,"No OnHold Sound found in configuration!");
-			 return;
-		 }
-		
-		//String file_name = "/storage/sdcard0/Android/data/most.voip.example1/files/test_hold.wav";
-		String file_name = this.configParams.get("onHoldSound");
-		
-		try {
-			Log.d(TAG,"Instancing AudioMedia for OnHoldSound:" + file_name);
-			Log.d(TAG,"Application Context:" + this.context);
-		 
-			AudioMedia am = this.ep.audDevManager().getPlaybackDevMedia();
-			player.createPlayer(file_name);
-			player.startTransmit(am);
-			onHoldSoundIsPlaying = true;
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			Log.e(TAG, "Error playing the file:"  + e.getMessage());
-		}
-		  
-	}
-	
-	private void stopOnHoldSound()
-	{
-		Log.d(TAG,"Trying to stop audio file");
-	 
-		if (player!=null && onHoldSoundIsPlaying)
+		//if (this.playSoundFile("onHoldSound")) onHoldSoundIsPlaying = true;
+		if (playerOnHold!=null)
 		{
-			AudioMedia sink;
+			AudioMedia am;
 			try {
-				Log.d(TAG,"get sink...");
-				sink = this.ep.audDevManager().getPlaybackDevMedia();
-				Log.d(TAG,"Sink:" + sink);
-				Log.d(TAG,"Stopping sink");
-				player.stopTransmit(sink);
-				Log.d(TAG,"Sink stopped");
-				onHoldSoundIsPlaying = false;
-				
+				am = VoipLibBackend.ep.audDevManager().getPlaybackDevMedia();
+				playerOnHold.setPos(0);
+				playerOnHold.startTransmit(am);
 			} catch (Exception e) {
-				Log.e(TAG, "Exception stopping the sink " + e);
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 	}
 	
+	private void stopOnHoldSound()
+	{
+		 AudioMedia sink;
+		try {
+			sink = VoipLibBackend.ep.audDevManager().getPlaybackDevMedia();
+			playerOnHold.stopTransmit(sink);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	private void playOutcomingRingtoneSound()  
+	{
+		//if (this.playSoundFile("onHoldSound")) onHoldSoundIsPlaying = true;
+				if (playerOutcomingCall!=null)
+				{
+					AudioMedia am;
+					try {
+						am = VoipLibBackend.ep.audDevManager().getPlaybackDevMedia();
+						playerOutcomingCall.setPos(0);
+						playerOutcomingCall.startTransmit(am);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+	}
+	
+	private void stopOutcomingRingtoneSound()
+	{
+		//if (this.playSoundFile("onOutcomingCallSound")) onOutcomingCallRingToneIsPlaying = true;
+		 AudioMedia sink;
+			try {
+				sink = VoipLibBackend.ep.audDevManager().getPlaybackDevMedia();
+				playerOutcomingCall.stopTransmit(sink);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	}
+	
+	private void playIncomingRingtoneSound()  
+	{
+		if (playerIncomingCall!=null)
+		{
+			AudioMedia am;
+			try {
+				am = VoipLibBackend.ep.audDevManager().getPlaybackDevMedia();
+				playerIncomingCall.setPos(0);
+				playerIncomingCall.startTransmit(am);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private void stopIncomingRingtoneSound()
+	{
+		//if (this.playSoundFile("onOutcomingCallSound")) onOutcomingCallRingToneIsPlaying = true;
+		 AudioMedia sink;
+			try {
+				sink = VoipLibBackend.ep.audDevManager().getPlaybackDevMedia();
+				playerIncomingCall.stopTransmit(sink);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	}
+	
+	
+	
+	private void setupAudioPlayers()
+	{
+		//params.put("onHoldSound", onHoldSoundPath);
+		//params.put("onIncomingCallSound",onIncomingCallRingTonePath ); // onIncomingCallRingTonePath
+		//params.put("onOutcomingCallSound",onIncomingCallRingTonePath); // onOutcomingCallRingTonePath
+	 
+		try {
+			AudioMedia am = VoipLibBackend.ep.audDevManager().getPlaybackDevMedia();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if (this.configParams.containsKey("onHoldSound"))
+			try {
+				playerOnHold = new AudioMediaPlayer();
+				playerOnHold.createPlayer(this.configParams.get("onHoldSound"));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		if (this.configParams.containsKey("onIncomingCallSound"))
+			try {
+				playerIncomingCall = new AudioMediaPlayer();
+				playerIncomingCall.createPlayer(this.configParams.get("onIncomingCallSound"));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		if (this.configParams.containsKey("onOutcomingCallSound"))
+			try {
+				playerOutcomingCall = new AudioMediaPlayer();
+				playerOutcomingCall.createPlayer(this.configParams.get("onOutcomingCallSound"));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	}
+	
+	
 	// Subclass to extend the Account and get notifications etc.
-	class MyAccount extends Account {
+	class MyAccount extends Account implements IAccount {
 		public HashMap<String,MyBuddy> buddyList = new HashMap<String,MyBuddy>();
 		public AccountConfig cfg;
+		private AccountState accState = AccountState.UNREGISTERED;
 		
 		MyAccount(AccountConfig config) {
 			super();
 			cfg = config;
 		}
 		
+		@Override
+		public IBuddy[] getBuddies() {
+			return this.buddyList.values().toArray(new IBuddy[0]);
+		}
 		
 		public boolean hasBuddy(String uri)
 		{
 			return buddyList.containsKey(uri);
 		}
+		
+		@Override
+		public boolean addBuddy(String  buddyUri) {
+			
+				if (this.hasBuddy(buddyUri))
+				{
+					Log.d(TAG,"Buddy with extension:" + buddyUri + " already added" );
+					return false;
+				}
+				BuddyConfig buddyConfig = new BuddyConfig();
+				//dest_uri = "sip:%s@%s;transport=tcp" % (str(dest_extension), self.sip_server)
+				
+				buddyConfig.setUri(buddyUri);
+				buddyConfig.setSubscribe(true);
+				notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.BUDDY_SUBSCRIBING, "Subscribing buddy with uri:" + buddyUri, buddyUri)); 
+				return (this.addBuddy(buddyConfig)!=null);
+	
+		}
+
+		@Override
+		public boolean removeBuddy(String  buddyUri) {
+				return (this.delBuddy(buddyUri)!=null);
+		}
+
+		@Override
+		public IBuddy getBuddy(String buddyUri) {
+			
+				IBuddy b =  this.buddyList.get(buddyUri);
+				b.refreshStatus();
+				return b;
+		}
+
 		
 		/***
 		 * add a buddy to this account , if not already added
@@ -737,6 +895,8 @@ private final static String TAG = "VoipLib";
 				if (regStatus==RegistrationState.REQUEST_TIMEOUT.intValue() || regStatus==RegistrationState.SERVICE_UNAVAILABLE.intValue())
 				{
 					serverState = ServerState.DISCONNECTED;
+					accState = AccountState.UNREGISTERED;
+					
 					notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.LIB_CONNECTION_FAILED, "Connection Failed: Code:" +
 	                        prm.getCode().swigValue() + " " + prm.getReason(), null)); 
 				}
@@ -746,13 +906,14 @@ private final static String TAG = "VoipLib";
 					serverState = ServerState.CONNECTED;
 					// Account registered
 					if (prm.getExpiration()>0  && acc.getInfo().getRegIsActive()){
+						accState = AccountState.REGISTERED;
 						notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_REGISTERED, "Registration Success:::" + prm.getReason(), regStatus));
 					     
-						
 					}
 					
 					// Account unregistered
 					else  if (prm.getExpiration()==0  && !acc.getInfo().getRegIsActive()) {
+						accState = AccountState.UNREGISTERED;
 						notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_UNREGISTERED, "Unregistration Success:::" + prm.getReason(), regStatus));
 					}
 					
@@ -786,10 +947,13 @@ private final static String TAG = "VoipLib";
 			MyCall call = new MyCall(this, prm.getCallId());
 			//MyApp.observer.notifyIncomingCall(call);
 			 try {
-				 boolean incoming_call_result = handleIncomingCall(call);	
+				 boolean incoming_call_result = handleIncomingCall(call, true);	// allow multiple calls...
 				 if (incoming_call_result)
+				 {
+					 playIncomingRingtoneSound();
 					 notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_INCOMING, "Incoming call from:" + call.getInfo().getRemoteUri(), call));
-                		
+				 }
+				 
 			 } catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -805,6 +969,25 @@ private final static String TAG = "VoipLib";
 			System.out.println("Contact		: " + prm.getContactUri());
 			System.out.println("Mimetype	: " + prm.getContentType());
 			System.out.println("Body		: " + prm.getMsgBody());
+		}
+
+
+		@Override
+		public String getUri() {
+			try {
+				return this.getInfo().getUri();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return "N.A";
+			}
+		}
+
+
+		@Override
+		public AccountState getState() {
+			 
+			return this.accState;
 		}
 	}
 	
@@ -910,6 +1093,12 @@ private final static String TAG = "VoipLib";
 		public void refreshStatus() {
 			this.updateBuddyStatus();
 		}
+
+		@Override
+		public String getExtension() {
+			String uri = this.cfg.getUri();
+			return uri.substring(uri.indexOf(':')+1, uri.indexOf('@'));
+		}
 		
 	}
 	private void loadConfig(HashMap<String, String> configParams) {
@@ -920,7 +1109,7 @@ private final static String TAG = "VoipLib";
 
 	        acfg = new AccountConfig();
 	        
-	        this.sipServerIp = configParams.get("sipServerIp"); //   "192.168.1.83"; //156.148.33.223";
+	        this.sipServerIp = configParams.get("sipServerIp"); 
 	        String registrar_uri = "sip:" +this.sipServerIp;
 	        String user_name = configParams.get("userName");
 	        String user_pwd = configParams.get("userPwd");
@@ -939,9 +1128,9 @@ private final static String TAG = "VoipLib";
 			acfg.getRegConfig().setTimeoutSec(60); // minimal auto-registration used to check server connection!
 			acfg.setPresConfig(apc);
 			// Transport Config
-			if (configParams.containsKey("sipPort"))
+			if (configParams.containsKey("sipServerPort"))
 			
-				sipTpConfig.setPort(Integer.valueOf(configParams.get("sipPort")));
+				sipTpConfig.setPort(Integer.valueOf(configParams.get("sipServerPort")));
 			else
 				sipTpConfig.setPort(5060);
 		 
@@ -950,26 +1139,27 @@ private final static String TAG = "VoipLib";
 			Log.e(TAG,"Error loading configuration:" + e.getMessage());
 		}
 	}
-	
+
+	/*
 	 private void saveConfig(String filename) {
 			JsonDocument json = new JsonDocument();
 			
 			try {
-				/* Write endpoint config */
+				// Write endpoint config  
 				json.writeObject(epConfig);
 				
-				/* Write transport config */
+				// Write transport config 
 				ContainerNode tp_node = json.writeNewContainer("SipTransport");
 				sipTpConfig.writeObject(tp_node);
 				
-				/* Write account configs */
+				// Write account configs 
 				buildAccConfigs();
 				ContainerNode accs_node = json.writeNewArray("accounts");
 				for (int i = 0; i < accCfgs.size(); i++) {
 					accCfgs.get(i).writeObject(accs_node);
 				}
 				
-				/* Save file */
+				// Save file 
 				//json.saveFile(filename);
 				
 				// Print the content!
@@ -981,12 +1171,12 @@ private final static String TAG = "VoipLib";
 				Log.e(TAG, "Exception reading the json:" + e.toString());
 			}
 
-			/* Force delete json now, as I found that Java somehow destroys it
-			 * after lib has been destroyed and from non-registered thread.
-			 */
+			//Force delete json now, as I found that Java somehow destroys it
+			// after lib has been destroyed and from non-registered thread.
+			 
 			json.delete();
 		}
-
+*/
 	
 	class MyAccountConfig {
 		public AccountConfig accCfg = new AccountConfig();
@@ -1018,68 +1208,51 @@ private final static String TAG = "VoipLib";
 		}
 	}
 	@Override
-	public CallState getCallState() {
-		return this.currentCallState;
-	}
+	public ICall getCall() {
+		return new ICall(){
 
-	
-	
-	@Override
-	public boolean addBuddy(String  buddyUri) {
-		if (this.acc!=null)
-		{
-			
-			if (this.acc.hasBuddy(buddyUri))
-			{
-				Log.d(TAG,"Buddy with extension:" + buddyUri + " already added" );
-				return false;
+			@Override
+			public String getRemoteUri() {
+				// TODO Not implemented yet
+				return null;
 			}
-			BuddyConfig buddyConfig = new BuddyConfig();
-			//dest_uri = "sip:%s@%s;transport=tcp" % (str(dest_extension), self.sip_server)
+
+			@Override
+			public String getLocalUri() {
+				// TODO Not implemented yet
+				return null;
+			}
+
+			@Override
+			public CallState getState() {
 			
-			buddyConfig.setUri(buddyUri);
-			buddyConfig.setSubscribe(true);
-			notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.BUDDY_SUBSCRIBING, "Subscribing buddy with uri:" + buddyUri, buddyUri)); 
-			return (this.acc.addBuddy(buddyConfig)!=null);
-			
-		}
-		return false;
+				return currentCallState;
+			}};
 	}
 
+	
+	
+	
 	@Override
-	public boolean removeBuddy(String  buddyUri) {
-		if (this.acc!=null)
-		{
-			return (this.acc.delBuddy(buddyUri)!=null);
-		}
-		return false;
+	public IServer getServer() {
+		return new IServer(){
+
+			@Override
+			public ServerState getState() {
+				return serverState;
+			}
+
+			@Override
+			public String getIp() {
+			   return sipServerIp;
+			}};
 	}
 
-	@Override
-	public IBuddy getBuddy(String buddyUri) {
-		if (this.acc!=null)
-		{
-			IBuddy b =  this.acc.buddyList.get(buddyUri);
-			b.refreshStatus();
-			return b;
-		}
-		return null;
-	}
+	
 
 	@Override
-	public ServerState getServerState() {
-		return this.serverState;
-	}
-
-	@Override
-	public IBuddy[] getBuddies() {
-		
-		if (this.acc!=null)
-		{
-			return this.acc.buddyList.values().toArray(new IBuddy[0]);
-		}
-		else
-		return new IBuddy[]{};
+	public IAccount getAccount() {
+		return this.acc;
 	}
 	
 }

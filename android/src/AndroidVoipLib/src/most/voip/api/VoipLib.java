@@ -1,31 +1,49 @@
+/*
+ * Project MOST - Moving Outcomes to Standard Telemedicine Practice
+ * http://most.crs4.it/
+ *
+ * Copyright 2014, CRS4 srl. (http://www.crs4.it/)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * See license-GPLv2.txt or license-MIT.txt
+ */
+
 package most.voip.api;
 
 import java.util.HashMap;
-
-import most.voip.api.enums.BuddyState;
-import most.voip.api.enums.CallState;
-import most.voip.api.enums.ServerState;
+import most.voip.api.interfaces.IAccount;
 import most.voip.api.interfaces.IBuddy;
+import most.voip.api.interfaces.ICall;
+import most.voip.api.interfaces.IServer;
 
 import android.content.Context;
 import android.os.Handler;
 
-
+/**
+ * It is the core class of the Library, that allows you to:
+ * <ul>
+ * <li>initialize the Voip Library</li>
+ * <li>create an account and register it on a remote Sip Server</li>
+ * <li>make a call</li>
+ * <li>listen for incoming calls and answer</li>
+ * </ul>
+ *
+ */
 public interface VoipLib {
+	
 	
 	/**
 	 * Initialize the Voip Lib
 	 * @param context application context of the activity that uses this library
-	 * @param configParams All needed configuration string params. All the supported parameters are the following:
-	 * <ul>
-	 * <li>serverIp: the ip address of the Sip Server (e.g Asterisk)</li>
-	 * <li>userName: the account name of the peer to register to the sip server </li>
-	 * <li>userPwd: the account password of the peer to register to the sip server </li>
-	 * <li>sipPort: the port of the sip server (default:"5060") </li>
-	 * </ul>
+	 * @param configParams All needed configuration string parameters. All the supported parameters are the following:
+	 * 	<ul>
+	 * 		<li>sipServerIp: the ip address of the Sip Server (e.g Asterisk)</li>
+	 * 		<li>userName: the account name of the peer to register to the sip server </li>
+	 * 		<li>userPwd: the account password of the peer to register to the sip server </li>
+	 * 		<li>sipServerPort: the port of the sip server (default:"5060") </li>
+	 * 	</ul>
 	 * 
-	 * @param notificationHandler
-	 * @return
+	 * @param notificationHandler the handller that will receive all sip notifications 
+	 * @return true if the initialization request completes without errors, false otherwise 
 	 */
 	public boolean initLib(Context context, HashMap<String,String> configParams, Handler notificationHandler);
 	
@@ -79,42 +97,23 @@ public interface VoipLib {
      */
     public boolean hangupCall();
      
-    /**
-     * Get the state of the current call (if any)
-     * @return the state of the current call (if any), CallState.NONE if there is no call
-     */
-    public CallState getCallState();
     
     /**
-     *  Get the current state of the remote Sip Server
-     * @return the current state of the remote Sip Server
+     * Get informations about the local sip account
+     * @return  informations about the local sip account , like its current state
      */
-    public ServerState getServerState();
+    public IAccount getAccount();
     
     /**
-     * Add a buddy to this account.
-     * @param uri the buddy sip uri
-     * @return True if the buddy was added to the buddy list, False otherwise
+     * Get the current call info (if any)
+     * @return informations about the current call (if any), like the current Call State
      */
-    public boolean addBuddy(String uri);
+    public ICall getCall();
     
     /**
-     * Remove the buddy from this account
-     * @param uri The sip uri of the buddy to remove
-     * @return True if the buddy was found and it was successfully removed, False otherwise
+     *  Get informations about the remote Sip Server
+     * @return informations about the current sip server, like the current Server State
      */
-    public boolean removeBuddy(String uri);
+    public IServer getServer();
     
-    /**
-     * Get  the buddy with the given extension, or null if it is not found
-     * @param uri the buddy uri
-     * @return  the buddy with the provided uri, or null if it is not found
-     */
-    public IBuddy getBuddy(String uri);
-    
-    /**
-     * Get the list of buddies of the current registered account
-     * @return the list of the buddies of the currently registered account
-     */
-    public IBuddy [] getBuddies();
 }

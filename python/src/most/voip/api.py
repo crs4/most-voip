@@ -1,48 +1,71 @@
-'''
-Created on 28/apr/2014
+#
+# Project MOST - Moving Outcomes to Standard Telemedicine Practice
+# http://most.crs4.it/
+#
+# Copyright 2014, CRS4 srl. (http://www.crs4.it/)
+# Dual licensed under the MIT or GPL Version 2 licenses.
+# See license-GPLv2.txt or license-MIT.txt
+#
 
-@author: smonni
-'''
-from api_backend import VoipBackend
-#from states import ServerState, BuddyState
+"""
+Most-Voip API - VoipLib Class
+"""
 
 class VoipLib:
-    def __init__(self, backend=VoipBackend()):
-        self.backend = backend
+    """
+    It is the core class of the Library, that allows you to:
+    
+    - initialize the Voip Library
+    - create  an account and register it on a remote Sip Server
+    - make a call
+    - listen for incoming calls and answer  
+    
+    """
+    
+    def __init__(self, backend=None):
+        """
+        Create a new instance of the VoipLib
+        
+        :param backend: (optional) if specified, it is used as the default VoipLib implementation
+        
+        """
+        if backend==None:
+            from api_backend import VoipBackend
+            self.backend = VoipBackend()
+        else:
+            self.backend = backend()
+            
         
     def init_lib(self,params, notification_cb):
+        """Initialize the voip library
+        
+        :param params: a dictionary containing all initialization parameters 
+        :param notification_cb: a callback method called by the library for all event notificationa (status changes, errors, events and so on)
+        :returns: True if the initialization request completes without errors, False otherwise 
+        
         """
-        @param params: a dictionary containing all initialization parameters 
-        @param notification_cb: a method called for all voip notification (status changes, errors, events and so on)
-        @return: True if the initialization successfully completes, False otherwise 
-        """
+        
         return self.backend.init_lib(params, notification_cb)
     
    
     def register_account(self):
-        """
-        Register the account specified in the params dictionary passed to the L{init_lib} method
+        """Register the account specified into the *params* dictionary passed to the :func:`init_lib` method
+        
         """
         return self.backend.register_account()
-   
-    """
-    def set_online_status(self, is_online):
-        return self.backend.set_online_status(is_online)
-    
-    def is_online(self):
-        return self.backend.is_online()
-    """
+ 
     
     def unregister_account(self):
-        """
-        Unregister the account specified in the params dictionary passed to the L{init_lib} method
+        """Unregister the account specified in the *params* dictionary passed to the :func:`init_lib` method
+        
         """
         return self.backend.unregister_account()
     
     def make_call(self, extension):
-        """
-        Make a call to the specified extension
-        @param extension:the extension to dial
+        """Make a call to the specified extension
+        
+        :param extension: the extension to dial
+        
         """
         
         return self.backend.make_call(extension)
@@ -60,17 +83,19 @@ class VoipLib:
         return self.backend.hold_call()
     
     def unhold_call(self):
-        """
-         Put the currently active call on active status
+        """Put the currently active call on active status
+        
         """
         return self.backend.unhold_call()
     
     
-    def get_call_state(self):
+    def get_call(self):
         """
-        @return: the state of the current call (if any)
+        Get the current ICall instance
+        
+        :returns: an :class:`most.voip.interfaces.ICall`  object containing informations about the current call
         """
-        return self.backend.get_call_state()
+        return self.backend.get_call()
     
     def hangup_call(self):
         """
@@ -78,36 +103,22 @@ class VoipLib:
         """
         return self.backend.hangup_call()
     
-    def add_buddy(self, extension):
+    
+    def get_server(self):
         """
-        Add the specified buddy to this account (so its current state can be notified)
-        @param extension: the extension related to the buddy to add
-        """
-        self.backend.add_buddy(extension)
+        Get informations about the remote sip server
         
-    def remove_buddy(self, extension):
+        :returns:  an :class:`most.voip.interfaces.IServer` object containing informations about the remote sip server
         """
-        Remove the specified buddy from this account
-        @param extension: the extension related to the buddy to remove
+        return self.backend.get_server()
+    
+    def get_account(self):
         """
-        self.backend.remove_buddy(extension)
+        Get informations about the local account
         
-    def get_buddy_state(self, extension):
+        :returns: an :class:`most.voip.interfaces.IAccount` object containing informations about the local sip account
         """
-        Get the current state of the buddy with the given extension
-        @param extension: the extension of the buddy
-        @return: the current state of the buddy
-        @rtype: BuddyState
-        """
-        return self.backend.get_buddy_state(extension)
-   
-    def get_server_state(self):
-        """
-        Get the current state of the sip server
-        @return: the current remote sip server state
-        @rtype: ServerState
-        """
-        return self.backend.get_server_state()
+        return self.backend.get_account()
     
     def destroy_lib(self):
         """

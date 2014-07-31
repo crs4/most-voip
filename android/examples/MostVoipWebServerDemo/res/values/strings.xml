@@ -1,0 +1,16 @@
+<resources>
+
+    <string name="app_name">MostVoipWebServerConfigDemo</string>
+    <string name="ip_server">192.168.1.100</string>
+    <string name="ip_server_title">Web Server IP:</string>
+    <string name="extension_title">Extension:</string>
+    <string name="call_state_title">Call State:</string>
+    <string name="call_state">N.A</string>
+    <string name="server_state_title">Server State:</string>
+    <string name="server_state">N.A</string>
+    <string name="account_state_title">Account State:</string>
+    <string name="account_state">N.A</string>
+    <string name="account_title">Account:</string>
+    <string name="account_details">N.A</string>
+    
+</resources>

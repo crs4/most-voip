@@ -1,0 +1,3 @@
+INITIALIZE FROM PRINT
+Received state:VOIP_STATE__INITIALIZING -> Params: {'params': {u'username': u'stefano', u'log_level': 1, u'sip_pwd': u'ste', u'sip_server': u'156.148.33.226', u'sip_user': u'ste', u'debug': False, u'transport': u'udp'}, 'success': True}
+Received state:VOIP_STATE__INITIALIZED -> Params: {'sip_server': '156.148.33.226', 'success': True}
