@@ -1,2 +1,3 @@
 sphinx
 javasphinx
+sphinx_rtd_theme
