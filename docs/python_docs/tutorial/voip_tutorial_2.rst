@@ -41,7 +41,7 @@ of the incoming events.
     # build a dictionary containing all parameters needed for the Lib initialization
     
     voip_params = {  u'username': u'ste',  # a name describing the user
-                     u'sip_server_address': u'156.148.33.240',  # the ip of the remote sip server (default port: 5060)
+                     u'sip_server_address': u'192.168.1.100',  # the ip of the remote sip server (default port: 5060)
                      u'sip_server_user': u'ste', # the username of the sip account
                      u'sip_server_pwd': u'ste',  #  the password of the sip account
                      u'sip_server_transport' :u'udp', # the transport type (default: tcp) 

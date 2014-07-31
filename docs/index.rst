@@ -75,9 +75,25 @@ Indices and tables
 Licence
 =======
 
-MOST-Voip is released under the ?????
 ::
 
-  Copyright (c) 2012-2014, CRS4
+     Project MOST - Moving Outcomes to Standard Telemedicine Practice
+     http://most.crs4.it/
+    
+     Copyright 2014, CRS4 srl. (http://www.crs4.it/)
+     
+     Dual licensed under the MIT or GPL Version 2 licenses.
+     See license-GPLv2.txt or license-MIT.txt
 
 
+	 GPL2: https://www.gnu.org/licenses/gpl-2.0.txt
+	 MIT: http://opensource.org/licenses/MIT
+
+
+Detailed Dual Licensing Info
+============================
+
+The MOST-Voip API is licensed under both General Public License (GPL) version 2 and the MIT licence. In practical sense, this means:
+
+    * if you are developing Open Source Software (OSS) based on MOST-Voip, chances are you will be able to use MOST-Voip freely under GPL. Note that the Most-Voip Library depends on the PJSIP API, so  please double check `here <http://www.pjsip.org/licensing.htm>`_ for OSS license compatibility with GPL.
+    * alternatively, if you are unable to release your application as Open Source Software (because you have modified the MOST-Voip library by directly changing the code of the underlying PJSiP library)   you have  to release the library under the MIT licence. Again, please double check `here <http://www.pjsip.org/licensing.htm>`_.
