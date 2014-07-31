@@ -95,5 +95,5 @@ Detailed Dual Licensing Info
 
 The MOST-Voip API is licensed under both General Public License (GPL) version 2 and the MIT licence. In practical sense, this means:
 
-    * if you are developing Open Source Software (OSS) based on MOST-Voip, chances are you will be able to use MOST-Voip freely under GPL. Note that the Most-Voip Library depends on the PJSIP API, so  please double check `here <http://www.pjsip.org/licensing.htm>`_ for OSS license compatibility with GPL.
-    * alternatively, if you are unable to release your application as Open Source Software (because you have modified the MOST-Voip library by directly changing the code of the underlying PJSiP library)   you have  to release the library under the MIT licence. Again, please double check `here <http://www.pjsip.org/licensing.htm>`_.
+    * if you are developing Open Source Software (OSS) based on MOST-Voip, chances are you will be able to use MOST-Voip under GPL. Note that the Most-Voip Library depends on the PJSIP API, so  please double check `here <http://www.pjsip.org/licensing.htm>`_ for OSS license compatibility with GPL.
+    * alternatively, you can release your application under MIT licence, provided that you have followed the guidelines of the PJSIP licence explained `here <http://www.pjsip.org/licensing.htm>`_.
