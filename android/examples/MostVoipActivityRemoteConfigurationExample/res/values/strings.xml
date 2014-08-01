@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">MostVoipActivityRemoteConfiguration</string>
+    <string name="ip_server">192.168.1.80</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="login_user">Username:</string>
+    <string name="login_password">Password:</string>
+    <string name="login_button">Login</string>
+    <string name="default_user">admin</string>
+    <string name="default_password">admin</string>
+    <string name="server_ip">192.168.1.80</string>
+    <string name="lbl_ip_address">Ip Address</string>
+
+</resources>

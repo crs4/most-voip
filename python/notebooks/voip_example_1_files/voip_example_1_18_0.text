@@ -1,0 +1,2 @@
+Received state:VOIP_STATE__REGISTERED -> Params: {'account_info': <pjsua.AccountInfo instance at 0x7f6b0d4790e0>, 'Success': True}
+Received state:VOIP_STATE__CALL_DIALING -> Params: {'call_state': 2, 'success': True}

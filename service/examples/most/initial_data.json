@@ -1,0 +1,515 @@
+[
+{
+    "pk": 1, 
+    "model": "voip.sipserver", 
+    "fields": {
+        "port": 3478, 
+        "name": "sip server #1", 
+        "address": "192.168.1.1"
+    }
+},
+{
+    "pk": 1, 
+    "model": "voip.turnserver", 
+    "fields": {
+        "port": 8060, 
+        "name": "turn server #1", 
+        "address": "192.168.1.1"
+    }
+},
+{
+    "pk": 1, 
+    "model": "voip.buddy", 
+    "fields": {
+        "account": 1, 
+        "name": "pippo1", 
+        "extension": "PIPPO_1"
+    }
+},
+{
+    "pk": 2, 
+    "model": "voip.buddy", 
+    "fields": {
+        "account": 1, 
+        "name": "pippo2", 
+        "extension": "PIPPO_2"
+    }
+},
+{
+    "pk": 3, 
+    "model": "voip.buddy", 
+    "fields": {
+        "account": 1, 
+        "name": "pippo3", 
+        "extension": "PIPPO_3"
+    }
+},
+{
+    "pk": 1, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "add_logentry", 
+        "name": "Can add log entry", 
+        "content_type": 1
+    }
+},
+{
+    "pk": 2, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "change_logentry", 
+        "name": "Can change log entry", 
+        "content_type": 1
+    }
+},
+{
+    "pk": 3, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "delete_logentry", 
+        "name": "Can delete log entry", 
+        "content_type": 1
+    }
+},
+{
+    "pk": 4, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "add_permission", 
+        "name": "Can add permission", 
+        "content_type": 2
+    }
+},
+{
+    "pk": 5, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "change_permission", 
+        "name": "Can change permission", 
+        "content_type": 2
+    }
+},
+{
+    "pk": 6, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "delete_permission", 
+        "name": "Can delete permission", 
+        "content_type": 2
+    }
+},
+{
+    "pk": 7, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "add_group", 
+        "name": "Can add group", 
+        "content_type": 3
+    }
+},
+{
+    "pk": 8, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "change_group", 
+        "name": "Can change group", 
+        "content_type": 3
+    }
+},
+{
+    "pk": 9, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "delete_group", 
+        "name": "Can delete group", 
+        "content_type": 3
+    }
+},
+{
+    "pk": 10, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "add_user", 
+        "name": "Can add user", 
+        "content_type": 4
+    }
+},
+{
+    "pk": 11, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "change_user", 
+        "name": "Can change user", 
+        "content_type": 4
+    }
+},
+{
+    "pk": 12, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "delete_user", 
+        "name": "Can delete user", 
+        "content_type": 4
+    }
+},
+{
+    "pk": 13, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "add_contenttype", 
+        "name": "Can add content type", 
+        "content_type": 5
+    }
+},
+{
+    "pk": 14, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "change_contenttype", 
+        "name": "Can change content type", 
+        "content_type": 5
+    }
+},
+{
+    "pk": 15, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "delete_contenttype", 
+        "name": "Can delete content type", 
+        "content_type": 5
+    }
+},
+{
+    "pk": 16, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "add_session", 
+        "name": "Can add session", 
+        "content_type": 6
+    }
+},
+{
+    "pk": 17, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "change_session", 
+        "name": "Can change session", 
+        "content_type": 6
+    }
+},
+{
+    "pk": 18, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "delete_session", 
+        "name": "Can delete session", 
+        "content_type": 6
+    }
+},
+{
+    "pk": 19, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "add_client", 
+        "name": "Can add client", 
+        "content_type": 7
+    }
+},
+{
+    "pk": 20, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "change_client", 
+        "name": "Can change client", 
+        "content_type": 7
+    }
+},
+{
+    "pk": 21, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "delete_client", 
+        "name": "Can delete client", 
+        "content_type": 7
+    }
+},
+{
+    "pk": 22, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "add_grant", 
+        "name": "Can add grant", 
+        "content_type": 8
+    }
+},
+{
+    "pk": 23, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "change_grant", 
+        "name": "Can change grant", 
+        "content_type": 8
+    }
+},
+{
+    "pk": 24, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "delete_grant", 
+        "name": "Can delete grant", 
+        "content_type": 8
+    }
+},
+{
+    "pk": 25, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "add_accesstoken", 
+        "name": "Can add access token", 
+        "content_type": 9
+    }
+},
+{
+    "pk": 26, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "change_accesstoken", 
+        "name": "Can change access token", 
+        "content_type": 9
+    }
+},
+{
+    "pk": 27, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "delete_accesstoken", 
+        "name": "Can delete access token", 
+        "content_type": 9
+    }
+},
+{
+    "pk": 28, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "add_refreshtoken", 
+        "name": "Can add refresh token", 
+        "content_type": 10
+    }
+},
+{
+    "pk": 29, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "change_refreshtoken", 
+        "name": "Can change refresh token", 
+        "content_type": 10
+    }
+},
+{
+    "pk": 30, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "delete_refreshtoken", 
+        "name": "Can delete refresh token", 
+        "content_type": 10
+    }
+},
+{
+    "pk": 40, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "add_sipserver", 
+        "name": "Can add sip server", 
+        "content_type": 14
+    }
+},
+{
+    "pk": 41, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "change_sipserver", 
+        "name": "Can change sip server", 
+        "content_type": 14
+    }
+},
+{
+    "pk": 42, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "delete_sipserver", 
+        "name": "Can delete sip server", 
+        "content_type": 14
+    }
+},
+{
+    "pk": 43, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "add_turnserver", 
+        "name": "Can add turn server", 
+        "content_type": 15
+    }
+},
+{
+    "pk": 44, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "change_turnserver", 
+        "name": "Can change turn server", 
+        "content_type": 15
+    }
+},
+{
+    "pk": 45, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "delete_turnserver", 
+        "name": "Can delete turn server", 
+        "content_type": 15
+    }
+},
+{
+    "pk": 46, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "add_account", 
+        "name": "Can add account", 
+        "content_type": 16
+    }
+},
+{
+    "pk": 47, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "change_account", 
+        "name": "Can change account", 
+        "content_type": 16
+    }
+},
+{
+    "pk": 48, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "delete_account", 
+        "name": "Can delete account", 
+        "content_type": 16
+    }
+},
+{
+    "pk": 49, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "add_buddy", 
+        "name": "Can add buddy", 
+        "content_type": 17
+    }
+},
+{
+    "pk": 50, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "change_buddy", 
+        "name": "Can change buddy", 
+        "content_type": 17
+    }
+},
+{
+    "pk": 51, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "delete_buddy", 
+        "name": "Can delete buddy", 
+        "content_type": 17
+    }
+},
+{
+    "pk": 52, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "add_userprofile", 
+        "name": "Can add MOST User", 
+        "content_type": 18
+    }
+},
+{
+    "pk": 53, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "change_userprofile", 
+        "name": "Can change MOST User", 
+        "content_type": 18
+    }
+},
+{
+    "pk": 54, 
+    "model": "auth.permission", 
+    "fields": {
+        "codename": "delete_userprofile", 
+        "name": "Can delete MOST User", 
+        "content_type": 18
+    }
+},
+{
+    "pk": 1, 
+    "model": "auth.user", 
+    "fields": {
+        "username": "admin", 
+        "first_name": "", 
+        "last_name": "", 
+        "is_active": true, 
+        "is_superuser": true, 
+        "is_staff": true, 
+        "last_login": "2014-07-29T15:16:58.389Z", 
+        "groups": [], 
+        "user_permissions": [], 
+        "password": "pbkdf2_sha256$12000$1vBEVg9jSGZC$04UFgwOX3uhKKvN9wp1p8wiT2hJ3lUQxgYuyEyMOQ/w=", 
+        "email": "paneb@crs4.it", 
+        "date_joined": "2014-07-14T13:31:18.666Z"
+    }
+},
+{
+    "pk": 1, 
+    "model": "oauth2.client", 
+    "fields": {
+        "name": "testclient", 
+        "url": "http://localhost/", 
+        "client_type": 1, 
+        "redirect_uri": "http://localhost/", 
+        "user": null, 
+        "client_id": "065eb628607f75cc4642", 
+        "client_secret": "c8d3e22618ad29f0ef4ca4aa0fac14d95d491497"
+    }
+},
+{
+    "pk": 1, 
+    "model": "voip.account", 
+    "fields": {
+        "turn_server": 1, 
+        "name": "account #1", 
+        "extension": "admin_user_extension", 
+        "sip_username": "admin", 
+        "sip_transport": "tcp", 
+        "sip_server": 1, 
+        "user": 1, 
+        "sip_password": "admin", 
+        "turn_password": "admin", 
+        "turn_username": "admin"
+    }
+},
+{
+    "pk": 2, 
+    "model": "voip.account", 
+    "fields": {
+        "turn_server": 1, 
+        "name": "account #2", 
+        "extension": "EXTENSION_2", 
+        "sip_username": "admin2", 
+        "sip_transport": "tcp", 
+        "sip_server": 1, 
+        "user": 1, 
+        "sip_password": "admin2", 
+        "turn_password": "admin2", 
+        "turn_username": "admin2"
+    }
+}
+]

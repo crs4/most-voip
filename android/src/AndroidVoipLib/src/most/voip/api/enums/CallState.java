@@ -1,0 +1,18 @@
+/*
+ * Project MOST - Moving Outcomes to Standard Telemedicine Practice
+ * http://most.crs4.it/
+ *
+ * Copyright 2014, CRS4 srl. (http://www.crs4.it/)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * See license-GPLv2.txt or license-MIT.txt
+ */
+
+package most.voip.api.enums;
+
+public enum CallState {
+	  IDLE,   		  // No call 
+      DIALING ,   	  // The outcoming call is ringing
+	  INCOMING,       // The incoming call is ringing
+	  ACTIVE,    	  // The call is active 
+	  HOLDING   	  // The call has been put in holding state by the local user
+}
