@@ -1,4 +1,2 @@
-sphinx
-javalang
-javasphinx
-sphinx_rtd_theme
+javalang==0.9.5
+javasphinx==0.9.11
