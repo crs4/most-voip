@@ -37,7 +37,7 @@ import android.widget.ListView;
  * <li>unregister an account to a remote Sip Server </li>
  * <li>deinitialize the Voip Lib </li>
  * </ul>
- * @author crs4
+ *  
  *
  */
 public class MainActivity extends Activity implements Handler.Callback {

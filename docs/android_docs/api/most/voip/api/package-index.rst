@@ -10,8 +10,4 @@ most.voip.api
    VoipEventBundle
    VoipLib
    VoipLibBackend
-   VoipLibBackend-MyAccount
-   VoipLibBackend-MyAccountConfig
-   VoipLibBackend-MyBuddy
-   VoipLibBackend-MyCall
 

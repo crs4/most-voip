@@ -37,6 +37,33 @@ import most.voip.api.interfaces.IServer;
 import org.pjsip.pjsua2.*;
  
 
+
+
+/**
+ * This class implements the {@link most.voip.api.VoipLib} interface by using the PJSip library as backend.
+ * So, you can get a {@link most.voip.api.VoipLib} instance in the following way:
+ * <pre>
+ * <code> VoipLib myVoip = new VoipLibBackend();
+ * </code>
+ * </pre>
+ * To get a {@link most.voip.api.interfaces.ICall} instance you can call the {@link #getCall()} method:
+ * <pre>
+ * <code> ICall myCall = myVoip.getCall();
+ * </code></pre>
+ * 
+ * To get a {@link most.voip.api.interfaces.IAccount} instance you can call the {@link #getAccount()} method:
+ *  <pre>
+ * <code> IAccount myAccount = myVoip.getAccount();
+ * </code></pre>
+ *
+ * To get a {@link most.voip.api.interfaces.IServer} instance you can call the {@link #getServer()} method:
+ *  <pre>
+ * <code> IServer mySipSever = myVoip.getServer();
+ * </code></pre>
+ * 
+ * @see VoipLib
+ *
+ */
 public class VoipLibBackend extends Application implements VoipLib   {
 	
 private CallState currentCallState = CallState.IDLE;
@@ -51,8 +78,8 @@ private AudioMediaPlayer playerOutcomingCall = null;
 	}
 	
 
-public static Endpoint ep = null; //new Endpoint();
-public ArrayList<MyAccount> accList = new ArrayList<MyAccount>();
+private static Endpoint ep = null; //new Endpoint();
+//public ArrayList<MyAccount> accList = new ArrayList<MyAccount>();
 //private ArrayList<MyAccountConfig> accCfgs = new ArrayList<MyAccountConfig>();
 private EpConfig epConfig = new EpConfig();
 private TransportConfig sipTpConfig = new TransportConfig();
@@ -64,7 +91,7 @@ private ServerState serverState = ServerState.DISCONNECTED;
 
 private Handler notificationHandler = null;
 
-MediaPlayer mediaPlayer = null;
+//MediaPlayer mediaPlayer = null;
  
 private HashMap<String,String> configParams = new HashMap<String,String>();
 
@@ -199,6 +226,11 @@ private final static String TAG = "VoipLib";
 		return false;
 	}
 
+	/**
+	 * Get a sip uri in the format sip:<extension>@sip_server_ip 
+	 * @param extension the extension of the sip uri
+	 * @return the sip uri
+	 */
 	public String getSipUriFromExtension(String extension) {
 		return "sip:" + extension + "@" + this.sipServerIp;
 	}
@@ -520,7 +552,7 @@ private final static String TAG = "VoipLib";
 	}
 	
 	
-	class MyCall extends Call  {
+	private class MyCall extends Call  {
 		MyCall(MyAccount acc, int call_id) {
 			super(acc, call_id);
 		}
@@ -772,7 +804,7 @@ private final static String TAG = "VoipLib";
 	
 	
 	// Subclass to extend the Account and get notifications etc.
-	class MyAccount extends Account implements IAccount {
+	private class MyAccount extends Account implements IAccount {
 		public HashMap<String,MyBuddy> buddyList = new HashMap<String,MyBuddy>();
 		public AccountConfig cfg;
 		private AccountState accState = AccountState.UNREGISTERED;
@@ -991,7 +1023,7 @@ private final static String TAG = "VoipLib";
 		}
 	}
 	
-	class MyBuddy extends Buddy implements IBuddy {
+	private class MyBuddy extends Buddy implements IBuddy {
 		public BuddyConfig cfg;
 		MyBuddy(BuddyConfig config) {
 			super();
@@ -1178,7 +1210,8 @@ private final static String TAG = "VoipLib";
 		}
 */
 	
-	class MyAccountConfig {
+
+	private  class MyAccountConfig {
 		public AccountConfig accCfg = new AccountConfig();
 		public ArrayList<BuddyConfig> buddyCfgs = new ArrayList<BuddyConfig>();
 		

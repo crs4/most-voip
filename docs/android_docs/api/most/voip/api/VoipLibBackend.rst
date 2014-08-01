@@ -44,25 +44,31 @@ VoipLibBackend
 
 .. java:type:: public class VoipLibBackend extends Application implements VoipLib
 
-Fields
-------
-accList
-^^^^^^^
+   This class implements the \ :java:ref:`most.voip.api.VoipLib`\  interface by using the PJSip library as backend. So, you can get a \ :java:ref:`most.voip.api.VoipLib`\  instance in the following way:
 
-.. java:field:: public ArrayList<MyAccount> accList
-   :outertype: VoipLibBackend
+   .. parsed-literal::
 
-ep
-^^
+      VoipLib myVoip = new VoipLibBackend();
 
-.. java:field:: public static Endpoint ep
-   :outertype: VoipLibBackend
+   To get a \ :java:ref:`most.voip.api.interfaces.ICall`\  instance you can call the \ :java:ref:`getCall()`\  method:
 
-mediaPlayer
-^^^^^^^^^^^
+   .. parsed-literal::
 
-.. java:field::  MediaPlayer mediaPlayer
-   :outertype: VoipLibBackend
+      ICall myCall = myVoip.getCall();
+
+   To get a \ :java:ref:`most.voip.api.interfaces.IAccount`\  instance you can call the \ :java:ref:`getAccount()`\  method:
+
+   .. parsed-literal::
+
+      IAccount myAccount = myVoip.getAccount();
+
+   To get a \ :java:ref:`most.voip.api.interfaces.IServer`\  instance you can call the \ :java:ref:`getServer()`\  method:
+
+   .. parsed-literal::
+
+      IServer mySipSever = myVoip.getServer();
+
+   **See also:** :java:ref:`VoipLib`
 
 Constructors
 ------------
@@ -109,6 +115,11 @@ getSipUriFromExtension
 
 .. java:method:: public String getSipUriFromExtension(String extension)
    :outertype: VoipLibBackend
+
+   Get a sip uri in the format sip:@sip_server_ip
+
+   :param extension: the extension of the sip uri
+   :return: the sip uri
 
 hangupCall
 ^^^^^^^^^^
