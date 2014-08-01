@@ -28,6 +28,9 @@ var/
 # Pycharm
 .idea/
 
+# Eclipse
+*.settings/
+
 #sqlite3
 *.sqlite3
 *.sqlite3.old
