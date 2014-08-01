@@ -1,3 +1,4 @@
 sphinx
+javalang
 javasphinx
 sphinx_rtd_theme
