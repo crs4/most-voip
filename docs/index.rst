@@ -72,7 +72,7 @@ Indices and tables
 * :ref:`search`
 
 
-Licence
+License
 =======
 
 ::
