@@ -15,7 +15,7 @@
 import sys
 import os
 
-# insert PATH for PYTOHN SOURCE CODE (see http://stackoverflow.com/questions/11874716/sphinx-import-error-in-not-to-document-package-is-there-any-way-to-skip)
+# insert PATH for PYTHON SOURCE CODE (see http://stackoverflow.com/questions/11874716/sphinx-import-error-in-not-to-document-package-is-there-any-way-to-skip)
 
 sys.path.insert(0, '../python/src/')
 

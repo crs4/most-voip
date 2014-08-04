@@ -20,7 +20,7 @@ VoipLib
 
 .. java:type:: public interface VoipLib
 
-   It is the core class of the Library, that allows you to:
+   It is the core class of the Library|||, that allows you to:
 
    ..
 

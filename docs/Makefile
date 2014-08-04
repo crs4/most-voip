@@ -52,6 +52,9 @@ clean:
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
+	@echo "Build java docs"
+	javasphinx-apidoc -fo android_docs/api/ ../android/src/AndroidVoipLib/src/most/voip/
+	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
 dirhtml:

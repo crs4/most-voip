@@ -25,6 +25,7 @@ import android.os.Handler;
  * <li>create an account and register it on a remote Sip Server</li>
  * <li>make a call</li>
  * <li>listen for incoming calls and answer</li>
+ * <li>get instances of IAccount, ICall and IServer objects</li>
  * </ul>
  *
  */
