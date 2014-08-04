@@ -15,6 +15,10 @@
 import sys
 import os
 
+# insert PATH for PYTOHN SOURCE CODE (see http://stackoverflow.com/questions/11874716/sphinx-import-error-in-not-to-document-package-is-there-any-way-to-skip)
+
+sys.path.insert(0, '../python/src/')
+
 # on_rtd is whether we are on readthedocs.org, this line of code grabbed from docs.readthedocs.org
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
