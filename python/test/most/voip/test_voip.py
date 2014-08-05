@@ -11,7 +11,7 @@ import unittest
 
 from most.voip.api import VoipLib
 from most.voip.constants import VoipEvent
-from most.voip.api_backend import VoipBackend
+#from most.voip.api_backend import VoipBackend
 from mock_voip import MockVoipBackend
 
 import time
@@ -146,16 +146,19 @@ class DummyVoipTestCase(VoipTestCase):
     def __init__(self, test_method):
         super(DummyVoipTestCase,self).__init__(test_method, MockVoipBackend)
         
+"""
 class PjsipVoipTestCase(VoipTestCase):
     def __init__(self, test_method):
         super(PjsipVoipTestCase,self).__init__(test_method, VoipBackend)
-        
+"""
+       
 def getDummyVoipSuite():
     return  unittest.makeSuite(DummyVoipTestCase, "test")
 
+"""
 def getRealVoipSuite():
     return  unittest.makeSuite(PjsipVoipTestCase, "test")
-    
+"""
 
  
 if __name__ == '__main__':
