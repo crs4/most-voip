@@ -21,7 +21,7 @@ Supported platforms:
  * Mobile: Android
  * Desktop: Linux Ubuntu
 
-So far, MOST-Voip for desktop platforms has been tested only on Linux Ubuntu v.14.10 distribution. However, it is written in Python 2.7, 
+So far, MOST-Voip for desktop platforms has been tested only on Linux Ubuntu v.14.04 distribution. However, it is written in Python 2.7, 
 so other platforms should be supported as well.
 
 

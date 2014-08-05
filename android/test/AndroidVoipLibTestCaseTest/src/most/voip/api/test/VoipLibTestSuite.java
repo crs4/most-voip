@@ -36,11 +36,11 @@ public class VoipLibTestSuite extends ActivityUnitTestCase implements Handler.Ca
 	
 	 
 	abstract class HandlerTest {
-		protected int curStateIndex = 0;
+		protected int curEventIndex = 0;
 		protected VoipEvent [] expectedEvents = {};
 		
 		public boolean isDone() {
-			return curStateIndex>=expectedEvents.length;
+			return curEventIndex>=expectedEvents.length;
 		}
 		
 		public abstract boolean handleMessage(Message voipMessage);
@@ -66,10 +66,10 @@ public class VoipLibTestSuite extends ActivityUnitTestCase implements Handler.Ca
 			//int msg_type = voipMessage.what;
 			VoipEventBundle myEvent = (VoipEventBundle) voipMessage.obj;
 			String infoMsg = myEvent.getEvent() + ":" + myEvent.getInfo();
-			Log.d(TAG, "handleMessage: Current State:" + infoMsg);
+			Log.d(TAG, "handleMessage: Current Event:" + infoMsg);
 			
-			assertEquals( myEvent.getEvent(), expectedEvents[curStateIndex]);
-			curStateIndex++;
+			assertEquals( myEvent.getEvent(), expectedEvents[curEventIndex]);
+			curEventIndex++;
 			     if (myEvent.getEvent()==VoipEvent.LIB_INITIALIZED)   assertTrue(myVoip.registerAccount());	
 			else if (myEvent.getEvent()==VoipEvent.ACCOUNT_REGISTERED)    assertTrue(myVoip.unregisterAccount());	
 			else if (myEvent.getEvent()==VoipEvent.ACCOUNT_UNREGISTERED)  assertTrue(myVoip.destroyLib());
@@ -102,10 +102,10 @@ public class VoipLibTestSuite extends ActivityUnitTestCase implements Handler.Ca
 			//Log.d(TAG, "Called handleMessage with info...");
 			VoipEventBundle myEvent = (VoipEventBundle) voipMessage.obj;
 			String infoMsg = myEvent.getEvent() + ":" + myEvent.getInfo();
-			Log.d(TAG, "handleMessage: Current State:" + infoMsg);
+			Log.d(TAG, "handleMessage: Current Event:" + infoMsg);
 			
-			assertEquals( myEvent.getEvent(), expectedEvents[curStateIndex]);
-			curStateIndex++;
+			assertEquals( myEvent.getEvent(), expectedEvents[curEventIndex]);
+			curEventIndex++;
 			     if (myEvent.getEvent()==VoipEvent.LIB_INITIALIZED)   assertTrue(myVoip.registerAccount());	
 			else if (myEvent.getEvent()==VoipEvent.ACCOUNT_REGISTERED)    assertTrue(myVoip.makeCall("destination_test_extension"));	
 			else if (myEvent.getEvent()==VoipEvent.CALL_ACTIVE)   assertTrue(myVoip.hangupCall());	
@@ -136,11 +136,11 @@ public class VoipLibTestSuite extends ActivityUnitTestCase implements Handler.Ca
 
 		 private void notifyIncomingCall()
 		    {
-			    VoipEventBundle myStateBundle = new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_INCOMING, "Incoming call from:" + "test_caller", null);
+			    VoipEventBundle myEventBundle = new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_INCOMING, "Incoming call from:" + "test_caller", null);
 			    Handler testHandler = new Handler(VoipLibTestSuite.this);
-				Log.d(TAG, "Called notifyState for state:" + myStateBundle.getEvent().name());
+				Log.d(TAG, "Called notifyEvent for state:" + myEventBundle.getEvent().name());
 				
-		    	Message m = Message.obtain(testHandler,myStateBundle.getEventType().ordinal(), myStateBundle);
+		    	Message m = Message.obtain(testHandler,myEventBundle.getEventType().ordinal(), myEventBundle);
 				m.sendToTarget();
 		    }
 		 
@@ -150,13 +150,13 @@ public class VoipLibTestSuite extends ActivityUnitTestCase implements Handler.Ca
 			//Log.d(TAG, "Called handleMessage with info...");
 			VoipEventBundle myEvent = (VoipEventBundle) voipMessage.obj;
 			String infoMsg = myEvent.getEvent() + ":" + myEvent.getInfo();
-			Log.d(TAG, "handleMessage: Current State:" + infoMsg);
+			Log.d(TAG, "handleMessage: Current Event:" + infoMsg);
 			
-			assertEquals( myEvent.getEvent(), expectedEvents[curStateIndex]);
-			curStateIndex++;
+			assertEquals( myEvent.getEvent(), expectedEvents[curEventIndex]);
+			curEventIndex++;
 			     if (myEvent.getEvent()==VoipEvent.LIB_INITIALIZED)   { assertEquals(CallState.IDLE, myVoip.getCall().getState()); assertTrue(myVoip.registerAccount());	}
 			else if (myEvent.getEvent()==VoipEvent.ACCOUNT_REGISTERED)    this.notifyIncomingCall();	
-			else if (myEvent.getEvent()==VoipEvent.CALL_INCOMING) {  //assertEquals(CallState.INCOMING, myVoip.getCallState()); // non simulato...
+			else if (myEvent.getEvent()==VoipEvent.CALL_INCOMING) {  //assertEquals(CallState.INCOMING, myVoip.getCall().getState()); // non simulato...
 				                                                     assertTrue(myVoip.answerCall());
 																	}
 			else if (myEvent.getEvent()==VoipEvent.CALL_ACTIVE)   {assertEquals(CallState.ACTIVE, myVoip.getCall().getState());
@@ -185,8 +185,8 @@ public class VoipLibTestSuite extends ActivityUnitTestCase implements Handler.Ca
 	
 	
 	/**
-	 *  This test calls the initLib() method of the Voip Library. The testing callback method receives the updated Voip State. The test checks if
-	 *  the received Voip State matches with the expected state (VoipEvent.INITIALIZED). Then the test continues by calling the methods
+	 *  This test calls the initLib() method of the Voip Library. The testing callback method receives the updated Voip Event. The test checks if
+	 *  the received Voip Event matches with the expected state (VoipEvent.INITIALIZED). Then the test continues by calling the methods
 	 *  registerAccount(), unregisterAccount(), destroyLib(), checking any time for the expected received VoipEvent.
 	 */
 	public void testAccountRegistration()
@@ -197,8 +197,8 @@ public class VoipLibTestSuite extends ActivityUnitTestCase implements Handler.Ca
 	
 	
 	/**
-	 *  This test calls the initLib() method of the Voip Library. The testing callback method receives the updated Voip State. The test checks if
-	 *  the received Voip State matches with the expected state (VoipEvent.INITIALIZED). Then the test continues by calling the methods
+	 *  This test calls the initLib() method of the Voip Library. The testing callback method receives the updated Voip Event. The test checks if
+	 *  the received Voip Event matches with the expected state (VoipEvent.INITIALIZED). Then the test continues by calling the methods
 	 *  registerAccount(), makeCall(), hangupCall(), unregisterAccount(), destroyLib(), checking any time for the expected received VoipEvent.
 	 */
 	public void testMakeCall()
@@ -208,8 +208,8 @@ public class VoipLibTestSuite extends ActivityUnitTestCase implements Handler.Ca
 	}
 	
 	/**
-	 *  This test calls the initLib() method of the Voip Library. The testing callback method receives the updated Voip State. The test checks if
-	 *  the received Voip State matches with the expected state (VoipEvent.INITIALIZED). Then the test continues by calling the methods
+	 *  This test calls the initLib() method of the Voip Library. The testing callback method receives the updated Voip Event. The test checks if
+	 *  the received Voip Event matches with the expected state (VoipEvent.INITIALIZED). Then the test continues by calling the methods
 	 *  registerAccount(), answerCall() (after sending a simulated dialing notification), hangupCall(), unregisterAccount(), destroyLib(), checking any time for the expected received VoipEvent.
 	 */
 	public void testAnswerCall()

@@ -24,102 +24,80 @@ class VoipTestCase(unittest.TestCase):
      
         self.voip = VoipLib(backend)
         self.holding_event_already_triggered = False
-        self.curStateIndex = 0
+        self.curEventIndex = 0
     
         self.extension = "1234";  
-        self.params_spec =    {u'username': u'specialista', 
-                          u'turn_server': u'192.168.1.100', 
-                          u'sip_pwd': u'sha1$40fcf$4718177db1b6966f64d2d436f212', 
-                          u'sip_server': u'192.168.1.100', 
-                          u'sip_user': u'specialista', 
-                          u'turn_user': u'specialista', 
-                          u'turn_pwd': u'sha1$40fcf$4718177db1b6966f64d2d436f212',
-                                         #sha1$40fcf$4718177db1b6966f64d2d436f212 8da010a282b5
-                          u'log_level' :1 }
+       
         
-        self.params_eco =    {u'username': u'ecografista', 
-                              u'turn_server': u'192.168.1.100', 
-                              u'sip_pwd': u'sha1$fdcad$659da6841c6d8538b7a10ca12aae', 
-                                        #sha1$40fcf$4718177db1b6966f64d2d436f212
-                                        #sha1$fdcad$659da6841c6d8538b7a10ca12aae 3303f9a5a88b
-                                       
-                          u'sip_server': u'192.168.1.100', 
-                          u'sip_user': u'ecografista', 
-                          u'turn_user': u'ecografista', 
-                          u'turn_pwd': u'sha1$fdcad$659da6841c6d8538b7a10ca12aae',
-                          u'log_level' : 5}
-        
-        self.params_local =    {u'username': u'ste', 
+        self.params  =    {u'username': u'ste', 
                                 u'sip_user': u'ste', 
                                 u'sip_pwd': u'ste',    
                                 u'sip_server': u'192.168.1.100', 
                                 u'transport' : u'udp',
                                 u'log_level' : 1}
         
-        self.params = self.params_local
+      
         
+    def account_reg_notification_cb(self, voip_event, params):
+        print "Notification Event:%s - Params:%s" % (voip_event,params)
+        self.voipEvent = voip_event
         
-    
-    def account_reg_notification_cb(self, voip_state, params):
-        print "Notification State:%s - Params:%s" % (voip_state,params)
-        self.voipState = voip_state
-        
-        self.assertEqual(voip_state,  self.expectedStates[self.curStateIndex], "Wrong state: %s . Expected:%s"  % (self.voipState,  self.expectedStates[self.curStateIndex]) )
+        self.assertEqual(voip_event,  self.expectedEvents[self.curEventIndex], "Wrong event: %s . Expected:%s"  % (self.voipEvent,  self.expectedEvents[self.curEventIndex]) )
 
-        self.curStateIndex+=1
+        self.curEventIndex+=1
          
-        if (voip_state==VoipEvent.LIB_INITIALIZED):
+        if (voip_event==VoipEvent.LIB_INITIALIZED):
             self.assertTrue(self.voip.register_account());    
-        elif (voip_state==VoipEvent.ACCOUNT_REGISTERED):
+        elif (voip_event==VoipEvent.ACCOUNT_REGISTERED):
             self.assertTrue(self.voip.unregister_account());    
-        elif (voip_state==VoipEvent.ACCOUNT_UNREGISTERED):
+        elif (voip_event==VoipEvent.ACCOUNT_UNREGISTERED):
             self.assertTrue(self.voip.destroy_lib());
-        elif (voip_state==VoipEvent.LIB_DEINITIALIZED):
+        elif (voip_event==VoipEvent.LIB_DEINITIALIZED):
             print "Ok."
    
-    def make_call_notification_cb(self, voip_state, params):
-        print "Notification State:%s - Params:%s" % (voip_state,params)
-        self.voipState = voip_state
+    def make_call_notification_cb(self, voip_event, params):
+        print "Notification Event:%s - Params:%s" % (voip_event,params)
+        self.voipEvent = voip_event
         
-        self.assertEqual(voip_state,  self.expectedStates[self.curStateIndex], "Wrong state: %s . Expected:%s"  % (self.voipState,  self.expectedStates[self.curStateIndex]) )
+        self.assertEqual(voip_event,  self.expectedEvents[self.curEventIndex], "Wrong event: %s . Expected:%s"  % (self.voipEvent,  self.expectedEvents[self.curEventIndex]) )
 
-        self.curStateIndex+=1
+        self.curEventIndex+=1
          
-        if (voip_state==VoipEvent.LIB_INITIALIZED):
+        if (voip_event==VoipEvent.LIB_INITIALIZED):
             self.assertTrue(self.voip.register_account());    
-        elif (voip_state==VoipEvent.ACCOUNT_REGISTERED):
+        elif (voip_event==VoipEvent.ACCOUNT_REGISTERED):
             self.assertTrue(self.voip.make_call(self.extension)); 
-        elif (voip_state==VoipEvent.CALL_DIALING):
+        elif (voip_event==VoipEvent.CALL_DIALING):
             pass   
-        elif (voip_state==VoipEvent.CALL_ACTIVE):
+        elif (voip_event==VoipEvent.CALL_ACTIVE):
             time.sleep(2)
             self.assertTrue(self.voip.hold_call()); 
                 
-        elif (voip_state==VoipEvent.CALL_HOLDING):
+        elif (voip_event==VoipEvent.CALL_HOLDING):
             time.sleep(0.5)
             self.assertTrue(self.voip.unhold_call()); 
-        elif (voip_state==VoipEvent.CALL_UNHOLDING):
+        elif (voip_event==VoipEvent.CALL_UNHOLDING):
             self.assertTrue(self.voip.hangup_call()); 
-        elif (voip_state==VoipEvent.CALL_HANGUP):
+        elif (voip_event==VoipEvent.CALL_HANGUP):
             self.assertTrue(self.voip.unregister_account());  
-        elif (voip_state==VoipEvent.ACCOUNT_UNREGISTERED):
+        elif (voip_event==VoipEvent.ACCOUNT_UNREGISTERED):
             self.assertTrue(self.voip.destroy_lib());
-        elif (voip_state==VoipEvent.LIB_DEINITIALIZED):
+        elif (voip_event==VoipEvent.LIB_DEINITIALIZED):
             print "Ok."
         
     def setUp(self):
         print "Running test:%s" % self._testMethodName
-        self.curStateIndex = 0
-        self.voipState = VoipEvent.Null
+        self.curEventIndex = 0
+        self.voipEvent = VoipEvent.Null
        
     def tearDown(self):
         print "Test:%s completed." % self._testMethodName
         print "-----------------------------------------------\n"
       
         
-    def etest_account_registration(self):
+    def test_account_registration(self):
         
-        self.expectedStates = [
+        self.expectedEvents = [
                         VoipEvent.LIB_INITIALIZING, 
                         VoipEvent.LIB_INITIALIZED , 
                         VoipEvent.ACCOUNT_REGISTERING, 
@@ -134,13 +112,13 @@ class VoipTestCase(unittest.TestCase):
       
         self.assertTrue(result , "Error initializing the lib!")
         
-        while (self.curStateIndex<len(self.expectedStates)):
+        while (self.curEventIndex<len(self.expectedEvents)):
             time.sleep(0.5)
             
             
     def test_make_call(self):
         
-        self.expectedStates = [
+        self.expectedEvents = [
                         VoipEvent.LIB_INITIALIZING, 
                         VoipEvent.LIB_INITIALIZED , 
                         VoipEvent.ACCOUNT_REGISTERING, 
@@ -160,7 +138,7 @@ class VoipTestCase(unittest.TestCase):
       
         self.assertTrue(result , "Error initializing the lib!")
         
-        while (self.curStateIndex<len(self.expectedStates)):
+        while (self.curEventIndex<len(self.expectedEvents)):
             time.sleep(0.5)
 
     
@@ -181,7 +159,6 @@ def getRealVoipSuite():
 
  
 if __name__ == '__main__':
-    #pass
     myDummySuite = getDummyVoipSuite()
     #myRealSuite = getRealVoipSuite()
     runner = unittest.TextTestRunner()
