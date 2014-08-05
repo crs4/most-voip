@@ -20,7 +20,7 @@ VoipLib
 
 .. java:type:: public interface VoipLib
 
-   It is the core class of the Library|||, that allows you to:
+   It is the core class of the Library, that allows you to:
 
    ..
 
@@ -28,6 +28,7 @@ VoipLib
    * create an account and register it on a remote Sip Server
    * make a call
    * listen for incoming calls and answer
+   * get instances of IAccount, ICall and IServer objects
 
 Methods
 -------
