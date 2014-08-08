@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "Restarting asterisk"
-service asterisk restart
+#echo "Restarting asterisk with sudo"
+sudo service asterisk restart
 echo "opening console"
-asterisk -r
+sudo asterisk -r
