@@ -9,13 +9,16 @@ Getting Started
 The following tutorial shows you the main features of the library. 
 
 This tutorial assumes that you have installed and configured the `Asterisk Sip Server <http://www.asterisk.org/>`_
-on a reachable PC. For getting  instructions about the Asterisk configuration click 
-the Asterisk configuration, 
+on a reachable PC. (For getting  instructions about the Asterisk manual configuration click 
+on the Asterisk configuration link below)
+
+Alternatively, you can download a virtual machine containing a running Asterisk Server instance  already configured for running the proposed android examples, as explained `here <../../asterisk_docs/vm_asterisk_installation.html>`_ 
+
 
 .. toctree::
    :maxdepth: 3
    
-   asterisk_configuration
+   ../../asterisk_docs/asterisk_configuration
    voip_tutorial_1
    voip_tutorial_2
  

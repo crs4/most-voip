@@ -6,6 +6,8 @@ All examples describing the Most Voip Library features require, to work
 properly, a Sip Server running on a reachable PC. In this guide we show
 how to configure the `Asterisk Sip Server <http://www.asterisk.org/>`__
 
+Alternatively, if you prefer, you can install on your pc the Asterisk Virtual Machine (that contains an already configured Asterisk instance, as explained `here. <./vm_asterisk_installation.html>`_ 
+
 How to add Sip Users to Asterisk
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

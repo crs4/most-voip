@@ -21,9 +21,14 @@ the MOST-Voip sources. The available examples are the following:
 How to build and run the examples
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+First of all, download the Most-voip Asterisk VM,  containing a running Asterisk Server instance  already configured for running the proposed android examples, as explained `here <../../asterisk_docs/vm_asterisk_installation.html>`_ .
+
+Then, do the following:
+
  * Open your preferred IDE and import the Android Most Voip library project from the *android/src/AndroidVoipLib* folder (if you are using Eclipse, select *File/Import.../Android/Existing Android Code Into Workspace* to import the project)
  * Add to the project the dependence *android-support-v4.jar* . Please, visit `this site <https://developer.android.com/tools/support-library/setup.html>`_ to get detailed instructions about how to do it.
  * Import your preferred example project (e.g MostVoipActivityFirstExample) located in the *android/examples* folder in the same way you have imported the Android Most Voip library project
  * Set the AndroidVoipLib library project (previously added to the workspace) as a Project Reference of the example project imported at the previous step
  * Add to the example project the dependence 'android-support-v4.jar' , in the same way you have done for the AndroidVoipLib library project
  * Build the example project and deploy the generated .apk on your android emulator or mobile phone
+
