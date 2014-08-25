@@ -135,7 +135,7 @@ registration is accepted by the remote Sip server (with a
 VoipEvent.\_ACCOUNT\_REGISTERED state) or refused (with a
 VoipEvent.\_ACCOUNT\_REGISTRATION\_FAILED event)
 
-Step 3: Making a call to a arbitrary extension
+Step 3: Making a call to an arbitrary extension
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In case of successfull registration, you can dial an extension (or call
