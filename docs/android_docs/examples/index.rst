@@ -14,7 +14,8 @@ the MOST-Voip sources. The available examples are the following:
  * *MostVoipActivitySecondExample*: shows how to make a call to a remote Sip account
  * *MostVoipActivityAnswerCallExample*: shows how to answer a call incoming from a remote Sip account
  * *MostVoipActivityCallStateExample*: shows how to monitor the state of the remote Sip Server, of the current call and of the remote buddies
- * *MostVoipActivityRemoteConfigurationExample*: shows how to load the Sip Account Configuration from a remote Web Server
+ * *MostVoipActivityDemo*: show how to make a call to a remote buddy, answer a call, and monitor the state of the remote Sip Server, of the current call and of the remote buddies
+ * *MostVoipActivityRemoteConfigurationExample*: like the previous example, but it also shows how to load the Sip Account Configuration from a remote Web Server
 
 
 

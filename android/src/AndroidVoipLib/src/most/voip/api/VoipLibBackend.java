@@ -367,9 +367,13 @@ private final static String TAG = "VoipLib";
 			Log.d(TAG,"There is no call to hold");
 			return false;
 		}
+		
 		CallOpParam prm = new CallOpParam(true);
+		
+		// CallOpParam prm = new CallOpParam();
+		 //prm.setOptions(pjsua_call_flag.PJSUA_CALL_UPDATE_CONTACT.swigValue());
 		try {
-		Log.d(TAG,"Call Hold request...");
+		Log.d(TAG,"Call Hold request!!!");
 		currentCall.setHold(prm);
 		} catch (Exception e) {
 		e.printStackTrace();

@@ -93,10 +93,10 @@ class MostVoipGUI(QtGui.QMainWindow):
     def get_init_params(self):
         voip_params0 = {u'username': u'ste', 
                    u'sip_server_pwd': u'ste', 
-                   u'sip_server_address': u'192.168.1.100' ,  # u'192.168.1.100' , 
+                   u'sip_server_address': u'156.148.33.226' ,  # u'192.168.1.100' ,  156.148.132.243
                    u'sip_server_user': u'ste', 
                    u'sip_server_transport' :u'udp',
-                   #u'turn_server_address': u'192.168.1.79', 
+                   #u'turn_server_address': u'156.148.33.226', 
                    #u'turn_server_user': u'', 
                    #u'turn_server_pwd': u'',
                    u'log_level' : 1,
