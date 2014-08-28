@@ -899,7 +899,7 @@ class VoipBackend:
                 logger.debug("Setting turn server[%s]:%s" % (type(my_media_cfg.turn_server), (my_media_cfg.turn_server)))
                 
                 if self.params.has_key("turn_server_user"):
-                    my_media_cfg.turn_cred = pj.AuthCred("tecap.crs4.it", '%s' % str(self.params['turn_server_user']), '%s' % str(self.params['turn_server_pwd'])) #TODO check remote.most.it
+                    my_media_cfg.turn_cred = pj.AuthCred("most.crs4.it", '%s' % str(self.params['turn_server_user']), '%s' % str(self.params['turn_server_pwd'])) #TODO check remote.most.it
                     logger.debug("Setting turn user:%s:%s" % (self.params['turn_server_user'], self.params['turn_server_pwd']))
                     logger.debug("#%s#" % my_media_cfg.turn_cred)
                 else:

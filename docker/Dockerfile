@@ -18,6 +18,7 @@ RUN /tmp/restund_installer.sh
 
 COPY ./asterisk/sip.conf /etc/asterisk/
 COPY ./asterisk/extensions.conf /etc/asterisk/
+COPY ./asterisk/rtp.conf /etc/asterisk/
 COPY ./asterisk/modules.conf /etc/asterisk/
 RUN chmod 755 /etc/asterisk/*
 COPY ./asterisk/asterisk_service_runner.sh /usr/local/bin/

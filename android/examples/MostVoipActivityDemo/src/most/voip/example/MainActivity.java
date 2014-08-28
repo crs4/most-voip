@@ -412,6 +412,7 @@ public class MainActivity extends Activity {
 		params.put("sipServerIp",serverIp); 
 		params.put("userName","steand");
 		params.put("userPwd","steand");
+		params.put("turnServerIp", serverIp);
 		String onHoldSoundPath = Utils.getResourcePathByAssetCopy(this.getApplicationContext(), "", "test_hold.wav");
 		String onIncomingCallRingTonePath = Utils.getResourcePathByAssetCopy(this.getApplicationContext(), "", "ring_in_call.wav");
 		String onOutcomingCallRingTonePath = Utils.getResourcePathByAssetCopy(this.getApplicationContext(), "", "ring_out_call.wav");

@@ -1153,10 +1153,26 @@ private final static String TAG = "VoipLib";
 	        
 	        // Account Config
 	        acfg.setIdUri(id_uri); //"sip:ste@192.168.1.83");
-	        
 			acfg.getRegConfig().setRegistrarUri(registrar_uri); // "sip:192.168.1.83"
 			AuthCredInfo cred = new AuthCredInfo("digest", "*", user_name, 0, user_pwd);
 			acfg.getSipConfig().getAuthCreds().add( cred );
+			
+			// Account Nat Config (Turn Server)
+			if (configParams.containsKey("turnServerIp"))
+			{
+				acfg.getNatConfig().setIceEnabled(true);
+				acfg.getNatConfig().setTurnEnabled(true);
+				String turnServerPort = configParams.containsKey("turnServerPort") ? configParams.get("turnServerPort") : "3478" ;
+				acfg.getNatConfig().setTurnServer(configParams.get("turnServerIp")+ ":" + turnServerPort);
+				if (configParams.containsKey("turnServerUser") && configParams.containsKey("turnServerPwd")){
+					acfg.getNatConfig().setTurnUserName(configParams.get("turnServerUser"));
+					acfg.getNatConfig().setTurnPassword(configParams.get("turnServerPwd"));
+					acfg.getNatConfig().setTurnConnType(pj_turn_tp_type.PJ_TURN_TP_TCP);
+				}
+				
+				
+			}
+			
 			AccountPresConfig apc = new AccountPresConfig();
 			
 			apc.setPublishEnabled(true);
