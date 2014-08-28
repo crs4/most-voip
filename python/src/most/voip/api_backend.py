@@ -919,7 +919,7 @@ class VoipBackend:
             LOG_LEVEL =  self.params["log_level"]
 
             ua_cfg = pj.UAConfig()
-           
+         
             
             self.lib.init(log_cfg = pj.LogConfig(level=LOG_LEVEL, callback=log_cb),  media_cfg=my_media_cfg, ua_cfg=ua_cfg)
 

@@ -196,9 +196,9 @@ private final static String TAG = "VoipLib";
 		
 		// Create the account
 		
-		this.acc = new MyAccount(acfg);
+		this.acc = new MyAccount(this.acfg);
 		try {
-			acc.create(acfg);
+			this.acc.create(acfg);
 			// TODO: create IAccount interface to be passed as final parameter
 			this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_REGISTERING, "Account Registration request sent", this.acc));
 		} catch (Exception e) {
@@ -1143,7 +1143,7 @@ private final static String TAG = "VoipLib";
 			 
 			Log.d(TAG, "Reading account config:::");
 
-	        acfg = new AccountConfig();
+	        this.acfg = new AccountConfig();
 	        
 	        this.sipServerIp = configParams.get("sipServerIp"); 
 	        String registrar_uri = "sip:" +this.sipServerIp;
@@ -1152,33 +1152,45 @@ private final static String TAG = "VoipLib";
 	        String id_uri = "sip:" + user_name + "@" + this.sipServerIp;
 	        
 	        // Account Config
-	        acfg.setIdUri(id_uri); //"sip:ste@192.168.1.83");
-			acfg.getRegConfig().setRegistrarUri(registrar_uri); // "sip:192.168.1.83"
+	        this.acfg.setIdUri(id_uri); //"sip:ste@192.168.1.83");
+	        this.acfg.getRegConfig().setRegistrarUri(registrar_uri); // "sip:192.168.1.83"
 			AuthCredInfo cred = new AuthCredInfo("digest", "*", user_name, 0, user_pwd);
-			acfg.getSipConfig().getAuthCreds().add( cred );
+			this.acfg.getSipConfig().getAuthCreds().clear();
+			this.acfg.getSipConfig().getAuthCreds().add( cred );
 			
 			// Account Nat Config (Turn Server)
 			if (configParams.containsKey("turnServerIp"))
 			{
-				acfg.getNatConfig().setIceEnabled(true);
-				acfg.getNatConfig().setTurnEnabled(true);
+				
+				this.acfg.getNatConfig().setIceEnabled(true);
+				this.acfg.getNatConfig().setTurnEnabled(true);
 				String turnServerPort = configParams.containsKey("turnServerPort") ? configParams.get("turnServerPort") : "3478" ;
-				acfg.getNatConfig().setTurnServer(configParams.get("turnServerIp")+ ":" + turnServerPort);
+				Log.d(TAG,"Enabling turn server on " + configParams.get("turnServerIp")+ ":" + turnServerPort);
+				this.acfg.getNatConfig().setTurnServer(configParams.get("turnServerIp") + ":" + turnServerPort);
+				
+				
 				if (configParams.containsKey("turnServerUser") && configParams.containsKey("turnServerPwd")){
-					acfg.getNatConfig().setTurnUserName(configParams.get("turnServerUser"));
-					acfg.getNatConfig().setTurnPassword(configParams.get("turnServerPwd"));
-					acfg.getNatConfig().setTurnConnType(pj_turn_tp_type.PJ_TURN_TP_TCP);
+					this.acfg.getNatConfig().setTurnUserName(configParams.get("turnServerUser"));
+					this.acfg.getNatConfig().setTurnPassword(configParams.get("turnServerPwd"));
+					this.acfg.getNatConfig().setTurnConnType(pj_turn_tp_type.PJ_TURN_TP_TCP);
+				}
+				else
+				{
+					Log.d(TAG,"No Turn Username and password specified in configuration.\n");
 				}
 				
-				
+			}
+			else
+			{
+				Log.d(TAG,"No Turn Server specified in configuration.\n");
 			}
 			
 			AccountPresConfig apc = new AccountPresConfig();
 			
 			apc.setPublishEnabled(true);
 			
-			acfg.getRegConfig().setTimeoutSec(60); // minimal auto-registration used to check server connection!
-			acfg.setPresConfig(apc);
+			this.acfg.getRegConfig().setTimeoutSec(60); // minimal auto-registration used to check server connection!
+			this.acfg.setPresConfig(apc);
 			// Transport Config
 			if (configParams.containsKey("sipServerPort"))
 			
