@@ -895,6 +895,7 @@ class VoipBackend:
                 my_media_cfg.enable_ice = True
                 my_media_cfg.enable_turn = True
                 my_media_cfg.turn_server = "%s:3478" % str(self.turn_server)
+                my_media_cfg.turn_conn_type = pj.TURNConnType.TCP
                 
                 logger.debug("Setting turn server[%s]:%s" % (type(my_media_cfg.turn_server), (my_media_cfg.turn_server)))
                 
@@ -905,7 +906,7 @@ class VoipBackend:
                 else:
                     logger.debug("No turn server user specified...")
                 
-                my_media_cfg.turn_conn_type = pj.TURNConnType.TCP
+                
                 
             #my_media_cfg.snd_play_latency = 0
             #my_media_cfg.snd_rec_latency = 0

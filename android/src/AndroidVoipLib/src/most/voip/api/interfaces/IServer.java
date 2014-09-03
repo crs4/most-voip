@@ -29,4 +29,11 @@ public interface IServer {
    * @return the ip address of the remote sip server
    */
   String getIp();
+  
+  /**
+   * get the port of the remote sip server
+   * @return the ip address of the remote sip server
+   */
+  String getPort();
+
 }

@@ -71,6 +71,7 @@ public class MainActivity extends Activity {
 	private ArrayAdapter<String> arrayAdapter = null;
 	private ArrayAdapter<IBuddy> buddyArrayAdapter = null;
 	private String serverIp = null;
+	private String sipServerPort = "5062";
 	
 	private Button  butMakeCall = null;
 	private Button  butAnswerCall = null;
@@ -159,8 +160,12 @@ public class MainActivity extends Activity {
 																		ICall callInfo = (ICall) myEventBundle.getData();
 																		Log.d(TAG, "Hangup from uri:" + callInfo.getRemoteUri());
 																		IBuddy myBuddy = myVoip.getAccount().getBuddy(callInfo.getRemoteUri());
-																		Log.d(TAG, "Current Buddy Status Text:" + myBuddy.getStatusText());
-																		updateBuddyStateInfo(myBuddy);
+																		if (myBuddy!=null)
+																		{
+																			Log.d(TAG, "Current Buddy Status Text:" + myBuddy.getStatusText());
+																			updateBuddyStateInfo(myBuddy);
+																		}
+																		
 				                                                       // myVoip.unregisterAccount();
 				                                                   }
 			// Deinitialize the Voip Lib and release all allocated resources
@@ -236,7 +241,7 @@ public class MainActivity extends Activity {
     
     private String getBuddyUri(String extension)
 	{
-		return "sip:" + extension + "@" + this.serverIp ;
+		return "sip:" + extension + "@" + this.serverIp + ":" + this.sipServerPort ;
 	}
     
     private boolean isAtleastOneBuddyOnPhone()
@@ -410,9 +415,15 @@ public class MainActivity extends Activity {
     {
     	HashMap<String,String> params = new HashMap<String,String>();
 		params.put("sipServerIp",serverIp); 
+		params.put("sipServerPort",sipServerPort); // default 5060
 		params.put("userName","steand");
 		params.put("userPwd","steand");
-		params.put("turnServerIp", serverIp);
+		params.put("turnServerIp",  serverIp);
+		params.put("turnServerUser","ste");
+		params.put("turnServerPwd","ste");
+		
+		params.put("sipServerTransport", "tcp");
+		
 		String onHoldSoundPath = Utils.getResourcePathByAssetCopy(this.getApplicationContext(), "", "test_hold.wav");
 		String onIncomingCallRingTonePath = Utils.getResourcePathByAssetCopy(this.getApplicationContext(), "", "ring_in_call.wav");
 		String onOutcomingCallRingTonePath = Utils.getResourcePathByAssetCopy(this.getApplicationContext(), "", "ring_out_call.wav");
@@ -423,7 +434,7 @@ public class MainActivity extends Activity {
 		params.put("onOutcomingCallSound",onOutcomingCallRingTonePath); // onOutcomingCallRingTonePath
 		
 		Log.d(TAG,"OnHoldSoundPath:" + onHoldSoundPath);
-		//params.put("sipServerPort","5060"); // optional: default 5060
+		 
 		return params;
     	
     }

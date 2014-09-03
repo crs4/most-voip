@@ -87,6 +87,7 @@ private MyAccount acc = null;
 private AccountConfig acfg = null;
 private static MyCall currentCall = null;	
 private String sipServerIp = null;
+private String sipServerPort = null;
 private ServerState serverState = ServerState.DISCONNECTED;
 
 private Handler notificationHandler = null;
@@ -167,10 +168,22 @@ private final static String TAG = "VoipLib";
 			ep.libInit( epConfig );
 			
 			// Create SIP transport. Error handling sample is shown
-			Log.d(TAG,"transport create...");
-			ep.transportCreate(pjsip_transport_type_e.PJSIP_TRANSPORT_UDP, sipTpConfig);
+			
+			//self.params.has_key("sip_server_transport") and self.params["sip_server_transport"]=="udp"):
+			if (configParams.containsKey("sipServerTransport") && configParams.get("sipServerTransport").equalsIgnoreCase("tcp"))
+			{
+				ep.transportCreate(pjsip_transport_type_e.PJSIP_TRANSPORT_TCP, sipTpConfig);
+				Log.d(TAG,"transport create with TCP Transport");
+			}
+			else 
+			{
+				Log.d(TAG,"transport create with UDP Transport");
+				ep.transportCreate(pjsip_transport_type_e.PJSIP_TRANSPORT_UDP, sipTpConfig);
+			}
+				
+			
 			// Start the library
-			Log.d(TAG,"Lib startig....");
+			Log.d(TAG,"Lib starting....");
 			ep.libStart();
 			
 			// instance the player
@@ -227,12 +240,13 @@ private final static String TAG = "VoipLib";
 	}
 
 	/**
-	 * Get a sip uri in the format sip:<extension>@sip_server_ip 
+	 * Get a sip uri in the format sip:<extension>@sip_server_ip[:sip_server_port]
 	 * @param extension the extension of the sip uri
 	 * @return the sip uri
 	 */
 	public String getSipUriFromExtension(String extension) {
-		return "sip:" + extension + "@" + this.sipServerIp;
+		String transportInfo = configParams.containsKey("sipServerTransport") && configParams.get("sipServerTransport").equalsIgnoreCase("tcp") ? ";transport=tcp" : "";
+		return "sip:" + extension + "@" + this.sipServerIp + ":" + this.sipServerPort + transportInfo; // [TO DO]
 	}
 	
 	@Override
@@ -254,7 +268,9 @@ private final static String TAG = "VoipLib";
 		opt.setVideoCount(0);
 
 		try {
-			call.makeCall(this.getSipUriFromExtension(extension), prm);
+			String uri = this.getSipUriFromExtension(extension);
+			Log.d(TAG,"making call to:" + uri);
+			call.makeCall(uri, prm);
 		} catch (Exception e) {
 			VoipLibBackend.currentCall = null;
 			Log.e(TAG, "Exception in makeCall: " + e.getMessage());
@@ -838,6 +854,8 @@ private final static String TAG = "VoipLib";
 				}
 				BuddyConfig buddyConfig = new BuddyConfig();
 				//dest_uri = "sip:%s@%s;transport=tcp" % (str(dest_extension), self.sip_server)
+				if (configParams.containsKey("sipServerTransport") && configParams.get("sipServerTransport").equalsIgnoreCase("tcp"))
+					buddyUri += ";transport=tcp";
 				
 				buddyConfig.setUri(buddyUri);
 				buddyConfig.setSubscribe(true);
@@ -855,7 +873,8 @@ private final static String TAG = "VoipLib";
 		public IBuddy getBuddy(String buddyUri) {
 			
 				IBuddy b =  this.buddyList.get(buddyUri);
-				b.refreshStatus();
+				if (b!=null)
+				  {b.refreshStatus();}
 				return b;
 		}
 
@@ -1146,14 +1165,23 @@ private final static String TAG = "VoipLib";
 	        this.acfg = new AccountConfig();
 	        
 	        this.sipServerIp = configParams.get("sipServerIp"); 
-	        String registrar_uri = "sip:" +this.sipServerIp;
+	        this.sipServerPort = configParams.containsKey("sipServerPort") ? this.sipServerPort = configParams.get("sipServerPort") : "5060";
+	        
+	        // Transport Config
+	     	sipTpConfig.setPort(Integer.valueOf(this.sipServerPort));
+	     			 
 	        String user_name = configParams.get("userName");
 	        String user_pwd = configParams.get("userPwd");
+	        String account_transport_info = (configParams.containsKey("sipServerTransport") && configParams.get("sipServerTransport").equalsIgnoreCase("tcp")) ? 
+	        								";transport=tcp" : "";
 	        String id_uri = "sip:" + user_name + "@" + this.sipServerIp;
+	        String registrar_uri = "sip:" +this.sipServerIp + ":" + this.sipServerPort + account_transport_info;
 	        
 	        // Account Config
 	        this.acfg.setIdUri(id_uri); //"sip:ste@192.168.1.83");
+	        Log.d(TAG,"Setting registrar uri to:  " + registrar_uri);
 	        this.acfg.getRegConfig().setRegistrarUri(registrar_uri); // "sip:192.168.1.83"
+	        
 			AuthCredInfo cred = new AuthCredInfo("digest", "*", user_name, 0, user_pwd);
 			this.acfg.getSipConfig().getAuthCreds().clear();
 			this.acfg.getSipConfig().getAuthCreds().add( cred );
@@ -1163,16 +1191,27 @@ private final static String TAG = "VoipLib";
 			{
 				
 				this.acfg.getNatConfig().setIceEnabled(true);
+				this.acfg.getNatConfig().setIceNoRtcp(true); // test
 				this.acfg.getNatConfig().setTurnEnabled(true);
+				
 				String turnServerPort = configParams.containsKey("turnServerPort") ? configParams.get("turnServerPort") : "3478" ;
 				Log.d(TAG,"Enabling turn server on " + configParams.get("turnServerIp")+ ":" + turnServerPort);
 				this.acfg.getNatConfig().setTurnServer(configParams.get("turnServerIp") + ":" + turnServerPort);
+				this.acfg.getNatConfig().setTurnConnType(pj_turn_tp_type.PJ_TURN_TP_TCP);
 				
-				
+				//this.acfg.getNatConfig().setMediaStunUse(pjsua_stun_use.PJSUA_STUN_USE_DEFAULT); // test
+				//this.acfg.getMediaConfig().setTransportConfig(sipTpConfig); // test
+				//this.acfg.getMediaConfig().setStreamKaEnabled(false); // test
+				//this.acfg.getSipConfig().setAuthInitialEmpty(false); // test
+				//this.acfg.getMediaConfig().setSrtpUse(pjmedia_srtp_use.PJMEDIA_SRTP_DISABLED); // test
+	
 				if (configParams.containsKey("turnServerUser") && configParams.containsKey("turnServerPwd")){
 					this.acfg.getNatConfig().setTurnUserName(configParams.get("turnServerUser"));
 					this.acfg.getNatConfig().setTurnPassword(configParams.get("turnServerPwd"));
-					this.acfg.getNatConfig().setTurnConnType(pj_turn_tp_type.PJ_TURN_TP_TCP);
+					this.acfg.getNatConfig().setTurnPasswordType(0); // 0 = plain pwd, 1 = digest
+					 
+					AuthCredInfo cred2 = new AuthCredInfo("digest", "most.crs4.it",configParams.get("turnServerUser"), 0, configParams.get("turnServerPwd"));
+					this.acfg.getSipConfig().getAuthCreds().add( cred2 ); // this does not work ...
 				}
 				else
 				{
@@ -1188,16 +1227,14 @@ private final static String TAG = "VoipLib";
 			AccountPresConfig apc = new AccountPresConfig();
 			
 			apc.setPublishEnabled(true);
-			
+		 
 			this.acfg.getRegConfig().setTimeoutSec(60); // minimal auto-registration used to check server connection!
 			this.acfg.setPresConfig(apc);
-			// Transport Config
-			if (configParams.containsKey("sipServerPort"))
+             
+		
 			
-				sipTpConfig.setPort(Integer.valueOf(configParams.get("sipServerPort")));
-			else
-				sipTpConfig.setPort(5060);
-		 
+			
+			
 		} catch (Exception e) {
 			System.out.println(e);
 			Log.e(TAG,"Error loading configuration:" + e.getMessage());
@@ -1310,6 +1347,11 @@ private final static String TAG = "VoipLib";
 			@Override
 			public String getIp() {
 			   return sipServerIp;
+			}
+
+			@Override
+			public String getPort() {
+				return sipServerPort;
 			}};
 	}
 
