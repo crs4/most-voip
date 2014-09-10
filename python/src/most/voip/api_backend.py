@@ -586,8 +586,9 @@ class VoipBackend:
             
             if current_call:
                 callState = CallState.ACTIVE
-                logger.debug( 'Chiamata occupata')
-                call.answer(486, "Busy")
+                logger.debug( 'Busy call... Refusing that')
+                #call.answer(486, "Busy") # not used because app craches!
+                call.hangup()
                 return
             #ru = str(call.info().remote_uri)
             #remote_contact = ru[ru.index('"')+1:ru.rindex('"')]
