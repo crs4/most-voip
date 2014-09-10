@@ -71,10 +71,11 @@ class MostVoipGUI(QtGui.QMainWindow):
         
 
     def _add_buddies(self):
-        buddy_extensions = ["steand", "ste2"]
+        buddy_extensions = ["ste", "steand", "ste2"]
         logger.debug("Adding buddies...")
         for ext in buddy_extensions:
-            self.myVoip.get_account().add_buddy(ext)
+            if ext!=self.voip_params.get("sip_server_user"):
+                self.myVoip.get_account().add_buddy(ext)
         
     def _update_buddy_list(self):
         buddies = self.myVoip.get_account().get_buddies()
@@ -110,9 +111,14 @@ class MostVoipGUI(QtGui.QMainWindow):
 
 
     def _update_status_labels(self):
+        self._update_sip_username()
         self._update_server_state()
         self._update_call_state()
         self._update_account_state()
+        
+    def _update_sip_username(self):
+         
+        self.labSipUsernameInfo.setText(self.voip_params.get("sip_server_user","N.A"))
         
     def _update_server_state(self):
         server_state = self.myVoip.get_server().get_state()
@@ -237,6 +243,14 @@ class MostVoipGUI(QtGui.QMainWindow):
         return vBox
     
     def _buildStatesPanel(self,cWidget):
+        
+        hBox0 = QtGui.QHBoxLayout()
+        hBox0.setSpacing(5)
+        labSipUsername = QtGui.QLabel('Sip Username', cWidget)
+        self.labSipUsernameInfo =  QtGui.QLabel('N.A', cWidget)
+        hBox0.addWidget(labSipUsername)
+        hBox0.addWidget(self.labSipUsernameInfo)
+        
         hBox1 = QtGui.QHBoxLayout()
         hBox1.setSpacing(5)
         labServerState = QtGui.QLabel('Server State', cWidget)
@@ -262,6 +276,7 @@ class MostVoipGUI(QtGui.QMainWindow):
         vBox = QtGui.QVBoxLayout()
         vBox.setSpacing(5)
         
+        vBox.addLayout(hBox0)
         vBox.addLayout(hBox1)
         vBox.addLayout(hBox2)
         vBox.addLayout(hBox3)
