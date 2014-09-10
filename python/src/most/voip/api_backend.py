@@ -394,6 +394,7 @@ class VoipBackend:
                 #logger.debug('Change internal state on CALLING')
                 #self.sip_controller.change_state(SipControllerState.Calling, callState)
                 callState = CallState.ACTIVE
+                _stop_call_sound()
                 self.notification_cb(VoipEventType.CALL_EVENT,VoipEvent.CALL_ACTIVE, {'success': True, 'call_state' :callState})
                 
 
@@ -447,7 +448,7 @@ class VoipBackend:
                 #self.messenger.update_call_button_label("Call")
                 
                 callState = CallState.IDLE
-                
+                _stop_call_sound()
 
 
 
@@ -643,9 +644,9 @@ class VoipBackend:
         out_device = -2 # config.getint('VoipBackend','out_device')
         sel_in = -1 # config.getint('VoipBackend','in_sel_device')
         sel_out = -1 # config.getint('VoipBackend','out_sel_device')
-
+        logger.debug( "Available devices:%s" % str(self.lib.enum_snd_dev()))
         self.set_audio_devices(in_device,out_device,sel_in,sel_out)
-      
+        
 
     def get_inout_devices(self):
         devices = self.lib.enum_snd_dev()
@@ -1085,8 +1086,9 @@ class VoipBackend:
             logger.debug( "CURRENT CALL PRIMA:%s" % current_call)
 
 
-            callState = CallState.DIALING
+            
             current_call = acc.make_call(uri, cb=VoipBackend.MyCallCallback(self.notification_cb)) # todo inserire Listener
+            #callState = CallState.DIALING
             _start_call_sound_out()
             #self.messenger.update_call_button_label("Hangup")
             
@@ -1104,11 +1106,13 @@ class VoipBackend:
         global current_call
 
         try:
+            _stop_call_sound()
+            
             if not current_call:
                 logger.debug( 'There is no call TO ANSWER!')
+                
                 return
             elif current_call.info().state!=pj.CallState.CONFIRMED:
-                _stop_call_sound()
                 current_call.answer(200)
                 logger.debug( 'Answer')
             else:
@@ -1179,6 +1183,7 @@ class VoipBackend:
     def get_call(self):
         global callState
         if (not current_call):
+            callState = CallState.IDLE # bug fixing...?
             return VoipBackend.SipCall("","", callState)
         else:
             return VoipBackend.SipCall(current_call.info().uri,current_call.info().remote_uri, callState)

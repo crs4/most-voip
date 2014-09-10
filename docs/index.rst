@@ -44,12 +44,6 @@ If you intend to use Most-Voip on the Android platform, you also have to build P
 
 Get the latest release from GitHub: `https://github.com/crs4/most-voip <https://github.com/crs4/most-voip>`_
 
-Launch the following command:
-
-.. code-block:: bash
-
-  python setup.py install
-
 
 Table Of Contents
 =================

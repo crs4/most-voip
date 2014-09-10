@@ -1191,8 +1191,9 @@ private final static String TAG = "VoipLib";
 			{
 				
 				this.acfg.getNatConfig().setIceEnabled(true);
-				this.acfg.getNatConfig().setIceNoRtcp(true); // test
+				this.acfg.getNatConfig().setIceNoRtcp(true);  
 				this.acfg.getNatConfig().setTurnEnabled(true);
+				//this.acfg.getMediaConfig().setStreamKaEnabled(true); // test
 				
 				String turnServerPort = configParams.containsKey("turnServerPort") ? configParams.get("turnServerPort") : "3478" ;
 				Log.d(TAG,"Enabling turn server on " + configParams.get("turnServerIp")+ ":" + turnServerPort);

@@ -91,14 +91,14 @@ class MostVoipGUI(QtGui.QMainWindow):
     
         
     def get_init_params(self):
-        voip_params0 = {u'username': u'ste', 
-                   u'sip_server_pwd': u'ste', 
+        voip_params0 = {u'username': u'steand', 
+                   u'sip_server_pwd': u'steand', 
                    u'sip_server_address': u'156.148.33.226:5062' ,  # u'192.168.1.100' ,  156.148.132.243
-                   u'sip_server_user': u'ste', 
+                   u'sip_server_user': u'steand', 
                    u'sip_server_transport' :u'tcp',
                    u'turn_server_address': u'156.148.33.226', 
-                   u'turn_server_user': u'ste', 
-                   u'turn_server_pwd': u'ste',
+                   u'turn_server_user': u'steand',
+                   u'turn_server_pwd': u'steand',
                    u'log_level' : 1,
                    u'debug' : True }   
         return voip_params0
@@ -152,18 +152,21 @@ class MostVoipGUI(QtGui.QMainWindow):
                 self.butMakeCall.setEnabled(True)
                 self.butAnswer.setEnabled(False)
                 self.butHangup.setEnabled(False)
+                self.butHold.setText("Hold")
                 self.butHold.setEnabled(False)
                 
             elif myCallState==CallState.INCOMING:
                 self.butMakeCall.setEnabled(False)
                 self.butAnswer.setEnabled(True)
                 self.butHangup.setEnabled(True)
+                self.butHold.setText("Hold")
                 self.butHold.setEnabled(False)
                 
             elif myCallState==CallState.DIALING:
                 self.butMakeCall.setEnabled(False)
                 self.butAnswer.setEnabled(False)
                 self.butHangup.setEnabled(True)
+                self.butHold.setText("Hold")
                 self.butHold.setEnabled(False)
                 
             elif myCallState==CallState.HOLDING:
