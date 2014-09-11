@@ -1103,6 +1103,7 @@ class VoipBackend:
         except pj.Error, e:
             logger.exception( ">>>> Exception in make_call: %s" % str(e))
             return False
+        
         return False
 
     def answer_call(self):
@@ -1120,8 +1121,13 @@ class VoipBackend:
                 logger.debug( 'Answer')
             else:
                 logger.debug( 'Call On line: answer call ignored')
+                
         except Exception, ex:
             logger.exception( 'Exception in answer call:%s' % ex)
+            
+        except pj.Error,er:
+            logger.exception("Pjsip Error in answer call:%s" % er) 
+            return
             
     
     
@@ -1148,6 +1154,11 @@ class VoipBackend:
         except Exception,ex:
             logger.exception("Exception in hangup call:%s" % ex) 
             return False
+        
+        except pj.Error,er:
+            logger.exception("Pjsip Error in hangup call:%s" % er) 
+            return False
+
 
     def hold_call(self):
         try:
@@ -1165,6 +1176,9 @@ class VoipBackend:
         except Exception,ex:
             logger.exception("Exception in hold_call:%s" % ex)
             return False
+        except pj.Error,er:
+            logger.exception("Pjsip Error in hold call:%s" % er) 
+            return False
 
     def unhold_call(self):
         try:
@@ -1180,6 +1194,9 @@ class VoipBackend:
                 return False
         except Exception,ex:
             logger.exception( "Exception in unhold_call:%s" % ex)
+            return False
+        except pj.Error,er:
+            logger.exception("Pjsip Error in unhold call:%s" % er) 
             return False
 
 
