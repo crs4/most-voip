@@ -405,7 +405,8 @@ class VoipBackend:
         # Notification when call's media state has changed.
         def on_media_state(self):
             
-            global callState, input_volume, output_volume
+            global callState, input_volume, output_volume, current_call
+            
             logger.debug( 'DENTRO ON MEDIA STATE:%s' % self.call.info().media_state)
             if self.call.info().media_state == pj.MediaState.ACTIVE:
                 logger.debug( "Stopping ring tone....")
@@ -449,6 +450,7 @@ class VoipBackend:
                 
                 callState = CallState.IDLE
                 _stop_call_sound()
+                current_call = None
 
 
 
@@ -1184,7 +1186,7 @@ class VoipBackend:
     def get_call(self):
         global callState
         if (not current_call):
-            callState = CallState.IDLE # bug fixing...?
+            #callState = CallState.IDLE # bug fixing...?
             return VoipBackend.SipCall("","", callState)
         else:
             return VoipBackend.SipCall(current_call.info().uri,current_call.info().remote_uri, callState)
