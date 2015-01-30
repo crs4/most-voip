@@ -41,6 +41,7 @@ public enum VoipEvent {
   
   CALL_DIALING,   // outcoming call is ringing
   CALL_INCOMING,  // incoming call is ringing
+  CALL_READY, // the current call is ready to become active or rejected,
   CALL_INCOMING_REJECTED, // not triggered yet
   CALL_ACTIVE,
   CALL_HOLDING, // local user puts on hold the call

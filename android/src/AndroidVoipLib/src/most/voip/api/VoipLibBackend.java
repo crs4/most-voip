@@ -593,6 +593,14 @@ private final static String TAG = "VoipLib";
 				    playOutcomingRingtoneSound();
 					notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_DIALING, "Dialing call to:" + ci.getRemoteUri(), getICallInfo(ci)));
 				}
+				
+				
+				// added -> 30/01/2015 
+				else if (ci.getState()==pjsip_inv_state.PJSIP_INV_STATE_EARLY)
+				{
+					notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_READY, "Current call ready:" + ci.getRemoteUri(), getICallInfo(ci)));
+				}
+				
 				else if (ci.getState()==pjsip_inv_state.PJSIP_INV_STATE_CONFIRMED) {
 					//currentCallState = CallState.ACTIVE;
 					notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_ACTIVE, "Call active with:" + ci.getRemoteUri(), getICallInfo(ci)));
