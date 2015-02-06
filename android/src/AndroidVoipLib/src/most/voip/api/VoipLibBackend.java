@@ -1178,8 +1178,8 @@ private final static String TAG = "VoipLib";
 	        // Transport Config
 	     	sipTpConfig.setPort(Integer.valueOf(this.sipServerPort));
 	     			 
-	        String user_name = configParams.get("userName");
-	        String user_pwd = configParams.get("userPwd");
+	        String user_name = configParams.containsKey("sipServerUser") ? configParams.get("sipServerUser") : configParams.get("userName");
+	        String user_pwd = configParams.containsKey("sipServerPwd") ? configParams.get("sipServerPwd") : configParams.get("userPwd");
 	        String account_transport_info = (configParams.containsKey("sipServerTransport") && configParams.get("sipServerTransport").equalsIgnoreCase("tcp")) ? 
 	        								";transport=tcp" : "";
 	        String id_uri = "sip:" + user_name + "@" + this.sipServerIp;
@@ -1218,9 +1218,10 @@ private final static String TAG = "VoipLib";
 					this.acfg.getNatConfig().setTurnUserName(configParams.get("turnServerUser"));
 					this.acfg.getNatConfig().setTurnPassword(configParams.get("turnServerPwd"));
 					this.acfg.getNatConfig().setTurnPasswordType(0); // 0 = plain pwd, 1 = digest
-					 
-					AuthCredInfo cred2 = new AuthCredInfo("digest", "most.crs4.it",configParams.get("turnServerUser"), 0, configParams.get("turnServerPwd"));
-					this.acfg.getSipConfig().getAuthCreds().add( cred2 ); // this does not work ...
+					
+					String authRealm = configParams.containsKey("turnAuthRealm") ? configParams.get("turnAuthRealm") : "most.crs4.it";
+					AuthCredInfo cred2 = new AuthCredInfo("digest", authRealm ,configParams.get("turnServerUser"), 0, configParams.get("turnServerPwd"));
+					this.acfg.getSipConfig().getAuthCreds().add( cred2 );
 				}
 				else
 				{

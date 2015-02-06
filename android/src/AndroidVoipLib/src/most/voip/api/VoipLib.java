@@ -35,12 +35,18 @@ public interface VoipLib {
 	/**
 	 * Initialize the Voip Lib
 	 * @param context application context of the activity that uses this library
-	 * @param configParams All needed configuration string parameters. All the supported parameters are the following:
+	 * @param configParams All needed configuration string parameters. All the supported parameters are the following (turn server params are needed only if you intend to use a turn server):
 	 * 	<ul>
-	 * 		<li>sipServerIp: the ip address of the Sip Server (e.g Asterisk)</li>
-	 * 		<li>userName: the account name of the peer to register to the sip server </li>
-	 * 		<li>userPwd: the account password of the peer to register to the sip server </li>
-	 * 		<li>sipServerPort: the port of the sip server (default:"5060") </li>
+	 * 	   <li>sipServerIp: the ip address of the Sip Server (e.g Asterisk)</li>
+	 *     <li>sipServerPort: the port of the Sip Server (default: 5060)</li>
+	 *     <li>sipServerTransport: the sip transport: it can be "udp" or "tcp" (default: "udp")</li>
+	 * 	   <li>sipServerUser: the account name of the peer to register to the sip server </li>
+	 * 	   <li>sipServerPwd: the account password of the peer to register to the sip server </li>
+	 * 	   <li>turnServerIp: the ip address of the Turn Server</li>
+	 *     <li>turnServerPort: the port of the Turn Server (default: 3478)</li>    
+	 *     <li>turnServerUser: the username used for TurnServer Authentication</li>
+	 * 	   <li>turnServerPwd: the password of the user used for TurnServer Authentication</li>
+	 * 	   <li>turnAuthRealm:  the realm for the authentication (default:"most.crs4.it") </li>    
 	 * 	</ul>
 	 * 
 	 * @param notificationHandler the handller that will receive all sip notifications 
