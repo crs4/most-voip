@@ -474,6 +474,29 @@ private final static String TAG = "VoipLib";
 				Log.d(TAG,"Account deleted");
 			}
 			
+			// delete audio manager
+			
+			Log.d(TAG,"Deleting audio players...");
+			 if (playerOnHold!=null)
+			 {
+				 playerOnHold.delete();
+			     playerOnHold = null;
+			 }
+			 
+			 if (playerIncomingCall!=null)
+			 {
+				 playerIncomingCall.delete();
+			     playerIncomingCall = null;
+			 }
+			 
+			 if (playerOutcomingCall!=null)
+			 {
+				 playerOutcomingCall.delete();
+			     playerOutcomingCall = null;
+			 }
+			 
+			 Log.d(TAG,"Audio players deleted");
+			 
 			/* Try force GC to avoid late destroy of PJ objects as they should be
 			 * deleted before lib is destroyed.
 			 */
@@ -494,9 +517,33 @@ private final static String TAG = "VoipLib";
 			/* Force delete Endpoint here, to avoid deletion from a non-
 			 * registered thread (by GC?). 
 			 */
-			ep.delete();
+			
+			//Log.d(TAG, "Deleting endpoint DISABLED FOR DEBUGGING");
+		  	ep.delete();
+		  	
+			Log.d(TAG, "Endpoint deleted");
 			ep = null;
+			Log.d(TAG, "Endpoint set to null");
 			Log.d(TAG,"Lib destroyed");
+			notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZED, "Voip Lib destroyed", configParams));
+			
+//			Log.d(TAG, "Deleting endpoint after 10 seconds...");
+//			final Handler handler = new Handler();
+//			handler.postDelayed(new Runnable() {
+//			  @Override
+//			  public void run() {
+//				  Log.d(TAG, "Deleting endpoint NOW");
+//				  	ep.delete();
+//					Log.d(TAG, "Endpoint deleted");
+//					ep = null;
+//					Log.d(TAG, "Endpoint set to null");
+//					Log.d(TAG,"Lib destroyed");
+//					notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZED, "Voip Lib destroyed", configParams));
+//					}
+//			},10000);
+			
+			
+			
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -506,7 +553,7 @@ private final static String TAG = "VoipLib";
 			return false;
 		}
 		 
-		this.notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZED, "Voip Lib destroyed", this.configParams));
+		
 		return true;
 		
 	}
@@ -562,8 +609,7 @@ private final static String TAG = "VoipLib";
 			}
 
 			@Override
-			public CallState getState() {
-				 
+			public CallState getState() {		 
 				return currentCallState;
 			}
 			
