@@ -1224,8 +1224,8 @@ private final static String TAG = "VoipLib";
 	        // Transport Config
 	     	sipTpConfig.setPort(Integer.valueOf(this.sipServerPort));
 	     			 
-	        String user_name = configParams.containsKey("sipServerUser") ? configParams.get("sipServerUser") : configParams.get("userName");
-	        String user_pwd = configParams.containsKey("sipServerPwd") ? configParams.get("sipServerPwd") : configParams.get("userPwd");
+	        String user_name = configParams.containsKey("sipUserName") ? configParams.get("sipUserName") : configParams.get("userName");
+	        String user_pwd = configParams.containsKey("sipUserPwd") ? configParams.get("sipUserPwd") : configParams.get("userPwd");
 	        String account_transport_info = (configParams.containsKey("sipServerTransport") && configParams.get("sipServerTransport").equalsIgnoreCase("tcp")) ? 
 	        								";transport=tcp" : "";
 	        String id_uri = "sip:" + user_name + "@" + this.sipServerIp;
@@ -1287,10 +1287,6 @@ private final static String TAG = "VoipLib";
 			this.acfg.getRegConfig().setTimeoutSec(60); // minimal auto-registration used to check server connection!
 			this.acfg.setPresConfig(apc);
              
-		
-			
-			
-			
 		} catch (Exception e) {
 			System.out.println(e);
 			Log.e(TAG,"Error loading configuration:" + e.getMessage());

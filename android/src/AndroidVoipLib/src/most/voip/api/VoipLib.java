@@ -40,13 +40,17 @@ public interface VoipLib {
 	 * 	   <li>sipServerIp: the ip address of the Sip Server (e.g Asterisk)</li>
 	 *     <li>sipServerPort: the port of the Sip Server (default: 5060)</li>
 	 *     <li>sipServerTransport: the sip transport: it can be "udp" or "tcp" (default: "udp")</li>
-	 * 	   <li>sipServerUser: the account name of the peer to register to the sip server </li>
-	 * 	   <li>sipServerPwd: the account password of the peer to register to the sip server </li>
+	 * 	   <li>sipUserName: the account name of the peer to register to the sip server </li>
+	 * 	   <li>sipUserPwd: the account password of the peer to register to the sip server </li>
 	 * 	   <li>turnServerIp: the ip address of the Turn Server</li>
 	 *     <li>turnServerPort: the port of the Turn Server (default: 3478)</li>    
 	 *     <li>turnServerUser: the username used for TurnServer Authentication</li>
 	 * 	   <li>turnServerPwd: the password of the user used for TurnServer Authentication</li>
-	 * 	   <li>turnAuthRealm:  the realm for the authentication (default:"most.crs4.it") </li>    
+	 * 	   <li>turnAuthRealm: the realm for the authentication (default:"most.crs4.it") </li>    
+	 *     <li> onHoldSound: the path of the sound file played when the call is put on hold status </li>   
+	 *     <li> onIncomingCallSound: the path of the sound file played for outcoming calls </li> 
+	 *     <li> onOutcomingCallSound: the path of the sound file played for outcoming calls </li> 
+	 * 
 	 * 	</ul>
 	 * 
 	 * @param notificationHandler the handller that will receive all sip notifications 
@@ -67,7 +71,7 @@ public interface VoipLib {
 	public boolean registerAccount();
 	
 	/**
-	 * Unregister the currently registered account [Not Implemented yet]
+	 * Unregister the currently registered account
 	 * @return <code>true</code> if the unregistration request was sent to the sip server, <code>false</code> otherwise
 	 */
 	public boolean unregisterAccount();

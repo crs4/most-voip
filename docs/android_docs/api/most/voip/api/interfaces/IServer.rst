@@ -22,6 +22,16 @@ getIp
 
    :return: the ip address of the remote sip server
 
+getPort
+^^^^^^^
+
+.. java:method::  String getPort()
+   :outertype: IServer
+
+   get the port of the remote sip server
+
+   :return: the ip address of the remote sip server
+
 getState
 ^^^^^^^^
 
