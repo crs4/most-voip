@@ -149,7 +149,7 @@ public class MainActivity extends Activity {
 																			}	
 			else if (myEventBundle.getEvent()==VoipEvent.ACCOUNT_REGISTERED)    {
 																	this.app.addInfoLine("Ready to accept calls (adding buddy...)");
-			 													    //add a buddy so that we can receive presence notifications from it
+			 													    //subscribe buddies so that we can receive presence notifications from them
 			                                                        subscribeBuddies();
 			                                                      }														
 			else if (myEventBundle.getEvent()==VoipEvent.CALL_INCOMING)  handleIncomingCall();

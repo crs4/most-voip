@@ -10,8 +10,20 @@
 package most.voip.api.enums;
 
 public enum VoipEventType {
-     LIB_EVENT,  // voip library general states: (de) init, server disconnection
-	 ACCOUNT_EVENT, // account (un)registration
-	 CALL_EVENT, // incoming, dialing, active, (un)holding, hanging up CALL
-	 BUDDY_EVENT // buddy presence notification: (un)subsscribing, (dis)connection,  remote (un)holding
+     /** 
+      * Voip Library Events (Voip (de)initialization)
+      */
+     LIB_EVENT,   
+      /** 
+      * Voip Account Events ((un)registration)
+      */
+	ACCOUNT_EVENT,  
+        /** 
+      	* Voip Call Events (incoming, dialing, active, (un)holding, hanging up)
+      	*/
+	CALL_EVENT, 
+  	/** 
+      	 * Voip Buddy Events (buddy presence notification: (un)subsscribing, (dis)connection,  remote (un)holding)
+      	 */
+	 BUDDY_EVENT
 }

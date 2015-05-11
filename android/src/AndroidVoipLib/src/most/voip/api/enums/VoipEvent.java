@@ -14,39 +14,126 @@ package most.voip.api.enums;
  * 
  */
 public enum VoipEvent {
-	
-  LIB_INITIALIZING,   
+  /**
+   * The library is under initilization process
+   */
+  LIB_INITIALIZING,  
+  /**
+   * The lib was successully initialied
+   */
   LIB_INITIALIZED,
+  /**
+   * The library initialization process failed for some reason (e.g authentication failed)
+   */
   LIB_INITIALIZATION_FAILED,
+  /**
+   * The library is under deinitilization process
+   */
   LIB_DEINITIALIZING,
+  /**
+   * The lib was successully deinitialied
+   */
   LIB_DEINITIALIZED,
+  /**
+   * The library deinitialization process failed for some reason (e.g authentication failed)
+   */
   LIB_DEINITIALIZATION_FAILED,
-  LIB_CONNECTION_FAILED,  // TIMEOUT during account registration request on the remote Sip Server
+  
+  /**
+   * The connection to the remote Sip Server failed (a Timeout occurred during account an registration request tothe remote Sip Server)
+   */
+  LIB_CONNECTION_FAILED,   
   //CONNECTING,   // server connection is checked during each account registration renewal
   //CONNECTED,
   
-  ACCOUNT_REGISTERING,    // called only for explicit registration requests (no called during automatic registration renewals)
+  /**
+   * The Sip user is under registration process (this event triggered only for explicit registration requests, so it is no called during automatic registration renewals)
+   */
+  ACCOUNT_REGISTERING,  
+  /**
+   * The Sip user is under unregistration process
+   */
   ACCOUNT_UNREGISTERING,
-  ACCOUNT_REGISTERED,     // called also for each registration renewal
+  /**
+   * The sip user has been successfully registered to the remote Sip Server (this event is also triggered called for each registration renewal)
+   */
+  ACCOUNT_REGISTERED,   
+  /**
+   * The sip user has been successfully unregistered   
+   */
   ACCOUNT_UNREGISTERED ,
+  /**
+   * The User Account Registration process failed for some reason (e.g authentication failed)
+   */
   ACCOUNT_REGISTRATION_FAILED,
+  
+  /**
+   * The User Account Unregistration process failed for some reason (e.g the sip server is down)
+   */
   ACCOUNT_UNREGISTRATION_FAILED,
   
+  /**
+   * a remote user is under subscrition process
+   */
   BUDDY_SUBSCRIBING , // ex REMOTE_USER_SUBSCRIBING
-  BUDDY_SUBSCRIPTION_FAILED,  //ex  REMOTE_USER_SUBSCRIBING_FAILED
+  /**
+   * The remote user subscription process failed for some reason
+   */
+  BUDDY_SUBSCRIPTION_FAILED,   
+  /**
+   * The remote user has been successfully subscribed (it is now possible to get status notifications about it)
+   */
   BUDDY_SUBSCRIBED, // ex REMOTE_USER_SUBSCRIBED
-  BUDDY_CONNECTED , // ex REMOTE_USER_CONNECTED
-  BUDDY_DISCONNECTED, // ex REMOTE_USER_DISCONNECTED
+  /**
+   * The remote user is connected (i.e is in ON LINE status) 
+   */
+  BUDDY_CONNECTED , 
+  /**
+   * The remote user is no longer connected (i.e is in OFF LINE status) 
+   */
+  BUDDY_DISCONNECTED, 
+  /**
+   * The remote user is still connected, but it is not available at the moment (it is in BUSY state)
+   */
   BUDDY_HOLDING,  // ex CALL_REMOTE_HOLDING
   
-  CALL_DIALING,   // outcoming call is ringing
-  CALL_INCOMING,  // incoming call is ringing
-  CALL_INCOMING_REJECTED, // not triggered yet
+  /**
+   * an outcoming call is ringing
+   */
+  CALL_DIALING,    
+  /**
+   * an incoming call is ringing
+   */
+  CALL_INCOMING,  
+  /**
+   * a new call is ready to become active or rejected
+   */
+  CALL_READY,  
+  //CALL_INCOMING_REJECTED, // not triggered yet
+  /**
+   * The call is active 
+   */
   CALL_ACTIVE,
-  CALL_HOLDING, // local user puts on hold the call
-  CALL_UNHOLDING,  // local user resumes the call on active state
+  /**
+   * The local user puts on hold the call
+   */
+  CALL_HOLDING,  
+  /**
+   * The local user unholds the call
+   */
+  CALL_UNHOLDING,   
+  /**
+   * The local user hangs up
+   */
   CALL_HANGUP,
-  CALL_REMOTE_HANGUP, // not triggered yet
-  CALL_REMOTE_DISCONNECTION_HANGUP  // not triggered yet
+  /**
+   * The remote user hangs up
+   */
+  CALL_REMOTE_HANGUP, 
+  /**
+   * The remote server has been disconnected so the call was interrupted.
+   */
+  CALL_REMOTE_DISCONNECTION_HANGUP
+ 
 }
    

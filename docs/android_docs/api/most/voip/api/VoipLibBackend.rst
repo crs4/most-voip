@@ -116,7 +116,7 @@ getSipUriFromExtension
 .. java:method:: public String getSipUriFromExtension(String extension)
    :outertype: VoipLibBackend
 
-   Get a sip uri in the format sip:@sip_server_ip
+   Get a sip uri in the format sip:@sip_server_ip[:sip_server_port]
 
    :param extension: the extension of the sip uri
    :return: the sip uri

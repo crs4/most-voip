@@ -14,11 +14,15 @@ ACTIVE
 .. java:field:: public static final CallState ACTIVE
    :outertype: CallState
 
+   The call is active
+
 DIALING
 ^^^^^^^
 
 .. java:field:: public static final CallState DIALING
    :outertype: CallState
+
+   An outcoming call is ringing
 
 HOLDING
 ^^^^^^^
@@ -26,15 +30,21 @@ HOLDING
 .. java:field:: public static final CallState HOLDING
    :outertype: CallState
 
+   The call is on hold state
+
 IDLE
 ^^^^
 
 .. java:field:: public static final CallState IDLE
    :outertype: CallState
 
+   No call
+
 INCOMING
 ^^^^^^^^
 
 .. java:field:: public static final CallState INCOMING
    :outertype: CallState
+
+   The incoming call is ringing
 

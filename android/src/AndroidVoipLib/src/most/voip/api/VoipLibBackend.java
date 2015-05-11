@@ -474,6 +474,29 @@ private final static String TAG = "VoipLib";
 				Log.d(TAG,"Account deleted");
 			}
 			
+			// delete audio manager
+			
+			Log.d(TAG,"Deleting audio players...");
+			 if (playerOnHold!=null)
+			 {
+				 playerOnHold.delete();
+			     playerOnHold = null;
+			 }
+			 
+			 if (playerIncomingCall!=null)
+			 {
+				 playerIncomingCall.delete();
+			     playerIncomingCall = null;
+			 }
+			 
+			 if (playerOutcomingCall!=null)
+			 {
+				 playerOutcomingCall.delete();
+			     playerOutcomingCall = null;
+			 }
+			 
+			 Log.d(TAG,"Audio players deleted");
+			 
 			/* Try force GC to avoid late destroy of PJ objects as they should be
 			 * deleted before lib is destroyed.
 			 */
@@ -494,9 +517,33 @@ private final static String TAG = "VoipLib";
 			/* Force delete Endpoint here, to avoid deletion from a non-
 			 * registered thread (by GC?). 
 			 */
-			ep.delete();
+			
+			//Log.d(TAG, "Deleting endpoint DISABLED FOR DEBUGGING");
+		  	ep.delete();
+		  	
+			Log.d(TAG, "Endpoint deleted");
 			ep = null;
+			Log.d(TAG, "Endpoint set to null");
 			Log.d(TAG,"Lib destroyed");
+			notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZED, "Voip Lib destroyed", configParams));
+			
+//			Log.d(TAG, "Deleting endpoint after 10 seconds...");
+//			final Handler handler = new Handler();
+//			handler.postDelayed(new Runnable() {
+//			  @Override
+//			  public void run() {
+//				  Log.d(TAG, "Deleting endpoint NOW");
+//				  	ep.delete();
+//					Log.d(TAG, "Endpoint deleted");
+//					ep = null;
+//					Log.d(TAG, "Endpoint set to null");
+//					Log.d(TAG,"Lib destroyed");
+//					notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZED, "Voip Lib destroyed", configParams));
+//					}
+//			},10000);
+			
+			
+			
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -506,7 +553,7 @@ private final static String TAG = "VoipLib";
 			return false;
 		}
 		 
-		this.notifyEvent(new VoipEventBundle(VoipEventType.LIB_EVENT, VoipEvent.LIB_DEINITIALIZED, "Voip Lib destroyed", this.configParams));
+		
 		return true;
 		
 	}
@@ -562,8 +609,7 @@ private final static String TAG = "VoipLib";
 			}
 
 			@Override
-			public CallState getState() {
-				 
+			public CallState getState() {		 
 				return currentCallState;
 			}
 			
@@ -593,6 +639,14 @@ private final static String TAG = "VoipLib";
 				    playOutcomingRingtoneSound();
 					notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_DIALING, "Dialing call to:" + ci.getRemoteUri(), getICallInfo(ci)));
 				}
+				
+				
+				// added -> 30/01/2015 
+				else if (ci.getState()==pjsip_inv_state.PJSIP_INV_STATE_EARLY)
+				{
+					notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_READY, "Current call ready:" + ci.getRemoteUri(), getICallInfo(ci)));
+				}
+				
 				else if (ci.getState()==pjsip_inv_state.PJSIP_INV_STATE_CONFIRMED) {
 					//currentCallState = CallState.ACTIVE;
 					notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_ACTIVE, "Call active with:" + ci.getRemoteUri(), getICallInfo(ci)));
@@ -1170,8 +1224,8 @@ private final static String TAG = "VoipLib";
 	        // Transport Config
 	     	sipTpConfig.setPort(Integer.valueOf(this.sipServerPort));
 	     			 
-	        String user_name = configParams.get("userName");
-	        String user_pwd = configParams.get("userPwd");
+	        String user_name = configParams.containsKey("sipUserName") ? configParams.get("sipUserName") : configParams.get("userName");
+	        String user_pwd = configParams.containsKey("sipUserPwd") ? configParams.get("sipUserPwd") : configParams.get("userPwd");
 	        String account_transport_info = (configParams.containsKey("sipServerTransport") && configParams.get("sipServerTransport").equalsIgnoreCase("tcp")) ? 
 	        								";transport=tcp" : "";
 	        String id_uri = "sip:" + user_name + "@" + this.sipServerIp;
@@ -1210,9 +1264,10 @@ private final static String TAG = "VoipLib";
 					this.acfg.getNatConfig().setTurnUserName(configParams.get("turnServerUser"));
 					this.acfg.getNatConfig().setTurnPassword(configParams.get("turnServerPwd"));
 					this.acfg.getNatConfig().setTurnPasswordType(0); // 0 = plain pwd, 1 = digest
-					 
-					AuthCredInfo cred2 = new AuthCredInfo("digest", "most.crs4.it",configParams.get("turnServerUser"), 0, configParams.get("turnServerPwd"));
-					this.acfg.getSipConfig().getAuthCreds().add( cred2 ); // this does not work ...
+					
+					String authRealm = configParams.containsKey("turnAuthRealm") ? configParams.get("turnAuthRealm") : "most.crs4.it";
+					AuthCredInfo cred2 = new AuthCredInfo("digest", authRealm ,configParams.get("turnServerUser"), 0, configParams.get("turnServerPwd"));
+					this.acfg.getSipConfig().getAuthCreds().add( cred2 );
 				}
 				else
 				{
@@ -1232,10 +1287,6 @@ private final static String TAG = "VoipLib";
 			this.acfg.getRegConfig().setTimeoutSec(60); // minimal auto-registration used to check server connection!
 			this.acfg.setPresConfig(apc);
              
-		
-			
-			
-			
 		} catch (Exception e) {
 			System.out.println(e);
 			Log.e(TAG,"Error loading configuration:" + e.getMessage());

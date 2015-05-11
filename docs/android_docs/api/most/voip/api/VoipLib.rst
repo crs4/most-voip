@@ -111,14 +111,23 @@ initLib
    Initialize the Voip Lib
 
    :param context: application context of the activity that uses this library
-   :param configParams: All needed configuration string parameters. All the supported parameters are the following:
+   :param configParams: All needed configuration string parameters. All the supported parameters are the following (turn server params are needed only if you intend to use a turn server):
 
    ..
 
    * sipServerIp: the ip address of the Sip Server (e.g Asterisk)
-   * userName: the account name of the peer to register to the sip server
-   * userPwd: the account password of the peer to register to the sip server
-   * sipServerPort: the port of the sip server (default:"5060")
+   * sipServerPort: the port of the Sip Server (default: 5060)
+   * sipServerTransport: the sip transport: it can be "udp" or "tcp" (default: "udp")
+   * sipUserName: the account name of the peer to register to the sip server
+   * sipUserPwd: the account password of the peer to register to the sip server
+   * turnServerIp: the ip address of the Turn Server
+   * turnServerPort: the port of the Turn Server (default: 3478)
+   * turnServerUser: the username used for TurnServer Authentication
+   * turnServerPwd: the password of the user used for TurnServer Authentication
+   * turnAuthRealm: the realm for the authentication (default:"most.crs4.it")
+   * onHoldSound: the path of the sound file played when the call is put on hold status
+   * onIncomingCallSound: the path of the sound file played for outcoming calls
+   * onOutcomingCallSound: the path of the sound file played for outcoming calls
    :param notificationHandler: the handller that will receive all sip notifications
    :return: true if the initialization request completes without errors, false otherwise
 
@@ -159,7 +168,7 @@ unregisterAccount
 .. java:method:: public boolean unregisterAccount()
    :outertype: VoipLib
 
-   Unregister the currently registered account [Not Implemented yet]
+   Unregister the currently registered account
 
    :return: \ ``true``\  if the unregistration request was sent to the sip server, \ ``false``\  otherwise
 
