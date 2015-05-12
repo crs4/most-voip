@@ -24,7 +24,18 @@ Supported platforms:
 So far, MOST-Voip for desktop platforms has been tested only on Linux Ubuntu v.14.04 distribution. However, it is written in Python 2.7, 
 so other platforms should be supported as well.
 
+Table Of Contents
+=================
 
+.. toctree::
+   :maxdepth: 3
+   
+
+   index
+   python_docs/index
+   android_docs/index
+   authors
+    
 
 Installation
 ============
@@ -43,27 +54,6 @@ So, first of all, you have to install PJSip, by performing the following steps:
 If you intend to use Most-Voip on the Android platform, you also have to build Pjsip for Android, as explained `here <https://trac.pjsip.org/repos/wiki/Getting-Started/Android#Requirements>`_
 
 Get the latest release from GitHub: `https://github.com/crs4/most-voip <https://github.com/crs4/most-voip>`_
-
-
-Table Of Contents
-=================
-
-.. toctree::
-   :maxdepth: 3
-   
-
-   index
-   python_docs/index
-   android_docs/index
-   authors
-    
- 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
 
 License
@@ -92,4 +82,12 @@ The MOST-Voip API is licensed under both General Public License (GPL) version 2 
     * if you are developing Open Source Software (OSS) based on MOST-Voip, chances are you will be able to use MOST-Voip under GPL. Note that the Most-Voip Library depends on the PJSIP API, so  please double check `here <http://www.pjsip.org/licensing.htm>`_ for OSS license compatibility with GPL.
     * alternatively, you can release your application under MIT licence, provided that you have followed the guidelines of the PJSIP licence explained `here <http://www.pjsip.org/licensing.htm>`_.
 
+
+ 
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
 
