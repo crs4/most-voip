@@ -30,7 +30,7 @@ Available MOST Frameworks:
 ==========================
 
   * `MOST-Voip  <https://github.com/crs4/most-voip>`_  (a fast and lightweight library created for handling VOIP sessions)
-  * `MOST-Streaming  <https://github.com/crs4/most-voip>`_  (a library for managing audio/video streams)
+  * `MOST-Streaming  <https://github.com/crs4/most-streaming>`_  (a library for managing audio/video streams)
   * `MOST-Visualization  <https://github.com/crs4/most-visualization>`_  (a library for providing mobile applications with visual widgets for interacting with A/V streams)
   * `MOST-Report  <https://github.com/crs4/most-report>`_ (a library for managing clinical models)
   * `MOST-Demographics  <https://github.com/crs4/most-demographics>`_ 
