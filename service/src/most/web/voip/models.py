@@ -11,7 +11,7 @@
 from django.db import models
 #from django.contrib.auth.models import User
 from most.web.users.models import MostUser
-from Cython.Shadow import address
+#from Cython.Shadow import address
 
 # Create your models here.
 class SipServer(models.Model):
