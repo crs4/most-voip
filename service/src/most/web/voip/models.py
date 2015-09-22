@@ -25,6 +25,9 @@ class SipServer(models.Model):
         return result
     json_dict = property(_get_json_dict)
     
+    def __unicode__(self):
+        return '[Sip Server: {name}]'.format(name=self.name)
+    
 
 class TurnServer(models.Model):
     name = models.CharField(max_length=50)
@@ -38,6 +41,9 @@ class TurnServer(models.Model):
         return result
     
     json_dict = property(_get_json_dict)
+    
+    def __unicode__(self):
+        return '[Turn Server: {name}]'.format(name=self.name)
 
 class Account(models.Model):
     user = models.ForeignKey(MostUser)
@@ -62,6 +68,10 @@ class Account(models.Model):
 
     
         return result
+    
+    def __unicode__(self):
+        return '[Sip Account: {name}]'.format(name=self.name)
+    
     json_dict = property(_get_json_dict)
 
 
@@ -69,3 +79,6 @@ class Buddy(models.Model):
     account = models.ForeignKey(Account)
     name = models.CharField(max_length=50)
     extension = models.CharField(max_length=50)
+    
+    def __unicode__(self):
+        return '[Buddy: {name} : {extension}]'.format(name=self.name, extension=self.extension)
