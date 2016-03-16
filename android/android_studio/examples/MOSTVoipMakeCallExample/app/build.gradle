@@ -5,7 +5,7 @@ android {
     buildToolsVersion "21.0.2"
 
     defaultConfig {
-        applicationId "it.crs4.most.voip.examples.most_voip_account_registration_example"
+        applicationId "it.crs4.most.voip.examples.most_voip_second_example"
         minSdkVersion 11
         targetSdkVersion 21
         versionCode 1
