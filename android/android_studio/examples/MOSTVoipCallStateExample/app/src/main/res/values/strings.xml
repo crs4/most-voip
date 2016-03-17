@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Most Voip States Example</string>
+    <string name="ip_server">&lt;Insert SIP server IP&gt;</string>
+    <string name="ip_server_title">Sip Server IP:</string>
+    <string name="extension_title">Extension:</string>
+    <string name="call_state_title">Call State:</string>
+    <string name="call_state">Idle</string>
+    <string name="server_state_title">Server State:</string>
+    <string name="server_state">N.A</string>
+</resources>

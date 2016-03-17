@@ -38,6 +38,56 @@
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:focusableInTouchMode="true"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/labCallStateTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_gravity="left"
+            android:text="@string/call_state_title" />
+
+        <TextView
+            android:id="@+id/labCallState"
+            android:layout_width="0sp"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:inputType="text"
+            android:maxLines="1"
+            android:text="@string/call_state" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:focusableInTouchMode="true"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/labServerStateTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_gravity="left"
+            android:text="@string/server_state_title" />
+
+        <TextView
+            android:id="@+id/labServerState"
+            android:layout_width="0sp"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:maxLines="1"
+            android:text="@string/server_state" />
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal|center_vertical"
         android:focusableInTouchMode="true"
         android:orientation="horizontal">
@@ -69,9 +119,17 @@
     </LinearLayout>
 
     <ListView
+        android:id="@+id/listBuddies"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"
+        android:descendantFocusability="beforeDescendants"
+        android:focusable="true"></ListView>
+
+    <ListView
         android:id="@+id/listOperations"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dip"
         android:layout_weight="1"
         android:descendantFocusability="beforeDescendants"
         android:focusable="true"></ListView>
