@@ -38,6 +38,22 @@ model {
     }
 }
 
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository url:  mavenLocal().url
+            pom.version = '1.0'
+            pom.groupId = 'it.crs4.most.voip'
+            pom.artifactId = 'MOSTVoip'
+        }
+    }
+}
+
+artifacts {
+    archives file('build/outputs/aar/MOSTVoip-arm-debug.aar')
+}
+
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:19.0.+'
