@@ -1,13 +1,13 @@
 apply plugin: 'com.android.model.library'
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
 
 model {
     android {
-        compileSdkVersion 19
-        buildToolsVersion "19.1.0"
+        compileSdkVersion 21
+        buildToolsVersion "21.0.2"
 
         defaultConfig {
-            minSdkVersion.apiLevel 11
+            minSdkVersion.apiLevel 15
             targetSdkVersion.apiLevel 21
             versionCode 1
             versionName "1.0"
@@ -38,26 +38,26 @@ model {
     }
 }
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository url:  mavenLocal().url
-            pom.version = '1.0'
-            pom.groupId = 'it.crs4.most.voip'
-            pom.artifactId = 'MOSTVoip'
-        }
-    }
-}
-
-artifacts {
-    archives file('build/outputs/aar/MOSTVoip-arm-debug.aar')
-}
-
-
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:19.0.+'
+    compile 'com.android.support:appcompat-v7:21.0.2'
     testCompile 'junit:junit:4.12'
 }
 
+publishing {
+    repositories {
+        maven {
+            url mavenLocal().url
+        }
+    }
+    publications {
+        aar(MavenPublication) {
+            groupId 'it.crs4.most.voip'
+            version '1.0'
+            artifactId 'MOSTVoip'
+            artifact("build/outputs/aar/MOSTVoip-arm-debug.aar")
+
+        }
+    }
+}
 
