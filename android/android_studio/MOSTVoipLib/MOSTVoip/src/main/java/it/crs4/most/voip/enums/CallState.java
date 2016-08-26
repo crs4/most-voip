@@ -10,18 +10,24 @@
 package it.crs4.most.voip.enums;
 
 public enum CallState {
-	  /**  No call */
-	  IDLE,   	
-	  /** An outcoming call is ringing */
-      DIALING ,  
-      /** The incoming call is ringing */
-	  INCOMING,   
-	  /**
-	   * The call is active
-	   */
-	  ACTIVE,    	
-	  /**
-	   * The call is on hold state
-	   */
-	  HOLDING
+    /**
+     * No call
+     */
+    IDLE,
+    /**
+     * An outcoming call is ringing
+     */
+    DIALING,
+    /**
+     * The incoming call is ringing
+     */
+    INCOMING,
+    /**
+     * The call is active
+     */
+    ACTIVE,
+    /**
+     * The call is on hold state
+     */
+    HOLDING
 }

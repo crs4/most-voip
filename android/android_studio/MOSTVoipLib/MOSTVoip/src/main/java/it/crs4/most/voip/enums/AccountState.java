@@ -10,6 +10,6 @@
 package it.crs4.most.voip.enums;
 
 public enum AccountState {
-   UNREGISTERED,
-   REGISTERED
+    UNREGISTERED,
+    REGISTERED
 }

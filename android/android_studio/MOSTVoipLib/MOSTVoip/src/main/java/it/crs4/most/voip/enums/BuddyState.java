@@ -10,9 +10,9 @@
 package it.crs4.most.voip.enums;
 
 public enum BuddyState {
-	NOT_FOUND,
-	OFF_LINE,
-	ON_LINE,
-	ON_HOLD,
-	UNKNOWN,
+    NOT_FOUND,
+    OFF_LINE,
+    ON_LINE,
+    ON_HOLD,
+    UNKNOWN,
 }

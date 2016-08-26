@@ -10,6 +10,6 @@
 package it.crs4.most.voip.enums;
 
 public enum ServerState {
-   CONNECTED,
-   DISCONNECTED
+    CONNECTED,
+    DISCONNECTED
 }

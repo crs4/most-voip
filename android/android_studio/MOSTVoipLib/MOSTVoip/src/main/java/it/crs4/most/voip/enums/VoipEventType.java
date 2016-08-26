@@ -10,20 +10,20 @@
 package it.crs4.most.voip.enums;
 
 public enum VoipEventType {
-     /** 
-      * Voip Library Events (Voip (de)initialization)
-      */
-     LIB_EVENT,   
-      /** 
-      * Voip Account Events ((un)registration)
-      */
-	ACCOUNT_EVENT,  
-        /** 
-      	* Voip Call Events (incoming, dialing, active, (un)holding, hanging up)
-      	*/
-	CALL_EVENT, 
-  	/** 
-      	 * Voip Buddy Events (buddy presence notification: (un)subsscribing, (dis)connection,  remote (un)holding)
-      	 */
-	 BUDDY_EVENT
+    /**
+     * Voip Library Events (Voip (de)initialization)
+     */
+    LIB_EVENT,
+    /**
+     * Voip Account Events ((un)registration)
+     */
+    ACCOUNT_EVENT,
+    /**
+     * Voip Call Events (incoming, dialing, active, (un)holding, hanging up)
+     */
+    CALL_EVENT,
+    /**
+     * Voip Buddy Events (buddy presence notification: (un)subsscribing, (dis)connection,  remote (un)holding)
+     */
+    BUDDY_EVENT
 }
