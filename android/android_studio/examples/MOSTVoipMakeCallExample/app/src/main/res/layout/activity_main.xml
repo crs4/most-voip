@@ -1,0 +1,65 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+    
+    <LinearLayout 
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal" 
+    android:focusableInTouchMode="true"
+    >
+    <TextView android:id="@+id/labIpServer" 
+                android:text="@string/ip_server_title" 
+                android:layout_width="wrap_content" 
+                android:layout_gravity="left" 
+                android:layout_height="fill_parent" />
+    
+    <EditText android:id="@+id/txtServerIp"
+        android:layout_width="0sp"
+        android:layout_height="fill_parent"
+        android:layout_weight="1"
+        android:text="@string/ip_server" 
+        android:inputType="text" 
+        android:maxLines="1"
+        android:gravity="center"/>
+      <Button android:id="@+id/butGo" android:text="Go!" 
+                android:layout_width="wrap_content" 
+                android:layout_gravity="right" 
+                android:layout_height="fill_parent"
+                android:onClick="doVoipTest" />
+    </LinearLayout>
+    
+    <LinearLayout 
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal" 
+    android:focusableInTouchMode="true"
+    >
+    <TextView android:id="@+id/labExtension" 
+                android:text="@string/extension_title" 
+                android:layout_width="wrap_content" 
+                android:layout_gravity="left" 
+                android:layout_height="fill_parent" />
+    
+    <EditText android:id="@+id/txtExtension"
+        android:layout_width="0sp"
+        android:layout_height="fill_parent"
+        android:layout_weight="1"
+        android:text="@string/extension" 
+        android:inputType="text" 
+        android:maxLines="1"
+        android:gravity="center"/>
+     
+    </LinearLayout>
+    
+    <ListView
+        android:id="@+id/listOperations"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:focusable="true" android:descendantFocusability="beforeDescendants"
+        >
+    </ListView>
+
+</LinearLayout>
