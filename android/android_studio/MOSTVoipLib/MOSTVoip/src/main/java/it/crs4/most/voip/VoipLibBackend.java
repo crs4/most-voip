@@ -96,7 +96,7 @@ public class VoipLibBackend extends Application implements VoipLib {
 
     private final static String TAG = "VoipLib";
     private static Endpoint ep = null; //new Endpoint();
-    private static MyCall currentCall = null;
+    private MyCall currentCall = null;
 
     static {
         System.out.println("LOADING LIB...");
@@ -118,13 +118,13 @@ public class VoipLibBackend extends Application implements VoipLib {
     private String sipServerPort = null;
     private ServerState serverState = ServerState.DISCONNECTED;
 
-//MediaPlayer mediaPlayer = null;
+    //MediaPlayer mediaPlayer = null;
     private Handler notificationHandler = null;
 
-//private boolean onHoldSoundIsPlaying = false;
+    //private boolean onHoldSoundIsPlaying = false;
 //private boolean onIncomingCallRingToneIsPlaying = false;
 //private boolean onOutcomingCallRingToneIsPlaying = false;
-    private HashMap<String, String> configParams = new HashMap<String, String>();
+    private HashMap<String, String> configParams = new HashMap<>();
     private boolean localHangup = false;
     private Context context;
 
@@ -191,19 +191,16 @@ public class VoipLibBackend extends Application implements VoipLib {
             Log.d(TAG, "Instancing EndPoint..");
             ep = new Endpoint();
             ep.libCreate();
-			
-			
+
 			/* Load config */
             Log.d(TAG, "Load configuration...");
             loadConfig(configParams);
-
 
             // Init the pjsua lib with the given configuration
             Log.d(TAG, "Lib init......");
             ep.libInit(epConfig);
 
             // Create SIP transport. Error handling sample is shown
-
             //self.params.has_key("sip_server_transport") and self.params["sip_server_transport"]=="udp"):
             if (configParams.containsKey("sipServerTransport") && configParams.get("sipServerTransport").equalsIgnoreCase("tcp")) {
                 ep.transportCreate(pjsip_transport_type_e.PJSIP_TRANSPORT_TCP, sipTpConfig);
@@ -213,7 +210,6 @@ public class VoipLibBackend extends Application implements VoipLib {
                 Log.d(TAG, "transport create with UDP Transport");
                 ep.transportCreate(pjsip_transport_type_e.PJSIP_TRANSPORT_UDP, sipTpConfig);
             }
-
 
             // Start the library
             Log.d(TAG, "Lib starting....");
@@ -236,7 +232,6 @@ public class VoipLibBackend extends Application implements VoipLib {
         }
     }
 
-
     @Override
     public boolean registerAccount() {
 
@@ -246,12 +241,14 @@ public class VoipLibBackend extends Application implements VoipLib {
         try {
             this.acc.create(acfg);
             // TODO: create IAccount interface to be passed as final parameter
-            this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_REGISTERING, "Account Registration request sent", this.acc));
+            this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT,
+                VoipEvent.ACCOUNT_REGISTERING, "Account Registration request sent", this.acc));
         }
         catch (Exception e) {
             e.printStackTrace();
             Log.e(TAG, "Error Registering the account:" + e);
-            this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_REGISTRATION_FAILED, "Account Registration request failed:" + e.getMessage(), this.acc));
+            this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT,
+                VoipEvent.ACCOUNT_REGISTRATION_FAILED, "Account Registration request failed:" + e.getMessage(), this.acc));
             return false;
         }
 
@@ -261,15 +258,19 @@ public class VoipLibBackend extends Application implements VoipLib {
     @Override
     public boolean unregisterAccount() {
         try {
+            this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT,
+                VoipEvent.ACCOUNT_UNREGISTERING, "Account Unregistration request sent", this.acc));
             acc.setRegistration(false);
-            this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_UNREGISTERING, "Account Unregistration request sent", this.acc));
+            acc.delete();
+            acc = null;
             return true;
         }
         catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
             Log.e(TAG, "Failed Unregistering the account:" + e.getMessage());
-            this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT, VoipEvent.ACCOUNT_UNREGISTRATION_FAILED, "Account Unregistration request failed:" + e.getMessage(), this.acc));
+            this.notifyEvent(new VoipEventBundle(VoipEventType.ACCOUNT_EVENT,
+                VoipEvent.ACCOUNT_UNREGISTRATION_FAILED, "Account Unregistration request failed:" + e.getMessage(), this.acc));
         }
         return false;
     }
@@ -297,7 +298,7 @@ public class VoipLibBackend extends Application implements VoipLib {
 		}
 		*/
 
-        MyCall call = new MyCall(this.acc, -1);
+        currentCall = new MyCall(this.acc, -1);
         CallOpParam prm = new CallOpParam();
         CallSetting opt = prm.getOpt();
         opt.setAudioCount(1);
@@ -306,15 +307,13 @@ public class VoipLibBackend extends Application implements VoipLib {
         try {
             String uri = this.getSipUriFromExtension(extension);
             Log.d(TAG, "making call to:" + uri);
-            call.makeCall(uri, prm);
+            currentCall.makeCall(uri, prm);
         }
         catch (Exception e) {
-            VoipLibBackend.currentCall = null;
+            currentCall = null;
             Log.e(TAG, "Exception in makeCall: " + e.getMessage());
             return false;
         }
-        // setting the new call as the current call
-        VoipLibBackend.currentCall = call;
         return true;
     }
 
@@ -384,13 +383,13 @@ public class VoipLibBackend extends Application implements VoipLib {
 
     @Override
     public boolean answerCall() {
-        if (VoipLibBackend.currentCall == null) {
+        if (currentCall == null) {
             Log.d(TAG, "Answer Call ignored: no call found");
             return false;
         }
         CallInfo ci;
         try {
-            ci = VoipLibBackend.currentCall.getInfo();
+            ci = currentCall.getInfo();
             if (ci.getState() != pjsip_inv_state.PJSIP_INV_STATE_EARLY) {
                 Log.d(TAG, "The current call is not in dialing state. Answering request ignored: State:" + ci.getState());
                 return false;
@@ -405,7 +404,7 @@ public class VoipLibBackend extends Application implements VoipLib {
         prm.setStatusCode(pjsip_status_code.PJSIP_SC_OK);
         try {
             Log.d(TAG, "Try to answer the Call");
-            VoipLibBackend.currentCall.answer(prm);
+            currentCall.answer(prm);
 
         }
         catch (Exception e) {
@@ -417,7 +416,7 @@ public class VoipLibBackend extends Application implements VoipLib {
 
     @Override
     public boolean holdCall() {
-        if (VoipLibBackend.currentCall == null) {
+        if (currentCall == null) {
             Log.d(TAG, "There is no call to hold");
             return false;
         }
@@ -440,7 +439,7 @@ public class VoipLibBackend extends Application implements VoipLib {
 
     @Override
     public boolean unholdCall() {
-        if (VoipLibBackend.currentCall == null) {
+        if (currentCall == null) {
             Log.d(TAG, "There is no call to unhold");
             return false;
         }
@@ -448,7 +447,7 @@ public class VoipLibBackend extends Application implements VoipLib {
         CallSetting cs;
         Log.d(TAG, "Retrieving current call settings.");
         try {
-            cs = VoipLibBackend.currentCall.getInfo().getSetting();
+            cs = currentCall.getInfo().getSetting();
             cs.setFlag(pjsua_call_flag.PJSUA_CALL_UNHOLD.swigValue());
         }
         catch (Exception e1) {
@@ -478,13 +477,14 @@ public class VoipLibBackend extends Application implements VoipLib {
     public boolean hangupCall() {
         // Stop the 'onhold sound, if any'
         stopOnHoldSound();
-        if (VoipLibBackend.currentCall != null) {
+        if (currentCall != null) {
             this.localHangup = true;
             CallOpParam prm = new CallOpParam();
             prm.setStatusCode(pjsip_status_code.PJSIP_SC_DECLINE);
             try {
                 Log.d(TAG, "Try to hangup the Call");
-                VoipLibBackend.currentCall.hangup(prm);
+                currentCall.hangup(prm);
+//                currentCall.delete();
                 return true;
             }
             catch (Exception e) {
@@ -492,7 +492,7 @@ public class VoipLibBackend extends Application implements VoipLib {
                 this.localHangup = false;
                 return false;
             }
-            //VoipLibBackend.currentCall = null;
+            //currentCall = null;
         }
         return false;
     }
@@ -753,7 +753,7 @@ public class VoipLibBackend extends Application implements VoipLib {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        if (this.configParams.containsKey("onHoldSound"))
+        if (this.configParams.containsKey("onHoldSound")) {
             try {
                 playerOnHold = new AudioMediaPlayer();
                 playerOnHold.createPlayer(this.configParams.get("onHoldSound"));
@@ -762,7 +762,8 @@ public class VoipLibBackend extends Application implements VoipLib {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-        if (this.configParams.containsKey("onIncomingCallSound"))
+        }
+        if (this.configParams.containsKey("onIncomingCallSound")) {
             try {
                 playerIncomingCall = new AudioMediaPlayer();
                 playerIncomingCall.createPlayer(this.configParams.get("onIncomingCallSound"));
@@ -771,7 +772,8 @@ public class VoipLibBackend extends Application implements VoipLib {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-        if (this.configParams.containsKey("onOutcomingCallSound"))
+        }
+        if (this.configParams.containsKey("onOutcomingCallSound")) {
             try {
                 playerOutcomingCall = new AudioMediaPlayer();
                 playerOutcomingCall.createPlayer(this.configParams.get("onOutcomingCallSound"));
@@ -780,6 +782,7 @@ public class VoipLibBackend extends Application implements VoipLib {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
+        }
     }
 
     private void loadConfig(HashMap<String, String> configParams) {
@@ -988,15 +991,17 @@ public class VoipLibBackend extends Application implements VoipLib {
                     stopOutcomingRingtoneSound();
                     stopOnHoldSound();
                     //currentCallState = CallState.IDLE;
-                    //VoipLibBackend.currentCall = null;
+                    //currentCall = null;
                     if (localHangup) {
                         notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_HANGUP, "Call hangup with:" + ci.getRemoteUri(), getICallInfo(ci)));
                     }
                     else {
-                        if (getServer().getState() == ServerState.DISCONNECTED)
+                        if (getServer().getState() == ServerState.DISCONNECTED) {
                             notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_REMOTE_DISCONNECTION_HANGUP, "Call remote hangup with:" + ci.getRemoteUri(), getICallInfo(ci)));
-                        else
+                        }
+                        else {
                             notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_REMOTE_HANGUP, "Call remote hangup with:" + ci.getRemoteUri(), getICallInfo(ci)));
+                        }
                     }
 
                 }
@@ -1047,10 +1052,12 @@ public class VoipLibBackend extends Application implements VoipLib {
                         stopOutcomingRingtoneSound();
 
                         //currentCallState = CallState.ACTIVE;
-                        if (getCall().getState() == CallState.HOLDING)
+                        if (getCall().getState() == CallState.HOLDING) {
                             notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_UNHOLDING, "Call Unholding", getICallInfo(ci)));
-                        else
+                        }
+                        else {
                             notifyEvent(new VoipEventBundle(VoipEventType.CALL_EVENT, VoipEvent.CALL_ACTIVE, "Call Active", getICallInfo(ci)));
+                        }
                     }
                     // unfortunately, on Java too, the returned Media cannot be downcasted to AudioMedia
                     Media m = getMedia(i);
@@ -1106,8 +1113,9 @@ public class VoipLibBackend extends Application implements VoipLib {
             }
             BuddyConfig buddyConfig = new BuddyConfig();
             //dest_uri = "sip:%s@%s;transport=tcp" % (str(dest_extension), self.sip_server)
-            if (configParams.containsKey("sipServerTransport") && configParams.get("sipServerTransport").equalsIgnoreCase("tcp"))
+            if (configParams.containsKey("sipServerTransport") && configParams.get("sipServerTransport").equalsIgnoreCase("tcp")) {
                 buddyUri += ";transport=tcp";
+            }
 
             buddyConfig.setUri(buddyUri);
             buddyConfig.setSubscribe(true);
@@ -1154,13 +1162,14 @@ public class VoipLibBackend extends Application implements VoipLib {
 
             if (bud != null) {
                 buddyList.put(bud_cfg.getUri(), bud);
-                if (bud_cfg.getSubscribe())
+                if (bud_cfg.getSubscribe()) {
                     try {
                         bud.subscribePresence(true);
                     }
                     catch (Exception e) {
                         Log.e(TAG, "Error subscribing the buddy:" + e);
                     }
+                }
             }
             return bud;
         }
@@ -1301,6 +1310,7 @@ public class VoipLibBackend extends Application implements VoipLib {
         public BuddyConfig cfg;
         private BuddyState buddyState = BuddyState.NOT_FOUND;
         private String statusText = "?";
+
         MyBuddy(BuddyConfig config) {
             super();
             cfg = config;
