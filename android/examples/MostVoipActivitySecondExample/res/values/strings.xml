@@ -1,8 +1,0 @@
-<resources>
-
-    <string name="app_name">MostVoipMakeCallExample</string>
-    <string name="ip_server">192.168.1.100</string>
-    <string name="ip_server_title">Sip Server IP:</string>
-    <string name="extension_title">Extension:</string>
-    <string name="extension">ste</string>
-</resources>
